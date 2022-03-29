@@ -1,5 +1,4 @@
 #include "KDTree.h"
-#include "model.h"
 #include <iostream>
 
 bool SolveEquision(Node* A, Node* B, glm::vec3 L, glm::mat4 TRTB, glm::mat4 TRTA) {
@@ -101,15 +100,15 @@ void print_queue(std::queue<std::pair<Node*, Node*>> q) {
 	std::cout << std::endl;
 }
 
-std::pair<Node*, Node*> findCollision(Model* firstShape, Model* secondShape) {
+std::pair<Node*, Node*> findCollision(Node* firstShape, glm::mat4 firstTransScale, Node* secondShape, glm::mat4 secondTransScale) {
 	std::queue<std::pair<Node*, Node*>> queue;
 	std::pair<Node*, Node*> ret;
-	queue.push(std::pair<Node*, Node*>(firstShape->kdTree.getRoot(), secondShape->kdTree.getRoot()));
+	queue.push(std::pair<Node*, Node*>(firstShape, secondShape));
 
 	while (!queue.empty()) {
 		std::pair<Node*, Node*> curPair = queue.front();
 		queue.pop();
-		if (checkCollision(curPair.first, curPair.second, firstShape->makeTransScale(glm::mat4(1)), secondShape->makeTransScale(glm::mat4(1)))) {
+		if (checkCollision(curPair.first, curPair.second, firstTransScale, secondTransScale)) {
 			if (curPair.first->isLastInnerNode() && curPair.second->isLastInnerNode()) {
 				ret = curPair;
 				break;

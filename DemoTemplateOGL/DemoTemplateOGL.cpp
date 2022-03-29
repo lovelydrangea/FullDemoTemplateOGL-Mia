@@ -1,8 +1,9 @@
 // DemoTemplateOGL.cpp : Defines the entry point for the application.
 //
-#define STB_IMAGE_IMPLEMENTATION
 #include "framework.h"
 #include "DemoTemplateOGL.h"
+#include <iostream>
+#include "Utilities.h"
 #include "KeyboardInput.h"
 #include <glad/glad.h>
 
@@ -12,21 +13,15 @@
 
 #include "glext.h"
 #include "wglext.h"
-#include "camera.h"
 #include "model.h"
+#include "MainModel.h"
 
-#include <iostream>
 #include "GamePadRR.h"
-#include "GraphicsRR.h"
+#include "Scenario.h"
 
 #define MAX_LOADSTRING 100
 #define Timer1 100
 
-// Global Variables:
-struct Vertex;
-struct Texture;
-struct CamDetails;
-struct CamDetails cameraDetails;    // Esta variable contiene los parametros actualizados de la camara
 HINSTANCE hInst;                                // current instance
 HWND hWnd;
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
@@ -50,7 +45,7 @@ unsigned int SCR_HEIGHT = 600;
 bool newContext = false; // Bandera para identificar si OpenGL 2.0 > esta activa
 
 // Objecto de escena y render
-GraphRR *OGLobj;
+Scenario *OGLobj;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -70,7 +65,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // game loop
     gamPad = new GamePadRR(1); // Obtenemos el primer gamepad conectado
-    OGLobj = new GraphRR(hWnd, glm::vec3(0.0f, 0.0f, 3.0f)); // Creamos nuestra escena con esa posicion de inicio
+
+    glm::vec3 translate;
+    glm::vec3 scale;
+    translate = glm::vec3(0.0f, 0.0f, 3.0f);
+    MainModel *model = new MainModel(hWnd, "models/Cube.obj", translate);
+    model->setPosition(translate);
+    glm::vec3 v(0, 0, -1);
+    model->setFront(v);
+    scale = glm::vec3(10.25f, 10.25f, 10.25f);	// it's a bit too big for our scene, so scale it down
+    model->setScale(&scale);
+    model->setTranslate(&translate);
+    
+    OGLobj = new Scenario(hWnd, model); // Creamos nuestra escena con esa posicion de inicio
     SetTimer(hWnd, Timer1, 1000/30, (TIMERPROC)WndProc);// Asignamos el timer con un render de 30 fps
     renderiza = false;
     MSG msg = { 0 };
@@ -92,10 +99,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                 //debido a que los controles se aguadean con el uso entonces ya no dan el cero
                 //en el centro, por eso lo comparo con una ventana de aguadencia de mi control
                 if (grados > 0.19 || grados < -0.19)
-                    OGLobj->CamaraGiraY(grados * 3.0);
+                    model->CamaraGiraY(grados * 3.0);
                 float velocidad = (float)gamPad->GetState().Gamepad.sThumbLY / 32767;
                 if (velocidad > 0.19 || velocidad < -0.19)
-                    OGLobj->CamaraAvanza(velocidad);
+                    model->CamaraAvanza(velocidad);
             } else {
                 KeysEvents(OGLobj);
                 

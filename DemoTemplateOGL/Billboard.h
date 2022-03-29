@@ -1,6 +1,6 @@
 #ifndef _billb
 #define _billb
-#include "DemoTemplateOGL.h"
+#include "Utilities.h"
 #include <glad/glad.h>
 
 #include <glm/glm.hpp>
@@ -38,9 +38,9 @@ private:
 
 	void reloadData(float* vertices, float width, float height, float x, float y){
 
-		glm::vec3 billcam = glm::vec3(cameraDetails.Position->x - origin.x,
-			cameraDetails.Position->y - origin.y,
-			cameraDetails.Position->z - origin.z);
+		glm::vec3 billcam = glm::vec3(cameraDetails->getPosition().x - origin.x,
+			cameraDetails->getPosition().y - origin.y,
+			cameraDetails->getPosition().z - origin.z);
 
 		glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 		glm::vec3 right = glm::normalize(glm::cross(up, billcam));
@@ -70,8 +70,9 @@ private:
 		}
 	}
 public:
-
-	Billboard(HWND hWnd, WCHAR textura[], float ancho, float alto, float x, float y, float z) {
+	Camera* cameraDetails = NULL;
+	Billboard(HWND hWnd, WCHAR textura[], float ancho, float alto, float x, float y, float z, Camera* camera) {
+		cameraDetails = camera;
 		int mapAlturaX, mapAlturaY, mapAlturaComp;
 		this->alto = alto;
 		this->ancho= ancho;
@@ -182,8 +183,8 @@ public:
 	}
 
 	void prepShader(Shader& shader) {
-		glm::mat4 projection = cameraDetails.currentProjection;
-		glm::mat4 view = cameraDetails.currentView;
+		glm::mat4 projection = cameraDetails->getProjection();
+		glm::mat4 view = cameraDetails->getView();
 
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0f)); // translate it down so it's at the center of the scene

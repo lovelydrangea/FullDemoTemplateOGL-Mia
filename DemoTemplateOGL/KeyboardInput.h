@@ -1,8 +1,7 @@
 #pragma once
 #ifndef KEYBOARD_INPUT_H
 #define KEYBOARD_INPUT_H
-
-#include "GraphicsRR.h"
+#include "Scenario.h"
 
 	struct Input {
 		enum Keys {
@@ -20,7 +19,7 @@
 
 	extern struct Input input;
 	extern bool KEYS[256];
-	extern void KeysEvents(GraphRR* OGLobj);
+	extern void KeysEvents(Scenario *obj);
 	extern void Init();
 
 #endif

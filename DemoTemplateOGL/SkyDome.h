@@ -7,7 +7,9 @@ class SkyDome : public Model {
 	//El constructor llama al metodo Esfera de la clase geometrias que generara los vertices
 	//normales y uvs de la misma, nos regresa la estructura Maya.
 public:
-	SkyDome(HWND hWnd, int stacks, int slices, float radio, WCHAR *nombre) {
+	Camera* cameraDetails = NULL;
+	SkyDome(HWND hWnd, int stacks, int slices, float radio, WCHAR *nombre, Camera* camera) {
+		cameraDetails = camera;
 		vector<unsigned int> indices;
 		vector<Texture> textures;
 		vector<Vertex>	vertices;
@@ -70,16 +72,16 @@ public:
 		shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 		glm::vec3 lightPos(1.2f, 100.0f, 2.0f);
 		shader.setVec3("light.position", lightPos);
-		shader.setVec3("viewPos", *cameraDetails.Position);
+		shader.setVec3("viewPos", this->cameraDetails->getPosition());
 
 		// view/projection transformations
-		shader.setMat4("projection", cameraDetails.currentProjection);
-		shader.setMat4("view", cameraDetails.currentView);
+		shader.setMat4("projection", cameraDetails->getProjection());
+		shader.setMat4("view", cameraDetails->getView());
 
 		// render the loaded model
 		glm::mat4 model = glm::mat4(1.0f);
 		//		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-		model = glm::translate(model, glm::vec3(cameraDetails.Position->x, cameraDetails.Position->y - 5, cameraDetails.Position->z)); // translate it down so it's at the center of the scene
+		model = glm::translate(model, glm::vec3(cameraDetails->getPosition().x, cameraDetails->getPosition().y - 5, cameraDetails->getPosition().z)); // translate it down so it's at the center of the scene
 		//model = glm::scale(model, glm::vec3(0.0025f, 0.0025f, 0.0025f));	// it's a bit too big for our scene, so scale it down
 //			model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
 		shader.setMat4("model", model);

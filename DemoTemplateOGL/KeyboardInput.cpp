@@ -1,6 +1,4 @@
 #include "KeyboardInput.h"
-#include "camera.h"
-#include "GraphicsRR.h"
 
 struct Input input;
 bool KEYS[256];
@@ -11,7 +9,8 @@ void Init() {
 	}
 }//Initizalizes keys
 
-void KeysEvents(GraphRR *OGLobj) {
+void KeysEvents(Scenario *scene){
+	MainModel* OGLobj = scene->camara;
 	if (KEYS[input.A]) {
 //		OGLobj->ProcessKeyboard(LEFT, 0.50 * 3.0);
 		OGLobj->CamaraGiraY(-0.50 * 3.0);
@@ -30,7 +29,7 @@ void KeysEvents(GraphRR *OGLobj) {
 //		OGLobj->ProcessKeyboard(FORWARD, 0.50);
 		if (!OGLobj->frontCollition) {
 			OGLobj->CamaraAvanza(0.50);
-			if (OGLobj->lookForCollition()) {
+			if (scene->lookForCollition()) {
 				OGLobj->CamaraAvanza(-0.50);
 				OGLobj->frontCollition = true;
 			}
@@ -42,7 +41,7 @@ void KeysEvents(GraphRR *OGLobj) {
 //		OGLobj->ProcessKeyboard(BACKWARD, 0.50);
 		if (!OGLobj->backCollition) {
 			OGLobj->CamaraAvanza(-0.50);
-			if (OGLobj->lookForCollition()) {
+			if (scene->lookForCollition()) {
 				OGLobj->CamaraAvanza(0.50);
 				OGLobj->backCollition = true;
 			}

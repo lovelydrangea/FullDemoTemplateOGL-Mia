@@ -6,7 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vector>
-#include "DemoTemplateOGL.h"
+#include "Utilities.h"
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Camera_Movement {
@@ -40,7 +40,9 @@ private:
     float MovementSpeed;
     float MouseSensitivity;
     float Zoom;
-    HWND hWnd;
+    glm::mat4 projection;
+    // Obtenemos la vista
+    glm::mat4 view;
 
     // calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors() {
@@ -57,6 +59,7 @@ private:
         //            Up.y *= -1.0f;
     }
 public:
+    friend class MainModel;
     // constructor with vectors
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM) {
         Position = position;
@@ -80,6 +83,10 @@ public:
     }
 
     glm::mat4 CamaraUpdate() {
+        // Obtenemos la proyeccion en base a la ventana
+        projection = glm::perspective(glm::radians(getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        // Obtenemos la vista
+        view = GetViewMatrix();
         return glm::lookAt(Position,
             Position + Front,
             glm::vec3(0, 1, 0));
@@ -206,28 +213,54 @@ public:
         }
     }
     glm::vec3 &getPosition() { return Position; };
-    void setPosition(glm::vec3 &Position) { this->Position = Position; cameraDetails.Position = &this->Position; };
+    void setPosition(glm::vec3 &Position) { 
+        this->Position = Position; 
+//        cameraDetails.Position = &this->Position;
+    }
     glm::vec3 &getFront() { return Front; };
-    void setFront(glm::vec3 &Front) { this->Front = Front; cameraDetails.Front = &this->Front; };
+    void setFront(glm::vec3 &Front) { 
+        this->Front = Front; 
+//        cameraDetails.Front = &this->Front;
+    }
     glm::vec3 &getUp() { return Up; };
-    void setUp(glm::vec3 &Up) { this->Up = Up; cameraDetails.Up = &this->Up; };
+    void setUp(glm::vec3 &Up) { 
+        this->Up = Up; 
+//        cameraDetails.Up = &this->Up;
+    }
     glm::vec3 &getRight() { return Right; };
-    void setRight(glm::vec3 &Right) { this->Right = Right; cameraDetails.Right = &this->Right; };
+    void setRight(glm::vec3 &Right) { 
+        this->Right = Right; 
+//        cameraDetails.Right = &this->Right; 
+    }
     glm::vec3 &getWorldUp() { return WorldUp; };
-    void setWorldUp(glm::vec3 &WorldUp) { this->WorldUp = WorldUp; cameraDetails.WorldUp = &this->WorldUp; };
+    void setWorldUp(glm::vec3 &WorldUp) { 
+        this->WorldUp = WorldUp; 
+//        cameraDetails.WorldUp = &this->WorldUp; 
+    }
     // euler Angles
     float getYaw() { return Yaw; };
-    void setYaw(float Yaw) { this->Yaw = Yaw; cameraDetails.Yaw = &this->Yaw; };
+    void setYaw(float Yaw) { 
+        this->Yaw = Yaw;
+//        cameraDetails.Yaw = &this->Yaw; 
+    }
     float getPitch() { return Pitch; };
-    void setPitch(float Pitch) { this->Pitch = Pitch; cameraDetails.Pitch = &this->Pitch; };
+    void setPitch(float Pitch) { this->Pitch = Pitch; //cameraDetails.Pitch = &this->Pitch; 
+    }
     // camera options
     float getMovementSpeed() { return MovementSpeed; };
-    void setMovementSpeed(float MovementSpeed) { this->MovementSpeed = MovementSpeed; cameraDetails.MovementSpeed = &this->MovementSpeed; };
+    void setMovementSpeed(float MovementSpeed) { this->MovementSpeed = MovementSpeed; //cameraDetails.MovementSpeed = &this->MovementSpeed; 
+    }
     float getMouseSensitivity() { return MouseSensitivity; };
-    void setMouseSensitivity(float MouseSensitivity) { this->MouseSensitivity = MouseSensitivity; cameraDetails.MouseSensitivity = &this->MouseSensitivity; };
+    void setMouseSensitivity(float MouseSensitivity) { this->MouseSensitivity = MouseSensitivity; //cameraDetails.MouseSensitivity = &this->MouseSensitivity; 
+    };
     float getZoom() { return Zoom; };
-    void setZoom(float Zoom) { this->Zoom = Zoom; cameraDetails.Zoom = &this->Zoom; };
-    HWND getHWND() { return this->hWnd; };
-    void setHWND(HWND hWnd) { this->hWnd = hWnd; }
+    void setZoom(float Zoom) { this->Zoom = Zoom; //cameraDetails.Zoom = &this->Zoom; 
+    }
+    glm::mat4 getProjection() {
+        return projection;
+    }
+    glm::mat4 getView() {
+        return view;
+    }
 };
 #endif

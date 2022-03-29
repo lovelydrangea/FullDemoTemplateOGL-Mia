@@ -10,9 +10,11 @@ private:
 
 public:
 	int verx, verz;
+	Camera* cameraDetails = NULL;
 	//el nombre numerico de la textura en cuestion, por lo pronto una
 
-	Terreno(HWND hWnd, WCHAR alturas[], WCHAR textura[], float ancho, float prof) {
+	Terreno(HWND hWnd, WCHAR alturas[], WCHAR textura[], float ancho, float prof, Camera* camera) {
+		cameraDetails = camera;
 		vector<unsigned int> indices;
 		vector<Texture>      textures;
 		vector<Material> materials;
@@ -148,11 +150,11 @@ public:
 		shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 		glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 		shader.setVec3("light.position", lightPos);
-		shader.setVec3("viewPos", *cameraDetails.Position);
+		shader.setVec3("viewPos", cameraDetails->getPosition());
 
 		// view/projection transformations
-		shader.setMat4("projection", cameraDetails.currentProjection);
-		shader.setMat4("view", cameraDetails.currentView);
+		shader.setMat4("projection", cameraDetails->getProjection());
+		shader.setMat4("view", cameraDetails->getView());
 
 		// render the loaded model
 		glm::mat4 model = glm::mat4(1.0f);

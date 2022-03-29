@@ -60,7 +60,7 @@
     <ClInclude Include="GamePadRR.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsRR.h">
+    <ClInclude Include="Scenario.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SkyDome.h">
@@ -80,6 +80,9 @@
     </ClInclude>
     <ClInclude Include="CollitionDetection.h">
       <Filter>Header Files\KDTree</Filter>
+    </ClInclude>
+    <ClInclude Include="MainModel.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -106,6 +109,9 @@
     </ClCompile>
     <ClCompile Include="CollitionDetection.cpp">
       <Filter>Source Files\KDTree</Filter>
+    </ClCompile>
+    <ClCompile Include="MainModel.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
