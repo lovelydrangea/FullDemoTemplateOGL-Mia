@@ -110,7 +110,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             DispatchMessage(&msg);
         }
     }
-
     return (int) msg.wParam;
 }
 
@@ -126,26 +125,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
-        case WM_CREATE:
-            break;
-        case WM_COMMAND:
-        {
-        }
-        break;
-        case WM_TIMER:
+        case WM_CREATE: {
+        } break;
+        case WM_COMMAND: {
+        } break;
+        case WM_TIMER: {
             OGLobj->angulo += 1.5;
             renderiza = true;
-            break;
-        case WM_PAINT:
-        break;
+        } break;
+        case WM_PAINT: {
+        }break;
         case WM_DESTROY: {
             if (newContext) {
                 ReleaseDC(hWnd, dc);
                 wglDeleteContext(rc);
                 PostQuitMessage(0);
             }
-        }
-        break;
+        } break;
         case WM_SIZE: {
             if (newContext) {
                 //esta opcion del switch se ejecuta una sola vez al arrancar y si se
@@ -158,16 +154,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 SCR_WIDTH = width;
                 glViewport(0, 0, width, height);
             }
-        }
-        break;
-        case WM_KEYDOWN: KEYS[wParam] = true;
-            break;
-        case WM_KEYUP:
+        } break;
+        case WM_KEYDOWN: {
+            KEYS[wParam] = true;
+        } break;
+        case WM_KEYUP: {
             switch (wParam) {
             case VK_ADD:
                 break;
             }
-        break;
+        } break;
     }
     return DefWindowProc(hWnd, message, wParam, lParam);
 }

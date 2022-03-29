@@ -70,12 +70,12 @@ public:
 		translate = glm::vec3(0.0f, 7.0f, 50.0f);
 		model->setTranslate(&translate);
 		ourModel.push_back(model);
-//		model = new Model(this->getHWND(), "models/IronMan.obj");
-//		translate = glm::vec3(0.0f, 10.0f, 20.0f);
-//		scale = glm::vec3(0.025f, 0.025f, 0.025f);	// it's a bit too big for our scene, so scale it down
-//		model->setScale(&scale);
-//		model->setTranslate(&translate);
-//		ourModel.push_back(model);
+		model = new Model(this->getHWND(), "models/IronMan.obj");
+		translate = glm::vec3(0.0f, 10.0f, 20.0f);
+		scale = glm::vec3(0.025f, 0.025f, 0.025f);	// it's a bit too big for our scene, so scale it down
+		model->setScale(&scale);
+		model->setTranslate(&translate);
+		ourModel.push_back(model);
 		model = new Model(this->getHWND(), "models/backpack.obj", false, false);
 		translate = glm::vec3(20.0f, 14.0f, 0.0f);
 		scale = glm::vec3(1.0f, 1.0f, 1.0f);	// it's a bit too big for our scene, so scale it down
