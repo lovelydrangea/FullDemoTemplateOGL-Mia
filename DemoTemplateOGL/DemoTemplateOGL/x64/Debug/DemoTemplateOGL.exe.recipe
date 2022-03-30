@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\OpenGL_ROOT\DemoTemplateOGL\x64\Debug\DemoTemplateOGL.exe</FullPath>
+      <FullPath>C:\OpenGL_ROOT\FullDemoTemplateOGL\DemoTemplateOGL\x64\Debug\DemoTemplateOGL.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

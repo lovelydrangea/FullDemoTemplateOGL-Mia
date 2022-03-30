@@ -66,6 +66,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // game loop
     gamPad = new GamePadRR(1); // Obtenemos el primer gamepad conectado
 
+    // Main character with it's camera
     glm::vec3 translate;
     glm::vec3 scale;
     translate = glm::vec3(0.0f, 0.0f, 3.0f);
@@ -73,12 +74,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     model->setPosition(translate);
     glm::vec3 v(0, 0, -1);
     model->setFront(v);
-    scale = glm::vec3(10.25f, 10.25f, 10.25f);	// it's a bit too big for our scene, so scale it down
+    scale = glm::vec3(0.25f, 0.25f, 0.25f);	// it's a bit too big for our scene, so scale it down
     model->setScale(&scale);
     model->setTranslate(&translate);
     
     OGLobj = new Scenario(hWnd, model); // Creamos nuestra escena con esa posicion de inicio
-    SetTimer(hWnd, Timer1, 1000/30, (TIMERPROC)WndProc);// Asignamos el timer con un render de 30 fps
+    SetTimer(hWnd, Timer1, 1000/60, (TIMERPROC)WndProc);// Asignamos el timer con un render de 30 fps
     renderiza = false;
     MSG msg = { 0 };
 

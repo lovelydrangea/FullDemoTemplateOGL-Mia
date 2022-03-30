@@ -1,7 +1,7 @@
 #ifndef _Sky
 #define _Sky
 #include "Utilities.h"
-#include "model.h"
+#include "Model.h"
 
 class SkyDome : public Model {
 	//El constructor llama al metodo Esfera de la clase geometrias que generara los vertices

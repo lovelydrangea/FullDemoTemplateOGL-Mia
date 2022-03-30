@@ -10,7 +10,7 @@
 #include <assimp/postprocess.h>
 
 #include "Utilities.h"
-#include "model.h"
+#include "Model.h"
 #include "camera.h"
 
 #include <string>

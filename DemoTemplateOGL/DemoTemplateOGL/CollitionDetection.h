@@ -1,5 +1,4 @@
 #include "KDTree.h"
-#include "model.h"
 #include <iostream>
 
 #ifndef COLLITION_DETECTION_H

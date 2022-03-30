@@ -10,7 +10,7 @@
 #include <vector>
 #include "camera.h"
 #include <iostream>
-#include "model.h"
+#include "Model.h"
 #include "MainModel.h"
 #include "SkyDome.h"
 #include "Terreno.h"
