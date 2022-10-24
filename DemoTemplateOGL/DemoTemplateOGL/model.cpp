@@ -4,6 +4,7 @@ Model::Model() {
     this->hWnd = NULL;
     this->cameraDetails = NULL;
     this->gammaCorrection = false;
+    this->rotacionAngle = 0;
 }
 Model::Model(HWND hWnd, string const& path, Camera* camera, bool rotationX, bool rotationY, bool gamma){
     this->cameraDetails = camera;
@@ -11,6 +12,7 @@ Model::Model(HWND hWnd, string const& path, Camera* camera, bool rotationX, bool
     loadModel(hWnd, path, rotationX, rotationY);
     defaultShader = false;
     buildKDtree();
+    this->rotacionAngle = 0;
 }
 
 Model::~Model() {
@@ -48,6 +50,8 @@ void Model::prepShader(Shader& gpuDemo) {
         model = glm::translate(model, translate); // translate it down so it's at the center of the scene
 //			model = glm::translate(model, glm::vec3(cameraDetails.Position->x, cameraDetails.Position->y - 5, cameraDetails.Position->z)); // translate it down so it's at the center of the scene
         //model = glm::scale(model, glm::vec3(0.0025f, 0.0025f, 0.0025f));	// it's a bit too big for our scene, so scale it down
+    if (rotacionAngle != 0)
+        model = glm::rotate(model, glm::radians(this->rotacionAngle), this->rotation);
     if (hasScale)
         model = glm::scale(model, scale);	// it's a bit too big for our scene, so scale it down
     gpuDemo.setMat4("model", model);
@@ -70,10 +74,14 @@ void Model::Draw(Shader& shader) {
         meshes[i].Draw(shader);
 }
 glm::mat4 Model::makeTransScale(const glm::mat4& prevTransformations) const {
-    if (hasScale)
-        return prevTransformations * glm::scale(makeTrans(), scale);
+    glm::mat4 model;
+    if (this->rotacionAngle != 0)
+        model = prevTransformations * glm::rotate(makeTrans(), glm::radians(this->rotacionAngle), this->rotation);
     else
-        return prevTransformations * makeTrans();
+        model = prevTransformations * makeTrans();
+    if (hasScale)
+        model = glm::scale(model, scale);
+    return model;
 }
 glm::mat4 Model::makeTrans() const {
     return  glm::translate(glm::mat4(1), translate);//glm::mat4(1) *glm::mat4(1)* glm::mat4(1);
@@ -102,6 +110,27 @@ void Model::setScale(glm::vec3* scale) {
         this->scale = *scale;
         this->hasScale = true;
     }
+}
+
+void Model::setRotation(float rotationAngle, glm::vec3* rotationVector) {
+    this->rotacionAngle = rotationAngle;
+    this->rotation = *rotationVector;
+}
+
+glm::vec3* Model::getTranslate() {
+    return &this->translate;
+}
+
+glm::vec3* Model::getScale() {
+    return &this->scale;
+}
+
+float Model::getRotationAngle() {
+    return this->rotacionAngle;
+}
+
+glm::vec3* Model::getRotationVector() {
+    return &this->rotation;
 }
 
 void Model::buildKDtree() {
@@ -232,15 +261,19 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, bool rotationX, bool
             vec.y = mesh->mTextureCoords[0][i].y;
             vertex.TexCoords = vec;
             // tangent
-            vector.x = mesh->mTangents[i].x;
-            vector.y = mesh->mTangents[i].y;
-            vector.z = mesh->mTangents[i].z;
-            vertex.Tangent = vector;
+            if (mesh->HasTangentsAndBitangents() && mesh->mTangents != NULL) {
+                vector.x = mesh->mTangents[i].x;
+                vector.y = mesh->mTangents[i].y;
+                vector.z = mesh->mTangents[i].z;
+                vertex.Tangent = vector;
+            }
             // bitangent
-            vector.x = mesh->mBitangents[i].x;
-            vector.y = mesh->mBitangents[i].y;
-            vector.z = mesh->mBitangents[i].z;
-            vertex.Bitangent = vector;
+            if (mesh->HasTangentsAndBitangents() && mesh->mBitangents != NULL) {
+                vector.x = mesh->mBitangents[i].x;
+                vector.y = mesh->mBitangents[i].y;
+                vector.z = mesh->mBitangents[i].z;
+                vertex.Bitangent = vector;
+            }
         }
         else
             vertex.TexCoords = glm::vec2(0.0f, 0.0f);

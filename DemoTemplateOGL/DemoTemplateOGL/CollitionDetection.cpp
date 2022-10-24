@@ -1,5 +1,6 @@
 #include "KDTree.h"
 #include <iostream>
+//https://github.com/Meirshomron/MeshCollision
 
 bool SolveEquision(Node* A, Node* B, glm::vec3 L, glm::mat4 TRTB, glm::mat4 TRTA) {
 	glm::vec4 centerB = TRTB * B->m_center;

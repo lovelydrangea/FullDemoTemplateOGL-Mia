@@ -56,9 +56,12 @@ public:
 		Model* model;
 		glm::vec3 translate;
 		glm::vec3 scale;
+		glm::vec3 rotation;
 		model = new Model(this->hwnd, "models/fogata.obj", main);
 		translate = glm::vec3(0.0f, 10.0f, 25.0f);
 		model->setTranslate(&translate);
+		rotation = glm::vec3(1.0f, 0.0f, 0.0f); //rotation Y
+		model->setRotation(90, &rotation); // 90° rotation
 		ourModel.push_back(model);
 		model= new Model(this->hwnd, "models/pez.obj", main);
 		translate = glm::vec3(0.0f, 7.0f, 50.0f);

@@ -29,6 +29,8 @@ private:
     glm::vec3 translate;
     bool hasScale;
     glm::vec3 scale;
+    float rotacionAngle;
+    glm::vec3 rotation;
     HWND hWnd;
     bool defaultShader;
 public:
@@ -62,6 +64,11 @@ public:
 
     void setTranslate(glm::vec3* translate);
     void setScale(glm::vec3* scale);
+    void setRotation(float rotationAngle, glm::vec3* rotationVector);
+    glm::vec3* getTranslate();
+    glm::vec3* getScale();
+    float getRotationAngle();
+    glm::vec3* getRotationVector();
 
     void buildKDtree();
 
