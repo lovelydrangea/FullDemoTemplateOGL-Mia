@@ -10,23 +10,19 @@
 #include <vector>
 #include "camera.h"
 #include <iostream>
-#include "Model.h"
-#include "MainModel.h"
-#include "SkyDome.h"
-#include "Terreno.h"
-#include "Billboard.h"
-#include "CollitionDetection.h"
+#include "Scene.h"
 
-class Scenario {
-public:
+class Scenario : public Scene {
+private:
 	SkyDome* sky;
 	Terreno* terreno;
-	std::vector<Billboard *> billBoard;
-	std::vector<Model *> ourModel;
+	std::vector<Billboard*> billBoard;
+	std::vector<Model*> ourModel;
 	MainModel* camara;
 	HWND hwnd;
 	float angulo;
 
+public:
 	Scenario(HWND hWnd) {
 		glm::vec3 translate;
 		glm::vec3 scale;
@@ -61,7 +57,7 @@ public:
 		translate = glm::vec3(0.0f, 10.0f, 25.0f);
 		model->setTranslate(&translate);
 		rotation = glm::vec3(1.0f, 0.0f, 0.0f); //rotation Y
-		model->setRotation(90, &rotation); // 90° rotation
+		model->setRotation(45, &rotation); // 90° rotation
 		ourModel.push_back(model);
 		model= new Model(this->hwnd, "models/pez.obj", main);
 		translate = glm::vec3(0.0f, 7.0f, 50.0f);
@@ -96,15 +92,13 @@ public:
 
 	//el metodo render toma el dispositivo sobre el cual va a dibujar
 	//y hace su tarea ya conocida
-	void Render(HDC hDC)
-	{
+	Scenario* Render(HDC hDC) {
 		//borramos el biffer de color y el z para el control de profundidad a la 
 		//hora del render a nivel pixel.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 //		glClearColor(255.0f, 255.0f, 255.0f, 255.0f);
-		// Posicionamos la camara pixeles arriba de su posicion en el terreno
-		camara->getPosition().y = terreno->Superficie(camara->getPosition().x, camara->getPosition().z) + 1.7;
+
 		// Actualizamos la camara
 		camara->CamaraUpdate();
 
@@ -123,19 +117,29 @@ public:
 			billBoard[i]->Draw();
 		// Le decimos a winapi que haga el update en la ventana
 		SwapBuffers(hDC);
+		return this;
 	}
-
-	bool lookForCollition() {
-		std::pair<Node*, Node*> innerCollisionNodes;
-		for (int i = 0; i < ourModel.size(); i++) {
-			if (ourModel[i] != camara) {
-				innerCollisionNodes = findCollision(camara->kdTree.getRoot(), camara->makeTransScale(glm::mat4(1)), ourModel[i]->kdTree.getRoot(), ourModel[i]->makeTransScale(glm::mat4(1)));
-				if (innerCollisionNodes.first) {
-					return true;
-				}
-			}
-		}
-		return false;
+	
+	std::vector<Model*> *getLoadedModels() {
+		return &ourModel;
+	}
+	std::vector<Billboard*> *getLoadedBillboards() {
+		return &billBoard;
+	}
+	MainModel* getMainModel() {
+		return this->camara;
+	}
+	float getAngulo() {
+		return this->angulo;
+	}
+	void setAngulo(float angulo) {
+		this->angulo = angulo;
+	}
+	SkyDome* getSky() {
+		return sky;
+	}
+	Terreno* getTerreno() {
+		return terreno;
 	}
 
 	~Scenario() {

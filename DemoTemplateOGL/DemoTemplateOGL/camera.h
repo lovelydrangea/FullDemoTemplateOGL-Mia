@@ -28,6 +28,7 @@ const float ZOOM = 45.0f;
 class Camera {
 private:
     // camera Attributes
+    glm::vec3 nextPosition;
     glm::vec3 Position;
     glm::vec3 Front;
     glm::vec3 Up;
@@ -63,6 +64,7 @@ public:
     // constructor with vectors
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM) {
         Position = position;
+        nextPosition = position;
         WorldUp = up;
         Yaw = yaw;
         Pitch = pitch;
@@ -71,6 +73,7 @@ public:
     // constructor with scalar values
     Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM) {
         Position = glm::vec3(posX, posY, posZ);
+        nextPosition = Position;
         WorldUp = glm::vec3(upX, upY, upZ);
         Yaw = yaw;
         Pitch = pitch;
@@ -129,8 +132,7 @@ public:
     }
 
     // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
-    void ProcessMouseScroll(float yoffset)
-    {
+    void ProcessMouseScroll(float yoffset) {
         Zoom -= (float)yoffset;
         if (Zoom < 1.0f)
             Zoom = 1.0f;
@@ -138,13 +140,25 @@ public:
             Zoom = 45.0f;
     }
 
-    void CamaraAvanza(float vel)
-    {
-        Position.x = Position.x + Front.x * vel;
-        Position.y = Position.y + Front.y * vel;
-        Position.z = Position.z + Front.z * vel;
-
-        setPosition(Position);
+    glm::vec3 movePosition(float vel) {
+        glm::vec3 avance;
+        avance.x = Position.x + Front.x * vel;
+        avance.y = Position.y + Front.y * vel;
+        avance.z = Position.z + Front.z * vel;
+        nextPosition = avance;
+        return avance;
+    }
+    void CamaraAvanza() {
+        setPosition(nextPosition);
+        /*gluLookAt(posc.X, posc.Y, posc.Z,
+            posc.X + dirc.X, posc.Y, posc.Z + dirc.Z,
+            0, 1, 0);*/
+        glm::vec3 tmp(Front.x, 0, Front.z);
+        glm::lookAt(Position, Position + tmp, Up);
+    }
+    void CamaraAvanza(float vel) {
+        glm::vec3 newPos = movePosition(vel);        
+        setPosition(newPos);
         /*gluLookAt(posc.X, posc.Y, posc.Z,
             posc.X + dirc.X, posc.Y, posc.Z + dirc.Z,
             0, 1, 0);*/
@@ -212,10 +226,15 @@ public:
             }
         }
     }
-    glm::vec3 &getPosition() { return Position; };
-    void setPosition(glm::vec3 &Position) { 
-        this->Position = Position; 
-//        cameraDetails.Position = &this->Position;
+    glm::vec3& getPosition() { return Position; };
+    void setPosition(glm::vec3& Position) {
+        this->Position = Position;
+        //        cameraDetails.Position = &this->Position;
+    }
+    glm::vec3& getNextPosition() { return nextPosition; };
+    void setNextPosition(glm::vec3& Position) {
+        this->nextPosition = Position;
+        //        cameraDetails.Position = &this->Position;
     }
     glm::vec3 &getFront() { return Front; };
     void setFront(glm::vec3 &Front) { 

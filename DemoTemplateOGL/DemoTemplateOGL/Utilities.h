@@ -36,6 +36,8 @@ extern struct Vertex {
 	glm::vec3 Tangent;
 	// bitangent
 	glm::vec3 Bitangent;
+	Vertex();
+	Vertex(glm::vec3 pos, glm::vec2 texCoord, glm::vec3 normal, glm::vec3 color);
 };
 
 // Estructura de Texture para guardar el ID de la textura y su tipo

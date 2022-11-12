@@ -13,6 +13,7 @@
 #include "material.h"
 #include "mesh.h"
 #include "shader.h"
+#include "CollitionDetection.h"
 
 #include <string>
 #include <fstream>
@@ -36,6 +37,8 @@ private:
 public:
     // model data 
     Camera* cameraDetails = NULL;
+    Model* AABB = NULL; // Modelo que alberga un cubo para colisiones
+
     vector<Texture> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
     vector<Material> material_loaded;	// stores all the materials.
     vector<Mesh>    meshes;
@@ -44,12 +47,11 @@ public:
     Shader* gpuDemo;
     string name;
     KDTree kdTree;
-    bool frontCollition;
-    bool backCollition;
     friend class MainModel;
     // constructor, expects a filepath to a 3D model.
     Model();
     Model(HWND hWnd, string const& path, Camera* camera, bool rotationX = false, bool rotationY = true, bool gamma = false);
+    Model(HWND hWnd, vector<Vertex> vertices, unsigned int numVertices, vector<unsigned int> indices, unsigned int numIndices);
     ~Model();
     // draws the model, and thus all its meshes
     void prepShader(Shader& gpuDemo);
@@ -71,8 +73,11 @@ public:
     glm::vec3* getRotationVector();
 
     void buildKDtree();
-
+    bool colisionaCon(Model* objeto);
+    std::pair<Node*, Node*> nodoColisionCon(Model* objeto);
 private:
+    vector<Vertex> init_cube(float x, float y, float z, float width, float height, float depth);
+    vector<unsigned int> getCubeIndex();
     vector<Material> loadMaterial(aiMaterial* mat);
     // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
     void loadModel(HWND hWnd, string const& path, bool rotationX = false, bool rotationY = true);

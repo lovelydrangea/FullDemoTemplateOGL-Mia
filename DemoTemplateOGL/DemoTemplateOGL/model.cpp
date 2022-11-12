@@ -13,9 +13,21 @@ Model::Model(HWND hWnd, string const& path, Camera* camera, bool rotationX, bool
     defaultShader = false;
     buildKDtree();
     this->rotacionAngle = 0;
+    // Creamos el cubo AABB apartir del arbol de puntos del modelo cargado
+    vector<Vertex> cuboAABB = init_cube(this->kdTree.getRoot()->m_center.x, this->kdTree.getRoot()->m_center.y, this->kdTree.getRoot()->m_center.z, this->kdTree.getRoot()->m_halfWidth, this->kdTree.getRoot()->m_halfHeight, this->kdTree.getRoot()->m_halfDepth);
+    vector<unsigned int> cuboIndex = getCubeIndex();
+    this->AABB = new Model(hWnd, cuboAABB, cuboAABB.size(), cuboIndex, cuboIndex.size());
+}
+Model::Model(HWND hWnd, vector<Vertex> vertices, unsigned int numVertices, vector<unsigned int> indices, unsigned int numIndices) {
+    vector<Texture> textures;
+    vector<Material> materials;
+    meshes.push_back(Mesh(vertices, indices, textures, materials));
+    buildKDtree();
 }
 
 Model::~Model() {
+    if (this->AABB != NULL)
+        delete AABB;
     if (gpuDemo != NULL) {
         delete gpuDemo;
         gpuDemo = NULL;
@@ -36,7 +48,7 @@ void Model::prepShader(Shader& gpuDemo) {
     gpuDemo.setVec3("light.diffuse", diffuseColor);
     gpuDemo.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
     //        glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-    glm::vec3 lightPos(1.2f, 100.0f, 2.0f);
+    glm::vec3 lightPos(100.2f, 100.0f, 100.0f);
     gpuDemo.setVec3("light.position", lightPos);
     gpuDemo.setVec3("viewPos", cameraDetails->getPosition());
 
@@ -347,4 +359,99 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type,
         }
     }
     return textures;
+}
+
+bool Model::colisionaCon(Model* objeto) {
+    std::pair<Node*, Node*> innerCollisionNodes = this->nodoColisionCon(objeto);
+    if (innerCollisionNodes.first)
+        return true;
+    return false;
+}
+std::pair<Node*, Node*> Model::nodoColisionCon(Model* objeto) {
+    return findCollision(this->kdTree.getRoot(), this->makeTransScale(glm::mat4(1)), objeto->kdTree.getRoot(), objeto->makeTransScale(glm::mat4(1)));
+}
+
+vector<Vertex> Model::init_cube(float x, float y, float z, float width, float height, float depth){
+    //Vertex* myVertex = (Vertex*)malloc(sizeof(Vertex) * 24 * 44);
+    vector<Vertex> myVertex;
+    Vertex t = Vertex(glm::vec3(-width + x, -height + y, -depth + z), glm::vec2(1, 0), glm::vec3(0, 0, -1), glm::vec3(1, 1, 0));			//yellow
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(-width + x, height + y, -depth + z), glm::vec2(0, 0), glm::vec3(0, 0, -1), glm::vec3(1, 1, 0));
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(width + x, height + y, -depth + z), glm::vec2(0, 1), glm::vec3(0, 0, -1), glm::vec3(1, 1, 0));
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(width + x, -height + y, -depth + z), glm::vec2(1, 1), glm::vec3(0, 0, -1), glm::vec3(1, 1, 0));
+    myVertex.push_back(t);
+
+    t = Vertex(glm::vec3(-width + x, -height + y, depth + z), glm::vec2(1, 0), glm::vec3(0, 0, 1), glm::vec3(1, 1, 1));			//white
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(-width + x, height + y, depth + z), glm::vec2(0, 0), glm::vec3(0, 0, 1), glm::vec3(1, 1, 1));
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(width + x, height + y, depth + z), glm::vec2(0, 1), glm::vec3(0, 0, 1), glm::vec3(1, 1, 1));
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(width + x, -height + y, depth + z), glm::vec2(1, 1), glm::vec3(0, 0, 1), glm::vec3(1, 1, 1));
+    myVertex.push_back(t);
+
+    t = Vertex(glm::vec3(-width + x, -height + y, -depth + z), glm::vec2(0, 1), glm::vec3(0, -1, 0), glm::vec3(1, 0.5, 0));		//orange
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(-width + x, -height + y, depth + z), glm::vec2(1, 1), glm::vec3(0, -1, 0), glm::vec3(1, 0.5, 0));
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(width + x, -height + y, depth + z), glm::vec2(1, 0), glm::vec3(0, -1, 0), glm::vec3(1, 0.5, 0));
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(width + x, -height + y, -depth + z), glm::vec2(0, 0), glm::vec3(0, -1, 0), glm::vec3(1, 0.5, 0));
+    myVertex.push_back(t);
+
+    t = Vertex(glm::vec3(-width + x, height + y, -depth + z), glm::vec2(0, 1), glm::vec3(0, 1, 0), glm::vec3(1, 0, 0));			//red
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(-width + x, height + y, depth + z), glm::vec2(1, 1), glm::vec3(0, 1, 0), glm::vec3(1, 0, 0));
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(width + x, height + y, depth + z), glm::vec2(1, 0), glm::vec3(0, 1, 0), glm::vec3(1, 0, 0));
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(width + x, height + y, -depth + z), glm::vec2(0, 0), glm::vec3(0, 1, 0), glm::vec3(1, 0, 0));
+    myVertex.push_back(t);
+
+    t = Vertex(glm::vec3(-width + x, -height + y, -depth + z), glm::vec2(1, 1), glm::vec3(-1, 0, 0), glm::vec3(0, 0, 1));			//blue
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(-width + x, -height + y, depth + z), glm::vec2(1, 0), glm::vec3(-1, 0, 0), glm::vec3(0, 0, 1));
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(-width + x, height + y, depth + z), glm::vec2(0, 0), glm::vec3(-1, 0, 0), glm::vec3(0, 0, 1));
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(-width + x, height + y, -depth + z), glm::vec2(0, 1), glm::vec3(-1, 0, 0), glm::vec3(0, 0, 1));
+    myVertex.push_back(t);
+
+    t = Vertex(glm::vec3(width + x, -height + y, -depth + z), glm::vec2(1, 1), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0));			//green
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(width + x, -height + y, depth + z), glm::vec2(1, 0), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0));
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(width + x, height + y, depth + z), glm::vec2(0, 0), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0));
+    myVertex.push_back(t);
+    t = Vertex(glm::vec3(width + x, height + y, -depth + z), glm::vec2(0, 1), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0));
+    myVertex.push_back(t);
+
+    return myVertex;
+}
+vector<unsigned int> Model::getCubeIndex() {
+    vector<unsigned int> indices;
+    int cubeIndexSize = 36;
+    unsigned int cubeIndex[] = { 0, 1, 2,
+    0, 2, 3,
+
+    6, 5, 4,
+    7, 6, 4,
+
+    10, 9, 8,
+    11, 10, 8,
+
+    12, 13, 14,
+    12, 14, 15,
+
+    16, 17, 18,
+    16, 18, 19,
+
+    22, 21, 20,
+    23, 22, 20
+    };
+    for (int i = 0; i < cubeIndexSize; i++)
+        indices.push_back(cubeIndex[i]);
+    return indices;
 }

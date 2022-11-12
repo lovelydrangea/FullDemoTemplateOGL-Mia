@@ -14,19 +14,20 @@ Entre los archivos mas destacados se tienen:
 |shader.h|material.h|class Shader|
 |camera.h|Utilities.h|enum Camera_Movement, class Camera	(Friend of MainModel)|
 |KDTree.h|N/A|class Node, class KDTree|
+|CollitionDetection.h|KDTree.h|SolveEquision,	checkCollision,	print_queue, findCollision|
 |mesh.h|Utilities.h, material.h, shader.h, KDTree.h|class Mesh|
 |Billboard.h|Utilities.h, camera.h, shader.h|class Billboard|
-|Model.h|Utilities.h, material.h, shader.h, mesh.h, camera.h, KDTree.h|class Model (Friend MainModel)|
+|Model.h|Utilities.h, material.h, shader.h, mesh.h, camera.h, KDTree.h, CollitionDetection.h|class Model (Friend MainModel)|
 |MainModel.h|Utilities.h,Model.h, camera.h|class MainModel	extends of Model and Camera|
 |SkyDome.h|Utilities.h, Model.h, camera.h, shader.h|class SkyDome	extends of Model|
 |Terreno.h|Utilities.h, Model.h, camera.h, shader.h|class Terreno extends of Model|
-|CollitionDetection.h|KDTree.h|SolveEquision,	checkCollision,	print_queue, findCollision|
-|Scenario.h|camera.h, Model.h, MainModel.h, SkyDome.h, Terreno.h, Billboard.h, CollitionDetection.h|class Scenario|
+|Scene.h|camera.h, Model.h, MainModel.h, SkyDome.h, Terreno.h, Billboard.h|class Scene|
+|Scenario.h|Scene.h|class Scenario|
 |KeyboardInput.h|Scenario.h, camera.h| Struct Input	(enum Keys),	KEYS,	KeysEvents,	Init)
   
    
 Esta plantilla esta estructurada para poder cargar modelos genericos y convencionales de forma rapida y administrada, se pueden generar escenarios individuales
-extendiendo la clase Scenario o bien duplicandola con su logica respectiva, se podría utilizar una interface o clase abstracta para Scenario pero esta como work in progress.
+extendiendo o implementando la clase Scene para generar multiples niveles con modelos y diseños diferentes.
   
 La plantilla por defecto tiene en su carpeta de binarios la libreria opengl32.dll para forzar el render por medio de Mesa en lugar de usar la 
 grafica de la computadora, si tu grafica soporta las extensiones de OGL 2 en delante, puedes remover el archivo, si necesitas extensiones superiores de OGL

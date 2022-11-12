@@ -16,6 +16,14 @@
 // Global Variables:
 struct Vertex;
 struct Texture;
+Vertex::Vertex() {}
+Vertex::Vertex(glm::vec3 pos, glm::vec2 texCoord, glm::vec3 normal, glm::vec3 color) {
+	this->Position = pos;
+	this->TexCoords = texCoord;
+	this->Normal = normal;
+	this->Tangent = color;
+	this->Bitangent = color;
+}
 
 std::wstring s2ws(const std::string& s) {
 	int len;

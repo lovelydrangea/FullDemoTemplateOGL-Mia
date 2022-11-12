@@ -17,6 +17,7 @@
 #include "MainModel.h"
 
 #include "GamePadRR.h"
+#include "Scene.h"
 #include "Scenario.h"
 
 #define MAX_LOADSTRING 100
@@ -45,7 +46,7 @@ unsigned int SCR_HEIGHT = 600;
 bool newContext = false; // Bandera para identificar si OpenGL 2.0 > esta activa
 
 // Objecto de escena y render
-Scenario *OGLobj;
+Scene *OGLobj;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -94,6 +95,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         if (renderiza) {
             // render
             // ------
+            bool checkCollition = false;
             if (gamPad->IsConnected()) {
                 //convierto a flotante el valor analogico de tipo entero
                 float grados = (float)gamPad->GetState().Gamepad.sThumbLX / 32767.0;
@@ -102,13 +104,26 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                 if (grados > 0.19 || grados < -0.19)
                     model->CamaraGiraY(grados * 3.0);
                 float velocidad = (float)gamPad->GetState().Gamepad.sThumbLY / 32767;
-                if (velocidad > 0.19 || velocidad < -0.19)
-                    model->CamaraAvanza(velocidad);
+                if (velocidad > 0.19 || velocidad < -0.19) {
+                    model->movePosition(velocidad);
+                    checkCollition = true;
+                }
             } else {
-                KeysEvents(OGLobj);
-                
+                checkCollition = KeysEvents(OGLobj);
             }
-            OGLobj->Render(dc);
+            if (checkCollition) { // Bandera para buscar colisiones sobre Camara/Modelo
+                // Posicionamos la camara/modelo pixeles arriba de su posicion en el terreno
+                model->getNextPosition().y = OGLobj->getTerreno()->Superficie(model->getNextPosition().x, model->getNextPosition().z) + 1.7;
+                if (OGLobj->lookForCollition() != NULL) // Llamamos a la funcion de colision 
+                    model->setNextPosition(model->getPosition());
+                else
+                    model->CamaraAvanza();
+            }
+            Scene *escena = OGLobj->Render(dc);
+            if (escena != OGLobj) {
+                delete OGLobj;
+                OGLobj = escena;
+            }
             renderiza = false;
         } else if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
             if (msg.message == WM_QUIT){
@@ -138,8 +153,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         case WM_COMMAND: {
         } break;
         case WM_TIMER: {
-            OGLobj->angulo += 1.5;
-            renderiza = true;
+            OGLobj->setAngulo(OGLobj->getAngulo() + 1.5);
+            if (!renderiza)
+                renderiza = true;
         } break;
         case WM_PAINT: {
         }break;

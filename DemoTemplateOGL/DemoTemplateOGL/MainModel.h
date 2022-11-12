@@ -26,7 +26,11 @@ public:
     MainModel();
     MainModel(HWND hWnd, string const& path, bool rotationX = false, bool rotationY = true, bool gamma = false);
     MainModel(HWND hWnd, string const& path, glm::vec3 actualPosition, bool rotationX = false, bool rotationY = true, bool gamma = false);
+    glm::mat4 makeTransNextPosition();
+    glm::mat4 makeTransScaleNextPosition(const glm::mat4& prevTransformations);
     glm::mat4 CamaraUpdate();
+    bool colisionaCon(Model* objeto);
+    std::pair<Node*, Node*> nodoColisionCon(Model* objeto);
 //    void CamaraGiraY(float grados);
 //    glm::mat4 GetViewMatrix();
 //    glm::mat4 CamaraUpdate();

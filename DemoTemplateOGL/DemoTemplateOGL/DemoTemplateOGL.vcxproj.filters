@@ -102,6 +102,9 @@
     <ClInclude Include="Logger.h">
       <Filter>Header Files\Base</Filter>
     </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Header Files\Base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DemoTemplateOGL.cpp">

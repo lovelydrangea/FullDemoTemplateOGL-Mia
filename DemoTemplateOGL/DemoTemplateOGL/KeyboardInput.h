@@ -19,7 +19,7 @@
 
 	extern struct Input input;
 	extern bool KEYS[256];
-	extern void KeysEvents(Scenario *obj);
+	extern bool KeysEvents(Scene *obj);
 	extern void Init();
 
 #endif
