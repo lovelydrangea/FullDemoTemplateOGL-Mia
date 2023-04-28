@@ -1,7 +1,8 @@
 #pragma once
 #ifndef KEYBOARD_INPUT_H
 #define KEYBOARD_INPUT_H
-#include "Scenario.h"
+#define MOUSE_INPUT_H
+#include "Utilities.h"
 
 	struct Input {
 		enum Keys {
@@ -17,9 +18,35 @@
 		};
 	};
 
+#define KEYB_CAMERA input.V
+#define KEYB_HMOVEMENT input.Shift
+
+	extern class MouseInput {
+	private:
+		glm::vec2 prevP;
+		glm::vec2 currP;
+		glm::vec2 delta;
+		char mouseWheel;
+		bool lbtn;
+		bool rbtn;
+	public:
+		MouseInput();
+		float getDY();
+		float getDX();
+		glm::vec2 getDelta();
+		glm::vec2 setPosition(float x, float y, bool isDelta = false);
+		glm::vec2 setPosition(glm::vec2 d, bool isDelta = false);
+		bool getLbtn();
+		bool getRbtn();
+		void setLbtn(bool v);
+		void setRbtn(bool v);
+		char getMouseWheel();
+		void setMouseWheel(char x);
+	};
 	extern struct Input input;
 	extern bool KEYS[256];
-	extern bool KeysEvents(Scene *obj);
+	extern bool KeysEvents(GameActions *obj);
 	extern void Init();
+	extern MouseInput cDelta;
 
 #endif

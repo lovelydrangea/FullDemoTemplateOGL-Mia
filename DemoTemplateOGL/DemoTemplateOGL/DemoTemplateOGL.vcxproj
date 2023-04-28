@@ -150,7 +150,6 @@
     <ClInclude Include="GamePadRR.h" />
     <ClInclude Include="glext.h" />
     <ClInclude Include="Logger.h" />
-    <ClInclude Include="MainModel.h" />
     <ClInclude Include="Scenario.h" />
     <ClInclude Include="KDTree.h" />
     <ClInclude Include="KeyboardInput.h" />
@@ -173,7 +172,6 @@
     <ClCompile Include="KDTree.cpp" />
     <ClCompile Include="KeyboardInput.cpp" />
     <ClCompile Include="Logger.cpp" />
-    <ClCompile Include="MainModel.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>

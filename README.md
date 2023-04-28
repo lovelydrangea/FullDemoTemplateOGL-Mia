@@ -7,23 +7,22 @@ Entre los archivos mas destacados se tienen:
 
 | File | Dependency | Contains |  
 | ----------- | ----------- | ----------- |   
-|Utilities.h|N/A|Struct Ejes, SCR_WIDTH, SCR_HEIGHT, Struct Vertex, Struct Texture, s2ws, loadFile, TextureFromFile, namespace UTILITIES_OGL	(Struct ImageDetails, Struct Vertices, Struct Maya, sumaNormal, normaliza, vectoresEsfera, Esfera, Plano, genNormal)|
+|Utilities.h|N/A|Struct Ejes, SCR_WIDTH, SCR_HEIGHT, struct GameActions, Struct Vertex, Struct Texture, s2ws, loadFile, TextureFromFile, namespace UTILITIES_OGL	(Struct ImageDetails, Struct Vertices, Struct Maya, sumaNormal, normaliza, vectoresEsfera, Esfera, Plano, genNormal)|
+|KeyboardInput.h|Utilities.h| Class MouseInput, Struct Input	(enum Keys),	KEYS,	KeysEvents,	Init)
 |Logger.h|N/A|namespace logger|
 |GamePadRR.h|N/A|class GamePadRR|
 |material.h|N/A|zeroVec3,	Struct Material, Struct Light|
 |shader.h|material.h|class Shader|
-|camera.h|Utilities.h|enum Camera_Movement, class Camera	(Friend of MainModel)|
 |KDTree.h|N/A|class Node, class KDTree|
 |CollitionDetection.h|KDTree.h|SolveEquision,	checkCollision,	print_queue, findCollision|
 |mesh.h|Utilities.h, material.h, shader.h, KDTree.h|class Mesh|
+|camera.h|Utilities.h|enum Camera_Movement, class Camera|
 |Billboard.h|Utilities.h, camera.h, shader.h|class Billboard|
-|Model.h|Utilities.h, material.h, shader.h, mesh.h, camera.h, KDTree.h, CollitionDetection.h|class Model (Friend MainModel)|
-|MainModel.h|Utilities.h,Model.h, camera.h|class MainModel	extends of Model and Camera|
+|Model.h|Utilities.h, material.h, shader.h, mesh.h, camera.h, KDTree.h, CollitionDetection.h|class Model|
 |SkyDome.h|Utilities.h, Model.h, camera.h, shader.h|class SkyDome	extends of Model|
 |Terreno.h|Utilities.h, Model.h, camera.h, shader.h|class Terreno extends of Model|
-|Scene.h|camera.h, Model.h, MainModel.h, SkyDome.h, Terreno.h, Billboard.h|class Scene|
+|Scene.h|camera.h, Model.h, SkyDome.h, Terreno.h, Billboard.h|class Scene|
 |Scenario.h|Scene.h|class Scenario|
-|KeyboardInput.h|Scenario.h, camera.h| Struct Input	(enum Keys),	KEYS,	KeysEvents,	Init)
   
    
 Esta plantilla esta estructurada para poder cargar modelos genericos y convencionales de forma rapida y administrada, se pueden generar escenarios individuales
@@ -32,5 +31,21 @@ extendiendo o implementando la clase Scene para generar multiples niveles con mo
 La plantilla por defecto tiene en su carpeta de binarios la libreria opengl32.dll para forzar el render por medio de Mesa en lugar de usar la 
 grafica de la computadora, si tu grafica soporta las extensiones de OGL 2 en delante, puedes remover el archivo, si necesitas extensiones superiores de OGL
 te invito a modificar el archivo principal del WinMain para agregar las extensiones faltantes a tu ventana.  
+
+La plantilla tiene soporta para gamepad pero no tiene mapeo a las funciones de la plantilla,
+funciones con teclado ya se encuentran mapeadas:
+
+| Command | Action | 
+| ----------- | ----------- |
+|W,A,S,D | movimiento de camera y modelo principal|
+|SHIFT + (A,D) | movimiento lateral|
+|MouseLeftClick + MovimientoMouseX | Rotacion de camara sobre personaje|
+|MouseRightClick + MovimientoMouseT | Posicion de camara sobre personaje|
+|DownMouseWheel | Zoom out Personaje|
+|UpMouseWheel | Zoom in Personaje|
+|V + DownMouseWheel | Zoom out Perspectiva|
+|V + UpMouseWheel | Zoom in Perspectiva|
+|P | Switch first person - third person|
+
 
 Mejoras o bugs, favor de levantar un issue.

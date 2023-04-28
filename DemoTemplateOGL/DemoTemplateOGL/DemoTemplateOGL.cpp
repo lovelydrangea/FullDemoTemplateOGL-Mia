@@ -14,7 +14,6 @@
 #include "glext.h"
 #include "wglext.h"
 #include "model.h"
-#include "MainModel.h"
 
 #include "GamePadRR.h"
 #include "Scene.h"
@@ -22,14 +21,12 @@
 
 #define MAX_LOADSTRING 100
 #define Timer1 100
-
 HINSTANCE hInst;                                // current instance
 HWND hWnd;
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 HDC dc;
 HGLRC rc;
-
 GamePadRR* gamPad;                  // Manejador de gamepad
 bool renderiza;                     // Variable para controlar el render
 
@@ -39,6 +36,8 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 // Funciones para activar OpenGL version > 2.0
 int prepareRenderWindow(HINSTANCE hInstance, int nCmdShow);
 bool SetUpPixelFormat(HDC hDC, PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB, PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB);
+bool checkInput(GameActions* actions, Scene *scene);
+void mouseActions();
 
 // Propiedades de la ventana
 unsigned int SCR_WIDTH = 800;
@@ -68,19 +67,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     gamPad = new GamePadRR(1); // Obtenemos el primer gamepad conectado
 
     // Main character with it's camera
-    glm::vec3 translate;
-    glm::vec3 scale;
-    translate = glm::vec3(0.0f, 0.0f, 3.0f);
-    MainModel *model = new MainModel(hWnd, "models/Cube.obj", translate);
-    model->setPosition(translate);
-    glm::vec3 v(0, 0, -1);
-    model->setFront(v);
-    scale = glm::vec3(0.25f, 0.25f, 0.25f);	// it's a bit too big for our scene, so scale it down
+    glm::vec3 translate, scale, v(0, 0, -1);
+    translate = glm::vec3(5.0f, 10.0f, -5.0f);
+    //5, ye - 1,-5
+    //MainModel *model = new MainModel(hWnd, "models/Cube.obj", translate);
+    Camera* camera = new Camera();
+    Model* model = new Model(hWnd, "models/BaseSpiderman.obj", translate, camera);
+    model->setTranslate(&translate);
+    camera->setFront(v);
+    scale = glm::vec3(1.0f, 1.0f, 1.0f);	// it's a bit too big for our scene, so scale it down
     model->setScale(&scale);
     model->setTranslate(&translate);
     
     OGLobj = new Scenario(hWnd, model); // Creamos nuestra escena con esa posicion de inicio
-    SetTimer(hWnd, Timer1, 1000/60, (TIMERPROC)WndProc);// Asignamos el timer con un render de 30 fps
+    SetTimer(hWnd, Timer1, 1000/30, (TIMERPROC)WndProc);// Asignamos el timer con un render de 30 fps
     renderiza = false;
     MSG msg = { 0 };
 
@@ -93,31 +93,27 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     while (running) {
         if (renderiza) {
+            GameActions actions;
             // render
             // ------
-            bool checkCollition = false;
-            if (gamPad->IsConnected()) {
-                //convierto a flotante el valor analogico de tipo entero
-                float grados = (float)gamPad->GetState().Gamepad.sThumbLX / 32767.0;
-                //debido a que los controles se aguadean con el uso entonces ya no dan el cero
-                //en el centro, por eso lo comparo con una ventana de aguadencia de mi control
-                if (grados > 0.19 || grados < -0.19)
-                    model->CamaraGiraY(grados * 3.0);
-                float velocidad = (float)gamPad->GetState().Gamepad.sThumbLY / 32767;
-                if (velocidad > 0.19 || velocidad < -0.19) {
-                    model->movePosition(velocidad);
-                    checkCollition = true;
-                }
-            } else {
-                checkCollition = KeysEvents(OGLobj);
-            }
+            bool checkCollition = checkInput(&actions, OGLobj);
             if (checkCollition) { // Bandera para buscar colisiones sobre Camara/Modelo
                 // Posicionamos la camara/modelo pixeles arriba de su posicion en el terreno
-                model->getNextPosition().y = OGLobj->getTerreno()->Superficie(model->getNextPosition().x, model->getNextPosition().z) + 1.7;
-                if (OGLobj->lookForCollition() != NULL) // Llamamos a la funcion de colision 
-                    model->setNextPosition(model->getPosition());
-                else
-                    model->CamaraAvanza();
+                model->getNextTranslate()->y = OGLobj->getTerreno()->Superficie(model->getNextTranslate()->x, model->getNextTranslate()->z) + 1.7;
+                if (OGLobj->lookForCollition(true) != NULL) { // Llamamos a la funcion de colision 
+                    model->setNextTranslate(model->getTranslate());
+                    model->setNextRotX(model->getRotX());
+                    model->setNextRotY(model->getRotY());
+                    model->setNextRotZ(model->getRotZ());
+                    model->setNextRotationVector(model->getRotationVector());
+                } else {
+                    //model->CamaraAvanza();
+                    model->setTranslate(model->getNextTranslate());
+                    model->setRotX(model->getNextRotX());
+                    model->setRotY(model->getNextRotY());
+                    model->setRotZ(model->getNextRotZ());
+                    model->setRotationVector(model->getNextRotationVector());
+                }
             }
             Scene *escena = OGLobj->Render(dc);
             if (escena != OGLobj) {
@@ -133,6 +129,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             DispatchMessage(&msg);
         }
     }
+    if (OGLobj != NULL) delete OGLobj;
+    if (camera != NULL) delete camera;
+    if (model != NULL) delete model;
     return (int) msg.wParam;
 }
 
@@ -152,6 +151,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         } break;
         case WM_COMMAND: {
         } break;
+        case WM_MOUSEMOVE: {
+            int value = lParam;
+        }break;
         case WM_TIMER: {
             OGLobj->setAngulo(OGLobj->getAngulo() + 1.5);
             if (!renderiza)
@@ -179,17 +181,96 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 glViewport(0, 0, width, height);
             }
         } break;
+        case WM_LBUTTONDOWN: {
+            cDelta.setLbtn(true);
+        }break;
+        case WM_LBUTTONUP: {
+            cDelta.setLbtn(false);
+        }break;
+        case WM_RBUTTONDOWN: {
+            cDelta.setRbtn(true);
+        }break;
+        case WM_RBUTTONUP: {
+            cDelta.setRbtn(false);
+        }break;
+        case WM_MOUSEWHEEL: {
+            char delta = HIWORD(wParam);
+            cDelta.setMouseWheel(delta);
+        }break;
         case WM_KEYDOWN: {
             KEYS[wParam] = true;
         } break;
         case WM_KEYUP: {
-            switch (wParam) {
-            case VK_ADD:
-                break;
-            }
+            if (wParam == KEYB_CAMERA || wParam == KEYB_HMOVEMENT)
+                KEYS[wParam] = false;
         } break;
     }
     return DefWindowProc(hWnd, message, wParam, lParam);
+}
+
+void mouseActions() {
+    POINT p;
+    GetCursorPos(&p);
+    ScreenToClient(hWnd, &p);
+    cDelta.setPosition(p.x, p.y, cDelta.getLbtn() || cDelta.getRbtn());
+}
+
+bool checkInput(GameActions *actions, Scene* scene) {
+    bool checkCollition = false;
+    if (gamPad->IsConnected()) {
+        //convierto a flotante el valor analogico de tipo entero
+        float grados = (float)gamPad->GetState().Gamepad.sThumbLX / 32767.0;
+        //debido a que los controles se aguadean con el uso entonces ya no dan el cero
+        //en el centro, por eso lo comparo con una ventana de aguadencia de mi control
+        if (grados > 0.19 || grados < -0.19)
+            //model->CamaraGiraY(grados * 3.0);
+            actions->setAngle(grados * 3.0);
+        float velocidad = (float)gamPad->GetState().Gamepad.sThumbLY / 32767;
+        if (velocidad > 0.19 || velocidad < -0.19) {
+            //model->movePosition(velocidad);
+            actions->advance = velocidad;
+            checkCollition = true;
+        }
+    } else {
+        mouseActions();
+        checkCollition = KeysEvents(actions);
+    }
+    Model* OGLobj = scene->getMainModel();
+    if (actions->firstPerson) {
+        OGLobj->cameraDetails->setFirstPerson(!OGLobj->cameraDetails->getFirstPerson());
+    }
+    if (actions->sideAdvance != 0) {
+        OGLobj->setNextRotY(OGLobj->getNextRotY() + (5.0 * actions->sideAdvance));
+        checkCollition = true;
+    }
+    if (actions->hAdvance != 0) {
+        glm::vec3 pos = *OGLobj->getTranslate();
+        pos.x += actions->hAdvance * 0.5 * glm::cos(glm::radians(OGLobj->getRotY()));
+        pos.z += actions->hAdvance * 0.5 * glm::sin(glm::radians(OGLobj->getRotY()));
+        OGLobj->setNextTranslate(&pos);
+        checkCollition = true;
+    }
+    if (actions->advance != 0) {
+        glm::vec3 pos = *OGLobj->getTranslate();
+        pos.x += actions->advance * 0.5 * glm::sin(glm::radians(OGLobj->getRotY()));
+        pos.z += actions->advance * 0.5 * glm::cos(glm::radians(OGLobj->getRotY()));
+        OGLobj->setNextTranslate(&pos);
+        checkCollition = true;
+    }
+    if (actions->getAngle() != NULL) {
+        OGLobj->cameraDetails->calculateAngleAroundPlayer((*actions->getAngle()) * 3.0);
+    }
+    if (actions->getPitch() != NULL) {
+        OGLobj->cameraDetails->setPitch(OGLobj->cameraDetails->getPitch() + (*actions->getPitch()) * 0.50 * 3.0);
+    }
+    if (actions->getZoom() != NULL) {
+        OGLobj->cameraDetails->setZoom(OGLobj->cameraDetails->getZoom() + *actions->getZoom() * 0.50);
+    }
+    if (actions->getPlayerZoom() != NULL) {
+        OGLobj->cameraDetails->calculateZoomPlayer(*actions->getPlayerZoom() * 0.50);
+    }
+
+    return checkCollition;
 }
 
 bool SetUpPixelFormat(HDC hDC, PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB, PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB) {

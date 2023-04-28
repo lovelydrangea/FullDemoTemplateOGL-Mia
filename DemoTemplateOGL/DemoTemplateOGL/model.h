@@ -26,14 +26,22 @@ using namespace std;
 
 class Model {
 private:
-    bool hasTranslate;
-    glm::vec3 translate;
-    bool hasScale;
-    glm::vec3 scale;
-    float rotacionAngle;
-    glm::vec3 rotation;
-    HWND hWnd;
-    bool defaultShader;
+    bool hasTranslate = false;
+    glm::vec3 translate = glm::vec3(0.0f, 0.0f, 0.0f);
+    bool hasScale = false;
+    glm::vec3 scale = glm::vec3(0.0f, 0.0f, 0.0f);
+    float rotX = 0;
+    float rotY = 0;
+    float rotZ = 0;
+    glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+    HWND hWnd = NULL;
+    bool defaultShader = false;;
+    glm::vec3 nextTranslate = glm::vec3(0.0f, 0.0f, 0.0f);
+    float nextRotX = 0;
+    float nextRotY = 0;
+    float nextRotZ = 0;
+    glm::vec3 nextRotation = glm::vec3(0.0f, 0.0f, 0.0f);
+
 public:
     // model data 
     Camera* cameraDetails = NULL;
@@ -44,14 +52,15 @@ public:
     vector<Mesh>    meshes;
     string directory;
     bool gammaCorrection;
-    Shader* gpuDemo;
+    Shader* gpuDemo = NULL;
     string name;
     KDTree kdTree;
-    friend class MainModel;
+
     // constructor, expects a filepath to a 3D model.
     Model();
     Model(HWND hWnd, string const& path, Camera* camera, bool rotationX = false, bool rotationY = true, bool gamma = false);
     Model(HWND hWnd, vector<Vertex> vertices, unsigned int numVertices, vector<unsigned int> indices, unsigned int numIndices);
+    Model(HWND hWnd, string const& path, glm::vec3 actualPosition, Camera* cam, bool rotationX = false, bool rotationY = true, bool gamma = false);
     ~Model();
     // draws the model, and thus all its meshes
     void prepShader(Shader& gpuDemo);
@@ -59,22 +68,39 @@ public:
     void Draw(Shader& shader);
     glm::mat4 makeTransScale(const glm::mat4& prevTransformations) const;
     glm::mat4 makeTrans() const;
+    glm::mat4 makeTransNextPosition();
+    glm::mat4 makeTransScaleNextPosition(const glm::mat4& prevTransformations);
     HWND getHWND();
     void setHWND(HWND hWnd);
     bool getDefaultShader();
     void setDefaultShader(bool defaultShader);
 
+    void setNextTranslate(glm::vec3* translate);
     void setTranslate(glm::vec3* translate);
     void setScale(glm::vec3* scale);
-    void setRotation(float rotationAngle, glm::vec3* rotationVector);
+    void setRotX(float rotationAngle);
+    void setRotY(float rotationAngle);
+    void setRotZ(float rotationAngle);
     glm::vec3* getTranslate();
+    glm::vec3* getNextTranslate();
     glm::vec3* getScale();
-    float getRotationAngle();
+    float getRotX();
+    float getRotY();
+    float getRotZ();
     glm::vec3* getRotationVector();
+    void setRotationVector(glm::vec3* vector);
+    float getNextRotX();
+    float getNextRotY();
+    float getNextRotZ();
+    glm::vec3* getNextRotationVector();
+    void setNextRotationVector(glm::vec3* vector);
+    void setNextRotX(float rotationAngle);
+    void setNextRotY(float rotationAngle);
+    void setNextRotZ(float rotationAngle);
 
     void buildKDtree();
-    bool colisionaCon(Model* objeto);
-    std::pair<Node*, Node*> nodoColisionCon(Model* objeto);
+    bool colisionaCon(Model* objeto, bool collitionMove = false);
+    std::pair<Node*, Node*> nodoColisionCon(Model* objeto, bool collitionMove = false);
 private:
     vector<Vertex> init_cube(float x, float y, float z, float width, float height, float depth);
     vector<unsigned int> getCubeIndex();

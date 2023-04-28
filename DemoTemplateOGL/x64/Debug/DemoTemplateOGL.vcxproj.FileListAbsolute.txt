@@ -1,1 +1,0 @@
-C:\OpenGL_ROOT\DemoTemplateOGL\x64\Debug\DemoTemplateOGL.exe

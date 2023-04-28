@@ -57,9 +57,6 @@
     <ClInclude Include="CollitionDetection.h">
       <Filter>Header Files\KDTree</Filter>
     </ClInclude>
-    <ClInclude Include="MainModel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Utilities.h">
       <Filter>Header Files\Base</Filter>
     </ClInclude>
@@ -118,9 +115,6 @@
     </ClCompile>
     <ClCompile Include="CollitionDetection.cpp">
       <Filter>Source Files\KDTree</Filter>
-    </ClCompile>
-    <ClCompile Include="MainModel.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Utilities.cpp">
       <Filter>Source Files\Base</Filter>

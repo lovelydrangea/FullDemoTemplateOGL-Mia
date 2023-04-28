@@ -4,7 +4,7 @@ Model::Model() {
     this->hWnd = NULL;
     this->cameraDetails = NULL;
     this->gammaCorrection = false;
-    this->rotacionAngle = 0;
+    defaultShader = false;
 }
 Model::Model(HWND hWnd, string const& path, Camera* camera, bool rotationX, bool rotationY, bool gamma){
     this->cameraDetails = camera;
@@ -12,7 +12,6 @@ Model::Model(HWND hWnd, string const& path, Camera* camera, bool rotationX, bool
     loadModel(hWnd, path, rotationX, rotationY);
     defaultShader = false;
     buildKDtree();
-    this->rotacionAngle = 0;
     // Creamos el cubo AABB apartir del arbol de puntos del modelo cargado
     vector<Vertex> cuboAABB = init_cube(this->kdTree.getRoot()->m_center.x, this->kdTree.getRoot()->m_center.y, this->kdTree.getRoot()->m_center.z, this->kdTree.getRoot()->m_halfWidth, this->kdTree.getRoot()->m_halfHeight, this->kdTree.getRoot()->m_halfDepth);
     vector<unsigned int> cuboIndex = getCubeIndex();
@@ -23,6 +22,18 @@ Model::Model(HWND hWnd, vector<Vertex> vertices, unsigned int numVertices, vecto
     vector<Material> materials;
     meshes.push_back(Mesh(vertices, indices, textures, materials));
     buildKDtree();
+}
+Model::Model(HWND hWnd, string const& path, glm::vec3 actualPosition, Camera *cam, bool rotationX, bool rotationY, bool gamma) {
+    cameraDetails = cam;
+    this->setTranslate(&actualPosition);
+    this->gammaCorrection = gamma;
+    Model::loadModel(hWnd, path, rotationX, rotationY);
+    this->defaultShader = false;
+    this->buildKDtree();
+    // Creamos el cubo AABB apartir del arbol de puntos del modelo cargado
+    vector<Vertex> cuboAABB = init_cube(this->kdTree.getRoot()->m_center.x, this->kdTree.getRoot()->m_center.y, this->kdTree.getRoot()->m_center.z, this->kdTree.getRoot()->m_halfWidth, this->kdTree.getRoot()->m_halfHeight, this->kdTree.getRoot()->m_halfDepth);
+    vector<unsigned int> cuboIndex = getCubeIndex();
+    this->AABB = new Model(hWnd, cuboAABB, cuboAABB.size(), cuboIndex, cuboIndex.size());
 }
 
 Model::~Model() {
@@ -62,8 +73,12 @@ void Model::prepShader(Shader& gpuDemo) {
         model = glm::translate(model, translate); // translate it down so it's at the center of the scene
 //			model = glm::translate(model, glm::vec3(cameraDetails.Position->x, cameraDetails.Position->y - 5, cameraDetails.Position->z)); // translate it down so it's at the center of the scene
         //model = glm::scale(model, glm::vec3(0.0025f, 0.0025f, 0.0025f));	// it's a bit too big for our scene, so scale it down
-    if (rotacionAngle != 0)
-        model = glm::rotate(model, glm::radians(this->rotacionAngle), this->rotation);
+    if (rotation.x != 0)
+        model = glm::rotate(model, glm::radians(this->rotX), glm::vec3(1, 0, 0));
+    if (rotation.y != 0)
+        model = glm::rotate(model, glm::radians(this->rotY), glm::vec3(0, 1, 0));
+    if (rotation.z != 0)
+        model = glm::rotate(model, glm::radians(this->rotZ), glm::vec3(0, 0, 1));
     if (hasScale)
         model = glm::scale(model, scale);	// it's a bit too big for our scene, so scale it down
     gpuDemo.setMat4("model", model);
@@ -87,9 +102,14 @@ void Model::Draw(Shader& shader) {
 }
 glm::mat4 Model::makeTransScale(const glm::mat4& prevTransformations) const {
     glm::mat4 model;
-    if (this->rotacionAngle != 0)
-        model = prevTransformations * glm::rotate(makeTrans(), glm::radians(this->rotacionAngle), this->rotation);
-    else
+    if (this->rotation.x != 0 || this->rotation.y != 0 || this->rotation.z != 0) {
+        if (this->rotation.x != 0)
+            model = prevTransformations * glm::rotate(makeTrans(), glm::radians(this->rotX), glm::vec3(1,0,0));
+        if (this->rotation.y != 0)
+            model = prevTransformations * glm::rotate(makeTrans(), glm::radians(this->rotY), glm::vec3(0,1,0));
+        if (this->rotation.z != 0)
+            model = prevTransformations * glm::rotate(makeTrans(), glm::radians(this->rotZ), glm::vec3(0,0,1));
+    } else
         model = prevTransformations * makeTrans();
     if (hasScale)
         model = glm::scale(model, scale);
@@ -97,6 +117,26 @@ glm::mat4 Model::makeTransScale(const glm::mat4& prevTransformations) const {
 }
 glm::mat4 Model::makeTrans() const {
     return  glm::translate(glm::mat4(1), translate);//glm::mat4(1) *glm::mat4(1)* glm::mat4(1);
+}
+glm::mat4 Model::makeTransScaleNextPosition(const glm::mat4& prevTransformations) {
+    glm::mat4 model;
+    if (this->nextRotation.x != 0 || this->nextRotation.y != 0 || this->nextRotation.z != 0) {
+        if (this->nextRotation.x != 0)
+            model = prevTransformations * glm::rotate(makeTransNextPosition(), glm::radians(this->nextRotX), glm::vec3(1, 0, 0));
+        if (this->nextRotation.y != 0)
+            model = prevTransformations * glm::rotate(makeTransNextPosition(), glm::radians(this->nextRotY), glm::vec3(0, 1, 0));
+        if (this->nextRotation.z != 0)
+            model = prevTransformations * glm::rotate(makeTransNextPosition(), glm::radians(this->nextRotZ), glm::vec3(0, 0, 1));
+    }
+    else
+        model = prevTransformations * makeTransNextPosition();
+    if (hasScale)
+        model = glm::scale(model, scale);
+    return model;
+}
+glm::mat4 Model::makeTransNextPosition() {
+    glm::vec3 pos = *this->getNextTranslate();
+    return  glm::translate(glm::mat4(1), pos);//glm::mat4(1) *glm::mat4(1)* glm::mat4(1);
 }
 HWND Model::getHWND() { return this->hWnd; }
 void Model::setHWND(HWND hWnd) { this->hWnd = hWnd; }
@@ -113,6 +153,13 @@ void Model::setTranslate(glm::vec3* translate) {
         this->hasTranslate = true;
     }
 }
+void Model::setNextTranslate(glm::vec3* translate) {
+    if (translate == NULL) {
+        this->nextTranslate = glm::vec3(0);
+    } else {
+        this->nextTranslate = *translate;
+    }
+}
 void Model::setScale(glm::vec3* scale) {
     if (scale == NULL) {
         this->scale = glm::vec3(0);
@@ -124,25 +171,73 @@ void Model::setScale(glm::vec3* scale) {
     }
 }
 
-void Model::setRotation(float rotationAngle, glm::vec3* rotationVector) {
-    this->rotacionAngle = rotationAngle;
-    this->rotation = *rotationVector;
+void Model::setRotX(float rotationAngle) {
+    this->rotX = rotationAngle;
+    this->rotation.x = 1;
+}
+void Model::setRotY(float rotationAngle) {
+    this->rotY = rotationAngle;
+    this->rotation.y = 1;
+}
+void Model::setRotZ(float rotationAngle) {
+    this->rotZ = rotationAngle;
+    this->rotation.z = 1;
+}
+void Model::setNextRotX(float rotationAngle) {
+    this->nextRotX = rotationAngle;
+    this->nextRotation.x = 1;
+}
+void Model::setNextRotY(float rotationAngle) {
+    this->nextRotY = rotationAngle;
+    this->nextRotation.y = 1;
+}
+void Model::setNextRotZ(float rotationAngle) {
+    this->nextRotZ = rotationAngle;
+    this->nextRotation.z = 1;
 }
 
 glm::vec3* Model::getTranslate() {
     return &this->translate;
+}
+glm::vec3* Model::getNextTranslate() {
+    return &this->nextTranslate;
 }
 
 glm::vec3* Model::getScale() {
     return &this->scale;
 }
 
-float Model::getRotationAngle() {
-    return this->rotacionAngle;
+float Model::getRotX() {
+    return this->rotX;
+}
+float Model::getRotY() {
+    return this->rotY;
+}
+float Model::getRotZ() {
+    return this->rotZ;
 }
 
 glm::vec3* Model::getRotationVector() {
     return &this->rotation;
+}
+void Model::setRotationVector(glm::vec3* vector) {
+    this->rotation = *vector;
+}
+void Model::setNextRotationVector(glm::vec3* vector) {
+    this->nextRotation = *vector;
+}
+float Model::getNextRotX() {
+    return this->nextRotX;
+}
+float Model::getNextRotY() {
+    return this->nextRotY;
+}
+float Model::getNextRotZ() {
+    return this->nextRotZ;
+}
+
+glm::vec3* Model::getNextRotationVector() {
+    return &this->nextRotation;
 }
 
 void Model::buildKDtree() {
@@ -361,14 +456,17 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type,
     return textures;
 }
 
-bool Model::colisionaCon(Model* objeto) {
-    std::pair<Node*, Node*> innerCollisionNodes = this->nodoColisionCon(objeto);
+bool Model::colisionaCon(Model* objeto, bool collitionMove) {
+    std::pair<Node*, Node*> innerCollisionNodes = this->nodoColisionCon(objeto, collitionMove);
     if (innerCollisionNodes.first)
         return true;
     return false;
 }
-std::pair<Node*, Node*> Model::nodoColisionCon(Model* objeto) {
-    return findCollision(this->kdTree.getRoot(), this->makeTransScale(glm::mat4(1)), objeto->kdTree.getRoot(), objeto->makeTransScale(glm::mat4(1)));
+std::pair<Node*, Node*> Model::nodoColisionCon(Model* objeto, bool collitionMove) {
+    if (collitionMove)
+        return findCollision(this->kdTree.getRoot(), this->makeTransScaleNextPosition(glm::mat4(1)), objeto->kdTree.getRoot(), objeto->makeTransScale(glm::mat4(1)));
+    else
+        return findCollision(this->kdTree.getRoot(), this->makeTransScale(glm::mat4(1)), objeto->kdTree.getRoot(), objeto->makeTransScale(glm::mat4(1)));
 }
 
 vector<Vertex> Model::init_cube(float x, float y, float z, float width, float height, float depth){

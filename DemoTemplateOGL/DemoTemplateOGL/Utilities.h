@@ -24,6 +24,30 @@ enum Ejes { EjeX, EjeY, EjeZ };
 extern unsigned int SCR_WIDTH;
 extern unsigned int SCR_HEIGHT;
 
+extern struct GameActions {
+	// float /// x = 0 -> quiet; x > 0 -> move positive; x < 0 -> move negative
+	float advance = 0;
+	float hAdvance = 0;
+	float sideAdvance = 0;
+	bool firstPerson = false;
+	bool jump = false;
+	bool action = false;
+	void setZoom(float value);
+	float* getZoom();
+	void setPlayerZoom(float value);
+	float* getPlayerZoom();
+	void setAngle(float value);
+	float* getAngle();
+	void setPitch(float value);
+	float* getPitch();
+	~GameActions();
+	private:
+		float* zoom = NULL;
+		float* playerZoom = NULL;
+		float* angle = NULL;
+		float* pitch = NULL;
+};
+
 // Estructura Vertice que contiene las propiedades del mesh
 extern struct Vertex {
 	// position

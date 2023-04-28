@@ -28,22 +28,24 @@ const float ZOOM = 45.0f;
 class Camera {
 private:
     // camera Attributes
-    glm::vec3 nextPosition;
-    glm::vec3 Position;
-    glm::vec3 Front;
-    glm::vec3 Up;
-    glm::vec3 Right;
-    glm::vec3 WorldUp;
+    float DistanceFromPlayer = 15;
+    float angleAroundPlayer = 0;
+    glm::vec3 Position = glm::vec3(0.0f, 0.0f, 0.0f);;
+    glm::vec3 Front = glm::vec3(0.0f, 0.0f, 0.0f);;
+    glm::vec3 Up = glm::vec3(0.0f, 0.0f, 0.0f);;
+    glm::vec3 Right = glm::vec3(0.0f, 0.0f, 0.0f);;
+    glm::vec3 WorldUp = glm::vec3(0.0f, 0.0f, 0.0f);;
     // euler Angles
-    float Yaw;
-    float Pitch;
+    float Yaw = 0;
+    float Pitch = 20;
     // camera options
-    float MovementSpeed;
-    float MouseSensitivity;
-    float Zoom;
+    float MovementSpeed = 0;
+    float MouseSensitivity = 0;
+    float Zoom = 0;
     glm::mat4 projection;
     // Obtenemos la vista
     glm::mat4 view;
+    bool firstPerson = false;
 
     // calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors() {
@@ -60,11 +62,9 @@ private:
         //            Up.y *= -1.0f;
     }
 public:
-    friend class MainModel;
     // constructor with vectors
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM) {
         Position = position;
-        nextPosition = position;
         WorldUp = up;
         Yaw = yaw;
         Pitch = pitch;
@@ -73,7 +73,6 @@ public:
     // constructor with scalar values
     Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM) {
         Position = glm::vec3(posX, posY, posZ);
-        nextPosition = Position;
         WorldUp = glm::vec3(upX, upY, upZ);
         Yaw = yaw;
         Pitch = pitch;
@@ -82,10 +81,28 @@ public:
 
     // returns the view matrix calculated using Euler Angles and the LookAt Matrix
     glm::mat4 GetViewMatrix() {
-        return glm::lookAt(Position, Position + Front, Up);
+        glm::mat4 viewMatrix(1.0f); // constructs an identity matrix
+        viewMatrix = glm::rotate(viewMatrix, glm::radians(Pitch), glm::vec3(1, 0, 0));
+        viewMatrix = glm::rotate(viewMatrix, glm::radians(Yaw), glm::vec3(0, 1, 0));
+        viewMatrix = glm::translate(viewMatrix, glm::vec3(-this->Position.x, -this->Position.y, -this->Position.z));
+        return viewMatrix;//glm::lookAt(Position, Position + Front, Up);
     }
 
-    glm::mat4 CamaraUpdate() {
+    void calculateCameraPosition(float pRotY, glm::vec3 *pTrans, float dHorizontal, float dVertical) {
+        if (firstPerson) {
+            float theta = pRotY + Camera::angleAroundPlayer; //Model::getRotationAngle() +
+            float offsetX = dHorizontal * glm::sin(glm::radians(theta));
+            float offsetZ = dHorizontal * glm::cos(glm::radians(theta));
+            getPosition().x = pTrans->x - offsetX;
+            getPosition().z = pTrans->z - offsetZ;
+            getPosition().y = pTrans->y + dVertical;
+        } else
+            setPosition(*pTrans);
+    }
+
+    glm::mat4 CamaraUpdate(float pRotY, glm::vec3 *pTrans) {
+        calculateCameraPosition(pRotY, pTrans, calculateHorizontalDistance(), calculateVerticalDistance());
+        setYaw(180 - pRotY - angleAroundPlayer);
         // Obtenemos la proyeccion en base a la ventana
         projection = glm::perspective(glm::radians(getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         // Obtenemos la vista
@@ -109,47 +126,16 @@ public:
             Position += Right * velocity;
     }
 
-    // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
-    void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
-    {
-        xoffset *= MouseSensitivity;
-        yoffset *= MouseSensitivity;
-
-        Yaw += xoffset;
-        Pitch += yoffset;
-
-        // make sure that when pitch is out of bounds, screen doesn't get flipped
-        if (constrainPitch)
-        {
-            if (Pitch > 89.0f)
-                Pitch = 89.0f;
-            if (Pitch < -89.0f)
-                Pitch = -89.0f;
-        }
-
-        // update Front, Right and Up Vectors using the updated Euler angles
-        updateCameraVectors();
-    }
-
-    // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
-    void ProcessMouseScroll(float yoffset) {
-        Zoom -= (float)yoffset;
-        if (Zoom < 1.0f)
-            Zoom = 1.0f;
-        if (Zoom > 45.0f)
-            Zoom = 45.0f;
-    }
-
     glm::vec3 movePosition(float vel) {
         glm::vec3 avance;
         avance.x = Position.x + Front.x * vel;
         avance.y = Position.y + Front.y * vel;
         avance.z = Position.z + Front.z * vel;
-        nextPosition = avance;
+        Position = avance;
         return avance;
     }
     void CamaraAvanza() {
-        setPosition(nextPosition);
+//        setPosition(nextPosition);
         /*gluLookAt(posc.X, posc.Y, posc.Z,
             posc.X + dirc.X, posc.Y, posc.Z + dirc.Z,
             0, 1, 0);*/
@@ -168,6 +154,10 @@ public:
 
     void CamaraGiraY(float grados) {
         glm::vec3 v = Transforma(Front, grados, Ejes::EjeY);
+        setFront(v);
+    }
+    void CamaraGiraX(float grados) {
+        glm::vec3 v = Transforma(Front, grados, Ejes::EjeX);
         setFront(v);
     }
 
@@ -226,14 +216,27 @@ public:
             }
         }
     }
+    void setFirstPerson(bool fps) {
+        firstPerson = fps;
+    }
+    bool getFirstPerson() {
+        return firstPerson;
+    }
+    void calculateAngleAroundPlayer(float val) {
+        angleAroundPlayer -= val * 0.5;
+    }
+    void calculateZoomPlayer(float val) {
+        DistanceFromPlayer -= val * 0.5f;
+    }
+    float calculateHorizontalDistance() {
+        return DistanceFromPlayer * glm::cos(glm::radians(Pitch));
+    }
+    float calculateVerticalDistance() {
+        return DistanceFromPlayer * glm::sin(glm::radians(Pitch));
+    }
     glm::vec3& getPosition() { return Position; };
     void setPosition(glm::vec3& Position) {
         this->Position = Position;
-        //        cameraDetails.Position = &this->Position;
-    }
-    glm::vec3& getNextPosition() { return nextPosition; };
-    void setNextPosition(glm::vec3& Position) {
-        this->nextPosition = Position;
         //        cameraDetails.Position = &this->Position;
     }
     glm::vec3 &getFront() { return Front; };
@@ -263,7 +266,12 @@ public:
 //        cameraDetails.Yaw = &this->Yaw; 
     }
     float getPitch() { return Pitch; };
-    void setPitch(float Pitch) { this->Pitch = Pitch; //cameraDetails.Pitch = &this->Pitch; 
+    void setPitch(float Pitch) { 
+        if (Pitch > 89.0f)
+            Pitch = 89.0f;
+        else if (Pitch < -89.0f)
+            Pitch = -89.0f;
+        else this->Pitch = Pitch; //cameraDetails.Pitch = &this->Pitch; 
     }
     // camera options
     float getMovementSpeed() { return MovementSpeed; };
@@ -273,7 +281,12 @@ public:
     void setMouseSensitivity(float MouseSensitivity) { this->MouseSensitivity = MouseSensitivity; //cameraDetails.MouseSensitivity = &this->MouseSensitivity; 
     };
     float getZoom() { return Zoom; };
-    void setZoom(float Zoom) { this->Zoom = Zoom; //cameraDetails.Zoom = &this->Zoom; 
+    void setZoom(float Zoom) { 
+        if (Zoom < 1.0f)
+            Zoom = 1.0f;
+        else if (Zoom > 45.0f)
+            Zoom = 45.0f;
+        else this->Zoom = Zoom; //cameraDetails.Zoom = &this->Zoom; 
     }
     glm::mat4 getProjection() {
         return projection;

@@ -83,7 +83,7 @@ public:
 		wstring tex(textura);
 		string text(tex.begin(), tex.end());
 		unsigned char* mapaAlturas = loadFile(text.c_str(), &mapAlturaX, &mapAlturaY, &mapAlturaComp, 0);
-		GLenum format;
+		GLenum format = GL_RGBA;
 		if (mapAlturaComp == 1)
 			format = GL_RED;
 		else if (mapAlturaComp == 3)

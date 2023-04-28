@@ -16,6 +16,41 @@
 // Global Variables:
 struct Vertex;
 struct Texture;
+struct GameActions;
+GameActions::~GameActions() {
+	if (angle != NULL) delete angle;
+	if (pitch != NULL) delete pitch;
+	if (zoom != NULL) delete zoom;
+	if (playerZoom != NULL) delete playerZoom;
+}
+void GameActions::setAngle(float value) {
+	if (angle == NULL) angle = new float;
+	*angle = value;
+}
+void GameActions::setPitch(float value) {
+	if (pitch == NULL) pitch = new float;
+	*pitch = value;
+}
+void GameActions::setPlayerZoom(float value) {
+	if (playerZoom == NULL) playerZoom = new float;
+	*playerZoom = value;
+}
+float* GameActions::getPlayerZoom() {
+	return playerZoom;
+}
+void GameActions::setZoom(float value) {
+	if (zoom == NULL) zoom = new float;
+	*zoom = value;
+}
+float* GameActions::getZoom() {
+	return zoom;
+}
+float* GameActions::getPitch() {
+	return pitch;
+}
+float* GameActions::getAngle() {
+	return angle;
+}
 Vertex::Vertex() {}
 Vertex::Vertex(glm::vec3 pos, glm::vec2 texCoord, glm::vec3 normal, glm::vec3 color) {
 	this->Position = pos;

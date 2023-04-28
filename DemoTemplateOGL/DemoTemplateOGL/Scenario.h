@@ -18,34 +18,35 @@ private:
 	Terreno* terreno;
 	std::vector<Billboard*> billBoard;
 	std::vector<Model*> ourModel;
-	MainModel* camara;
+	Model* camara;
 	HWND hwnd;
 	float angulo;
-
+	int animacion = 0;
+	int frameArbol = 1;
 public:
-	Scenario(HWND hWnd) {
+	Scenario(HWND hWnd, Camera *cam) {
 		glm::vec3 translate;
 		glm::vec3 scale;
-		MainModel* model = new MainModel(hWnd, "models/Cube.obj");
+		Model* model = new Model(hWnd, "models/Cube.obj", cam);
 		translate = glm::vec3(0.0f, 0.0f, 3.0f);
 		scale = glm::vec3(0.25f, 0.25f, 0.25f);	// it's a bit too big for our scene, so scale it down
 		model->setScale(&scale);
 		model->setTranslate(&translate);
 		InitGraph(hWnd, model);
 	}
-	Scenario(HWND hWnd, MainModel *camIni) {
+	Scenario(HWND hWnd, Model *camIni) {
 		InitGraph(hWnd, camIni);
 	}
-	void InitGraph(HWND hWnd, MainModel *main) {
+	void InitGraph(HWND hWnd, Model *main) {
 		hwnd = hWnd;
 		float matAmbient[] = { 1,1,1,1 };
 		float matDiff[] = { 1,1,1,1 };
 		angulo = 0;
 		camara = main;
 		//creamos el objeto skydome
-		sky = new SkyDome(hWnd, 32, 32, 20, (WCHAR*)L"skydome/earth.jpg", main);
+		sky = new SkyDome(hWnd, 32, 32, 20, (WCHAR*)L"skydome/earth.jpg", main->cameraDetails);
 		//creamos el terreno
-		terreno = new Terreno(hWnd, (WCHAR*)L"skydome/terreno.jpg", (WCHAR*)L"skydome/texterr2.jpg", 400, 400, main);
+		terreno = new Terreno(hWnd, (WCHAR*)L"skydome/terreno.jpg", (WCHAR*)L"skydome/texterr2.jpg", 400, 400, main->cameraDetails);
 		// load models
 		// -----------
 		ourModel.push_back(main);
@@ -53,13 +54,13 @@ public:
 		glm::vec3 translate;
 		glm::vec3 scale;
 		glm::vec3 rotation;
-		model = new Model(this->hwnd, "models/fogata.obj", main);
+		model = new Model(this->hwnd, "models/fogata.obj", main->cameraDetails);
 		translate = glm::vec3(0.0f, 10.0f, 25.0f);
 		model->setTranslate(&translate);
-		rotation = glm::vec3(1.0f, 0.0f, 0.0f); //rotation Y
-		model->setRotation(45, &rotation); // 90° rotation
+		rotation = glm::vec3(1.0f, 0.0f, 0.0f); //rotation X
+		model->setRotX(45); // 45° rotation
 		ourModel.push_back(model);
-		model= new Model(this->hwnd, "models/pez.obj", main);
+		model= new Model(this->hwnd, "models/pez.obj", main->cameraDetails);
 		translate = glm::vec3(0.0f, 7.0f, 50.0f);
 		model->setTranslate(&translate);
 		ourModel.push_back(model);
@@ -69,7 +70,7 @@ public:
 //		model->setScale(&scale);
 //		model->setTranslate(&translate);
 //		ourModel.push_back(model);
-		model = new Model(this->hwnd, "models/backpack.obj", main, false, false);
+		model = new Model(this->hwnd, "models/backpack.obj", main->cameraDetails, false, false);
 		translate = glm::vec3(20.0f, 14.0f, 0.0f);
 		scale = glm::vec3(1.0f, 1.0f, 1.0f);	// it's a bit too big for our scene, so scale it down
 		model->setTranslate(&translate);
@@ -78,16 +79,15 @@ public:
 		inicializaBillboards(hWnd);
 	}
 
-	void inicializaBillboards(HWND hWnd)
-	{
+	void inicializaBillboards(HWND hWnd) {
 		float ye = terreno->Superficie(0, 0);
-		billBoard.push_back(new Billboard(hWnd, (WCHAR*)L"billboards/Arbol.png", 6, 6, 0, ye - 1, 0, camara));
+		billBoard.push_back(new Billboard(hWnd, (WCHAR*)L"billboards/Arbol.png", 6, 6, 0, ye - 1, 0, camara->cameraDetails));
 
 		ye = terreno->Superficie(5, -5);
-		billBoard.push_back(new Billboard(hWnd, (WCHAR*)L"billboards/Arbol2.png", 6, 6, 5, ye - 1, -5, camara));
+		billBoard.push_back(new Billboard(hWnd, (WCHAR*)L"billboards/Arbol2.png", 6, 6, 5, ye - 1, -5, camara->cameraDetails));
 
 		ye = terreno->Superficie(-9, -15);
-		billBoard.push_back(new Billboard(hWnd, (WCHAR*)L"billboards/Arbol3.png", 8, 8, -9, ye - 1, -15, camara));
+		billBoard.push_back(new Billboard(hWnd, (WCHAR*)L"billboards/Arbol3.png", 8, 8, -9, ye - 1, -15, camara->cameraDetails));
 	}
 
 	//el metodo render toma el dispositivo sobre el cual va a dibujar
@@ -99,8 +99,24 @@ public:
 		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 //		glClearColor(255.0f, 255.0f, 255.0f, 255.0f);
 
+		if (this->animacion > 25) { // Timer se ejecuta cada 1000/30 = 33.333 ms
+			float ye = terreno->Superficie(5, -5);
+			Billboard* temporal = billBoard[1];
+			wstring textura = L"billboards/Arbol"+
+							  (this->frameArbol==1?L"":to_wstring(this->frameArbol)) + L".png";
+			billBoard[1] = new Billboard(this->hwnd, (WCHAR*)textura.c_str(), 6, 6, 5, ye - 1, -5, camara->cameraDetails);
+			if (this->frameArbol == 3) {
+				this->frameArbol = 1;
+			} else {
+				this->frameArbol++;
+			}
+			this->animacion = 0;
+			delete temporal;
+		} else {
+			animacion++;
+		}
 		// Actualizamos la camara
-		camara->CamaraUpdate();
+		camara->cameraDetails->CamaraUpdate(camara->getRotY(), camara->getTranslate());
 
 		// Decimos que dibuje la media esfera
 		sky->Draw();
@@ -126,7 +142,7 @@ public:
 	std::vector<Billboard*> *getLoadedBillboards() {
 		return &billBoard;
 	}
-	MainModel* getMainModel() {
+	Model* getMainModel() {
 		return this->camara;
 	}
 	float getAngulo() {
