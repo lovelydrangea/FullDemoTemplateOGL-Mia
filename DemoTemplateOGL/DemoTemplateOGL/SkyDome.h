@@ -1,21 +1,27 @@
 #ifndef _Sky
 #define _Sky
-#include "Utilities.h"
-#include "Model.h"
+#include "Base/Utilities.h"
+#include "Base/Model.h"
+
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <map>
+#include <vector>
 
 class SkyDome : public Model {
 	//El constructor llama al metodo Esfera de la clase geometrias que generara los vertices
 	//normales y uvs de la misma, nos regresa la estructura Maya.
 public:
 	Camera* cameraDetails = NULL;
-	SkyDome(HWND hWnd, int stacks, int slices, float radio, WCHAR *nombre, Camera* camera) {
+	SkyDome(int stacks, int slices, float radio, WCHAR *nombre, Camera* camera) {
 		cameraDetails = camera;
 		vector<unsigned int> indices;
 		vector<Texture> textures;
 		vector<Vertex>	vertices;
 		vector<Material> materials;
 		unsigned int esferaTextura;
-		setHWND(hWnd);
 		UTILITIES_OGL::Maya cuadro = UTILITIES_OGL::Esfera(stacks, slices, radio, 0.5, 1);
 		UTILITIES_OGL::vectoresEsfera(cuadro, vertices, indices, stacks * slices * 3, stacks * slices * 6);
 		delete cuadro.maya;
@@ -23,7 +29,7 @@ public:
 		// cargamos la textura de la figura
 		wstring n(nombre);
 		string textura(n.begin(), n.end());
-		esferaTextura = TextureFromFile(hWnd, textura.c_str(), this->directory);
+		esferaTextura = TextureFromFile(textura.c_str(), this->directory);
 		Texture t = { esferaTextura , "texture_diffuse", textura.c_str() };
 		textures_loaded.push_back(t);
 		textures.push_back(t);

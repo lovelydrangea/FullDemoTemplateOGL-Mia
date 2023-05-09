@@ -9,6 +9,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "glext.h"
-#include "wglext.h"
+#include "Base/glext.h"
+#include "Base/wglext.h"
 #include <iostream>

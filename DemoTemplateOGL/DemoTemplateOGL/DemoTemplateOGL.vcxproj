@@ -142,38 +142,38 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Billboard.h" />
-    <ClInclude Include="camera.h" />
-    <ClInclude Include="CollitionDetection.h" />
-    <ClInclude Include="DemoTemplateOGL.h" />
-    <ClInclude Include="framework.h" />
-    <ClInclude Include="GamePadRR.h" />
-    <ClInclude Include="glext.h" />
-    <ClInclude Include="Logger.h" />
+    <ClInclude Include="Base\Billboard.h" />
+    <ClInclude Include="Base\camera.h" />
+    <ClInclude Include="KDTree\CollitionDetection.h" />
+    <ClInclude Include="WinAPIHeaders\DemoTemplateOGL.h" />
+    <ClInclude Include="WinAPIHeaders\framework.h" />
+    <ClInclude Include="InputDevices\GamePadRR.h" />
+    <ClInclude Include="Base\glext.h" />
+    <ClInclude Include="Base\Logger.h" />
     <ClInclude Include="Scenario.h" />
-    <ClInclude Include="KDTree.h" />
-    <ClInclude Include="KeyboardInput.h" />
-    <ClInclude Include="material.h" />
-    <ClInclude Include="mesh.h" />
-    <ClInclude Include="Model.h" />
-    <ClInclude Include="Resource.h" />
-    <ClInclude Include="Scene.h" />
-    <ClInclude Include="shader.h" />
+    <ClInclude Include="KDTree\KDTree.h" />
+    <ClInclude Include="InputDevices\KeyboardInput.h" />
+    <ClInclude Include="Base\material.h" />
+    <ClInclude Include="Base\mesh.h" />
+    <ClInclude Include="Base\Model.h" />
+    <ClInclude Include="WinAPIHeaders\Resource.h" />
+    <ClInclude Include="Base\Scene.h" />
+    <ClInclude Include="Base\shader.h" />
     <ClInclude Include="SkyDome.h" />
-    <ClInclude Include="targetver.h" />
+    <ClInclude Include="WinAPIHeaders\targetver.h" />
     <ClInclude Include="Terreno.h" />
-    <ClInclude Include="Utilities.h" />
-    <ClInclude Include="wglext.h" />
+    <ClInclude Include="Base\Utilities.h" />
+    <ClInclude Include="Base\wglext.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CollitionDetection.cpp" />
+    <ClCompile Include="KDTree\CollitionDetection.cpp" />
     <ClCompile Include="DemoTemplateOGL.cpp" />
-    <ClCompile Include="glad.c" />
-    <ClCompile Include="KDTree.cpp" />
-    <ClCompile Include="KeyboardInput.cpp" />
-    <ClCompile Include="Logger.cpp" />
-    <ClCompile Include="Model.cpp" />
-    <ClCompile Include="Utilities.cpp" />
+    <ClCompile Include="Base\glad.c" />
+    <ClCompile Include="KDTree\KDTree.cpp" />
+    <ClCompile Include="InputDevices\KeyboardInput.cpp" />
+    <ClCompile Include="Base\Logger.cpp" />
+    <ClCompile Include="Base\Model.cpp" />
+    <ClCompile Include="Base\Utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DemoTemplateOGL.rc" />

@@ -36,9 +36,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Model.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Scenario.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -48,58 +45,61 @@
     <ClInclude Include="Terreno.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Billboard.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="KDTree.h">
+    <ClInclude Include="KDTree\KDTree.h">
       <Filter>Header Files\KDTree</Filter>
     </ClInclude>
-    <ClInclude Include="CollitionDetection.h">
+    <ClInclude Include="KDTree\CollitionDetection.h">
       <Filter>Header Files\KDTree</Filter>
     </ClInclude>
-    <ClInclude Include="Utilities.h">
+    <ClInclude Include="Base\Utilities.h">
       <Filter>Header Files\Base</Filter>
     </ClInclude>
-    <ClInclude Include="material.h">
+    <ClInclude Include="Base\material.h">
       <Filter>Header Files\Base</Filter>
     </ClInclude>
-    <ClInclude Include="shader.h">
+    <ClInclude Include="Base\shader.h">
       <Filter>Header Files\Base</Filter>
     </ClInclude>
-    <ClInclude Include="camera.h">
+    <ClInclude Include="Base\camera.h">
       <Filter>Header Files\Base</Filter>
     </ClInclude>
-    <ClInclude Include="DemoTemplateOGL.h">
+    <ClInclude Include="WinAPIHeaders\DemoTemplateOGL.h">
       <Filter>Header Files\WinAPIHeaders</Filter>
     </ClInclude>
-    <ClInclude Include="framework.h">
+    <ClInclude Include="WinAPIHeaders\framework.h">
       <Filter>Header Files\WinAPIHeaders</Filter>
     </ClInclude>
-    <ClInclude Include="glext.h">
+    <ClInclude Include="Base\glext.h">
       <Filter>Header Files\Base</Filter>
     </ClInclude>
-    <ClInclude Include="Resource.h">
+    <ClInclude Include="WinAPIHeaders\Resource.h">
       <Filter>Header Files\WinAPIHeaders</Filter>
     </ClInclude>
-    <ClInclude Include="GamePadRR.h">
+    <ClInclude Include="InputDevices\GamePadRR.h">
       <Filter>Header Files\InputDevices</Filter>
     </ClInclude>
-    <ClInclude Include="KeyboardInput.h">
+    <ClInclude Include="InputDevices\KeyboardInput.h">
       <Filter>Header Files\InputDevices</Filter>
     </ClInclude>
-    <ClInclude Include="mesh.h">
+    <ClInclude Include="Base\mesh.h">
       <Filter>Header Files\Base</Filter>
     </ClInclude>
-    <ClInclude Include="targetver.h">
+    <ClInclude Include="WinAPIHeaders\targetver.h">
       <Filter>Header Files\WinAPIHeaders</Filter>
     </ClInclude>
-    <ClInclude Include="wglext.h">
+    <ClInclude Include="Base\wglext.h">
       <Filter>Header Files\Base</Filter>
     </ClInclude>
-    <ClInclude Include="Logger.h">
+    <ClInclude Include="Base\Logger.h">
       <Filter>Header Files\Base</Filter>
     </ClInclude>
-    <ClInclude Include="Scene.h">
+    <ClInclude Include="Base\Scene.h">
+      <Filter>Header Files\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Base\Model.h">
+      <Filter>Header Files\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Base\Billboard.h">
       <Filter>Header Files\Base</Filter>
     </ClInclude>
   </ItemGroup>
@@ -107,25 +107,25 @@
     <ClCompile Include="DemoTemplateOGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Model.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="KDTree.cpp">
+    <ClCompile Include="KDTree\KDTree.cpp">
       <Filter>Source Files\KDTree</Filter>
     </ClCompile>
-    <ClCompile Include="CollitionDetection.cpp">
+    <ClCompile Include="KDTree\CollitionDetection.cpp">
       <Filter>Source Files\KDTree</Filter>
     </ClCompile>
-    <ClCompile Include="Utilities.cpp">
+    <ClCompile Include="Base\Utilities.cpp">
       <Filter>Source Files\Base</Filter>
     </ClCompile>
-    <ClCompile Include="glad.c">
+    <ClCompile Include="Base\glad.c">
       <Filter>Source Files\Base</Filter>
     </ClCompile>
-    <ClCompile Include="KeyboardInput.cpp">
+    <ClCompile Include="InputDevices\KeyboardInput.cpp">
       <Filter>Source Files\InputDevices</Filter>
     </ClCompile>
-    <ClCompile Include="Logger.cpp">
+    <ClCompile Include="Base\Logger.cpp">
+      <Filter>Source Files\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="Base\Model.cpp">
       <Filter>Source Files\Base</Filter>
     </ClCompile>
   </ItemGroup>

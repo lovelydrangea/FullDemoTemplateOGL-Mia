@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 #include <list>
-#include "KDTree.h"
+#include "../KDTree/KDTree.h"
 using namespace std;
 
 class Mesh {

@@ -12,6 +12,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "Utilities.h"
+#include "Logger.h"
 
 // Global Variables:
 struct Vertex;
@@ -409,7 +410,7 @@ unsigned char* loadFile(char const* filename, int* x, int* y, int* comp, int req
 	return tmp;
 }
 
-unsigned int TextureFromFile(HWND hWnd, const char* path, const std::string& directory, bool rotateX, bool rotateY, bool alpha, struct UTILITIES_OGL::ImageDetails* img) {
+unsigned int TextureFromFile(const char* path, const std::string& directory, bool rotateX, bool rotateY, bool alpha, struct UTILITIES_OGL::ImageDetails* img) {
 	std::string filename = std::string(path);
 	if (!directory.empty())
 		filename = directory + '/' + filename;
@@ -419,7 +420,7 @@ unsigned int TextureFromFile(HWND hWnd, const char* path, const std::string& dir
 
 	int width, height, nrComponents;
 	unsigned char* data = loadFile(filename.c_str(), &width, &height, &nrComponents, 0, rotateX, rotateY);
-	GLenum format;
+	GLenum format = GL_RGBA;
 	if (data) {
 		if (nrComponents == 1)
 			format = GL_RED;
@@ -448,10 +449,7 @@ unsigned int TextureFromFile(HWND hWnd, const char* path, const std::string& dir
 		delete[]data;
 	}
 	else {
-		std::wstring err(L"Texture failed to load at path: ");
-		err.append(s2ws(path));
-		MessageBox(hWnd, err.c_str(), L"ERROR LOAD OBJ", 0);
-		std::cout << "Texture failed to load at path: " << path << std::endl;
+		LOGGER::LOGS::getLOGGER().infoMB("Texture failed to load at path: " + filename, "ERROR LOAD OBJ");
 	}
 	if (img != NULL) {
 		img->format = format;

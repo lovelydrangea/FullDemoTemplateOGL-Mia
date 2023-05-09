@@ -1,22 +1,21 @@
 // DemoTemplateOGL.cpp : Defines the entry point for the application.
 //
-#include "framework.h"
-#include "DemoTemplateOGL.h"
-#include <iostream>
-#include "Utilities.h"
-#include "KeyboardInput.h"
+#include "WinAPIHeaders/framework.h"
+#include "WinAPIHeaders/DemoTemplateOGL.h"
+#include "Base/Utilities.h"
+#include "InputDevices/KeyboardInput.h"
 #include <glad/glad.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "glext.h"
-#include "wglext.h"
-#include "model.h"
+#include "Base/glext.h"
+#include "Base/wglext.h"
+#include "Base/model.h"
 
-#include "GamePadRR.h"
-#include "Scene.h"
+#include "InputDevices/GamePadRR.h"
+#include "Base/Scene.h"
 #include "Scenario.h"
 
 #define MAX_LOADSTRING 100
@@ -54,7 +53,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
-
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_DEMOTEMPLATEOGL, szWindowClass, MAX_LOADSTRING);
@@ -62,6 +60,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // Si no logra activar OpenGL 2 o superior termina el programa
     if (prepareRenderWindow(hInstance, nCmdShow))
         return 1;
+
+    LOGGER::LOGS::getLOGGER().setWindow(hWnd);
 
     // game loop
     gamPad = new GamePadRR(1); // Obtenemos el primer gamepad conectado
@@ -72,14 +72,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     //5, ye - 1,-5
     //MainModel *model = new MainModel(hWnd, "models/Cube.obj", translate);
     Camera* camera = new Camera();
-    Model* model = new Model(hWnd, "models/BaseSpiderman.obj", translate, camera);
+    Model* model = new Model("models/BaseSpiderman.obj", translate, camera);
     model->setTranslate(&translate);
     camera->setFront(v);
     scale = glm::vec3(1.0f, 1.0f, 1.0f);	// it's a bit too big for our scene, so scale it down
     model->setScale(&scale);
     model->setTranslate(&translate);
     
-    OGLobj = new Scenario(hWnd, model); // Creamos nuestra escena con esa posicion de inicio
+    OGLobj = new Scenario(model); // Creamos nuestra escena con esa posicion de inicio
     SetTimer(hWnd, Timer1, 1000/30, (TIMERPROC)WndProc);// Asignamos el timer con un render de 30 fps
     renderiza = false;
     MSG msg = { 0 };
@@ -115,7 +115,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                     model->setRotationVector(model->getNextRotationVector());
                 }
             }
-            Scene *escena = OGLobj->Render(dc);
+            Scene *escena = OGLobj->Render();
+            SwapBuffers(dc);
             if (escena != OGLobj) {
                 delete OGLobj;
                 OGLobj = escena;

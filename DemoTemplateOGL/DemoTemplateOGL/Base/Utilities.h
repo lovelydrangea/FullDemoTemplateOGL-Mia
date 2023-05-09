@@ -4,7 +4,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
-#include "framework.h"
+#include "../WinAPIHeaders/framework.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <glad/glad.h>
@@ -105,6 +105,6 @@ namespace UTILITIES_OGL {
 	extern glm::vec3 genNormal(float* v1, float* v2, float* v3);
 }
 extern unsigned char* loadFile(char const* filename, int* x, int* y, int* comp, int req_comp, bool rotateX = false, bool rotateY = true);
-extern unsigned int TextureFromFile(HWND hWnd, const char* path, const std::string& directory, bool rotateX = false, bool rotateY = true, bool alpha = false, struct UTILITIES_OGL::ImageDetails* img = NULL);
+extern unsigned int TextureFromFile(const char* path, const std::string& directory, bool rotateX = false, bool rotateY = true, bool alpha = false, struct UTILITIES_OGL::ImageDetails* img = NULL);
 
 #endif

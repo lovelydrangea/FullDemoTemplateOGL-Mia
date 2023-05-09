@@ -9,7 +9,7 @@ class Scene {
 		virtual float getAngulo() = 0;
 		virtual void setAngulo(float angulo) = 0;
 		virtual Model* getMainModel() = 0;
-		virtual Scene* Render(HDC hDC) = 0;
+		virtual Scene* Render() = 0;
 		virtual SkyDome* getSky() = 0;
 		virtual Terreno* getTerreno() = 0;
 		virtual std::vector<Model*> *getLoadedModels() = 0;

@@ -2,7 +2,7 @@
 #ifndef KEYBOARD_INPUT_H
 #define KEYBOARD_INPUT_H
 #define MOUSE_INPUT_H
-#include "Utilities.h"
+#include "../Base/Utilities.h"
 
 	struct Input {
 		enum Keys {

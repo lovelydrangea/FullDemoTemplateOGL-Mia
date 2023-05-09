@@ -13,7 +13,7 @@ public:
 	Camera* cameraDetails = NULL;
 	//el nombre numerico de la textura en cuestion, por lo pronto una
 
-	Terreno(HWND hWnd, WCHAR alturas[], WCHAR textura[], float ancho, float prof, Camera* camera) {
+	Terreno(WCHAR alturas[], WCHAR textura[], float ancho, float prof, Camera* camera) {
 		cameraDetails = camera;
 		vector<unsigned int> indices;
 		vector<Texture>      textures;
@@ -21,7 +21,6 @@ public:
 		vector<Vertex>       vertices;
 		unsigned int planoTextura;
 		int mapAlturaX, mapAlturaY, mapAlturaComp;
-		setHWND(hWnd);
 		anchof = ancho;
 		proff = prof;
 		//cargamos la textura de la figura
@@ -45,7 +44,7 @@ public:
 		// cargamos la textura de la figura
 		wstring n(textura);
 		string texturan(n.begin(), n.end());
-		planoTextura = TextureFromFile(hWnd, texturan.c_str(), this->directory);
+		planoTextura = TextureFromFile(texturan.c_str(), this->directory);
 
 		Texture t = { planoTextura , "texture_height", texturan.c_str() };
 		textures.push_back(t);

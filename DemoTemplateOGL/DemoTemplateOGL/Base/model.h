@@ -10,10 +10,11 @@
 #include <assimp/postprocess.h>
 
 #include "Utilities.h"
+#include "Logger.h"
 #include "material.h"
 #include "mesh.h"
 #include "shader.h"
-#include "CollitionDetection.h"
+#include "../KDTree/CollitionDetection.h"
 
 #include <string>
 #include <fstream>
@@ -34,7 +35,6 @@ private:
     float rotY = 0;
     float rotZ = 0;
     glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-    HWND hWnd = NULL;
     bool defaultShader = false;;
     glm::vec3 nextTranslate = glm::vec3(0.0f, 0.0f, 0.0f);
     float nextRotX = 0;
@@ -58,9 +58,9 @@ public:
 
     // constructor, expects a filepath to a 3D model.
     Model();
-    Model(HWND hWnd, string const& path, Camera* camera, bool rotationX = false, bool rotationY = true, bool gamma = false);
-    Model(HWND hWnd, vector<Vertex> vertices, unsigned int numVertices, vector<unsigned int> indices, unsigned int numIndices);
-    Model(HWND hWnd, string const& path, glm::vec3 actualPosition, Camera* cam, bool rotationX = false, bool rotationY = true, bool gamma = false);
+    Model(string const& path, Camera* camera, bool rotationX = false, bool rotationY = true, bool gamma = false);
+    Model(vector<Vertex> vertices, unsigned int numVertices, vector<unsigned int> indices, unsigned int numIndices);
+    Model(string const& path, glm::vec3 actualPosition, Camera* cam, bool rotationX = false, bool rotationY = true, bool gamma = false);
     ~Model();
     // draws the model, and thus all its meshes
     void prepShader(Shader& gpuDemo);
@@ -70,8 +70,6 @@ public:
     glm::mat4 makeTrans() const;
     glm::mat4 makeTransNextPosition();
     glm::mat4 makeTransScaleNextPosition(const glm::mat4& prevTransformations);
-    HWND getHWND();
-    void setHWND(HWND hWnd);
     bool getDefaultShader();
     void setDefaultShader(bool defaultShader);
 
@@ -106,7 +104,7 @@ private:
     vector<unsigned int> getCubeIndex();
     vector<Material> loadMaterial(aiMaterial* mat);
     // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
-    void loadModel(HWND hWnd, string const& path, bool rotationX = false, bool rotationY = true);
+    void loadModel(string const& path, bool rotationX = false, bool rotationY = true);
     // processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
     void processNode(aiNode* node, const aiScene* scene, bool rotationX = false, bool rotationY = true);
     Mesh processMesh(aiMesh* mesh, const aiScene* scene, bool rotationX = false, bool rotationY = true);

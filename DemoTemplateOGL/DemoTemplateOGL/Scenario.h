@@ -8,9 +8,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vector>
-#include "camera.h"
+#include "Base/camera.h"
 #include <iostream>
-#include "Scene.h"
+#include "Base/Scene.h"
 
 class Scenario : public Scene {
 private:
@@ -19,34 +19,32 @@ private:
 	std::vector<Billboard*> billBoard;
 	std::vector<Model*> ourModel;
 	Model* camara;
-	HWND hwnd;
 	float angulo;
 	int animacion = 0;
 	int frameArbol = 1;
 public:
-	Scenario(HWND hWnd, Camera *cam) {
+	Scenario(Camera *cam) {
 		glm::vec3 translate;
 		glm::vec3 scale;
-		Model* model = new Model(hWnd, "models/Cube.obj", cam);
+		Model* model = new Model("models/Cube.obj", cam);
 		translate = glm::vec3(0.0f, 0.0f, 3.0f);
 		scale = glm::vec3(0.25f, 0.25f, 0.25f);	// it's a bit too big for our scene, so scale it down
 		model->setScale(&scale);
 		model->setTranslate(&translate);
-		InitGraph(hWnd, model);
+		InitGraph(model);
 	}
-	Scenario(HWND hWnd, Model *camIni) {
-		InitGraph(hWnd, camIni);
+	Scenario(Model *camIni) {
+		InitGraph(camIni);
 	}
-	void InitGraph(HWND hWnd, Model *main) {
-		hwnd = hWnd;
+	void InitGraph(Model *main) {
 		float matAmbient[] = { 1,1,1,1 };
 		float matDiff[] = { 1,1,1,1 };
 		angulo = 0;
 		camara = main;
 		//creamos el objeto skydome
-		sky = new SkyDome(hWnd, 32, 32, 20, (WCHAR*)L"skydome/earth.jpg", main->cameraDetails);
+		sky = new SkyDome(32, 32, 20, (WCHAR*)L"skydome/earth.jpg", main->cameraDetails);
 		//creamos el terreno
-		terreno = new Terreno(hWnd, (WCHAR*)L"skydome/terreno.jpg", (WCHAR*)L"skydome/texterr2.jpg", 400, 400, main->cameraDetails);
+		terreno = new Terreno((WCHAR*)L"skydome/terreno.jpg", (WCHAR*)L"skydome/texterr2.jpg", 400, 400, main->cameraDetails);
 		// load models
 		// -----------
 		ourModel.push_back(main);
@@ -54,45 +52,45 @@ public:
 		glm::vec3 translate;
 		glm::vec3 scale;
 		glm::vec3 rotation;
-		model = new Model(this->hwnd, "models/fogata.obj", main->cameraDetails);
+		model = new Model("models/fogata.obj", main->cameraDetails);
 		translate = glm::vec3(0.0f, 10.0f, 25.0f);
 		model->setTranslate(&translate);
 		rotation = glm::vec3(1.0f, 0.0f, 0.0f); //rotation X
 		model->setRotX(45); // 45° rotation
 		ourModel.push_back(model);
-		model= new Model(this->hwnd, "models/pez.obj", main->cameraDetails);
+		model= new Model("models/pez.obj", main->cameraDetails);
 		translate = glm::vec3(0.0f, 7.0f, 50.0f);
 		model->setTranslate(&translate);
 		ourModel.push_back(model);
-//		model = new Model(this->hwnd, "models/IronMan.obj", main);
+//		model = new Model("models/IronMan.obj", main);
 //		translate = glm::vec3(0.0f, 20.0f, 30.0f);
 //		scale = glm::vec3(0.025f, 0.025f, 0.025f);	// it's a bit too big for our scene, so scale it down
 //		model->setScale(&scale);
 //		model->setTranslate(&translate);
 //		ourModel.push_back(model);
-		model = new Model(this->hwnd, "models/backpack.obj", main->cameraDetails, false, false);
+		model = new Model("models/backpack.obj", main->cameraDetails, false, false);
 		translate = glm::vec3(20.0f, 14.0f, 0.0f);
 		scale = glm::vec3(1.0f, 1.0f, 1.0f);	// it's a bit too big for our scene, so scale it down
 		model->setTranslate(&translate);
 		model->setScale(&scale);
 		ourModel.push_back(model);
-		inicializaBillboards(hWnd);
+		inicializaBillboards();
 	}
 
-	void inicializaBillboards(HWND hWnd) {
+	void inicializaBillboards() {
 		float ye = terreno->Superficie(0, 0);
-		billBoard.push_back(new Billboard(hWnd, (WCHAR*)L"billboards/Arbol.png", 6, 6, 0, ye - 1, 0, camara->cameraDetails));
+		billBoard.push_back(new Billboard((WCHAR*)L"billboards/Arbol.png", 6, 6, 0, ye - 1, 0, camara->cameraDetails));
 
 		ye = terreno->Superficie(5, -5);
-		billBoard.push_back(new Billboard(hWnd, (WCHAR*)L"billboards/Arbol2.png", 6, 6, 5, ye - 1, -5, camara->cameraDetails));
+		billBoard.push_back(new Billboard((WCHAR*)L"billboards/Arbol2.png", 6, 6, 5, ye - 1, -5, camara->cameraDetails));
 
 		ye = terreno->Superficie(-9, -15);
-		billBoard.push_back(new Billboard(hWnd, (WCHAR*)L"billboards/Arbol3.png", 8, 8, -9, ye - 1, -15, camara->cameraDetails));
+		billBoard.push_back(new Billboard((WCHAR*)L"billboards/Arbol3.png", 8, 8, -9, ye - 1, -15, camara->cameraDetails));
 	}
 
 	//el metodo render toma el dispositivo sobre el cual va a dibujar
 	//y hace su tarea ya conocida
-	Scenario* Render(HDC hDC) {
+	Scenario* Render() {
 		//borramos el biffer de color y el z para el control de profundidad a la 
 		//hora del render a nivel pixel.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -104,7 +102,7 @@ public:
 			Billboard* temporal = billBoard[1];
 			wstring textura = L"billboards/Arbol"+
 							  (this->frameArbol==1?L"":to_wstring(this->frameArbol)) + L".png";
-			billBoard[1] = new Billboard(this->hwnd, (WCHAR*)textura.c_str(), 6, 6, 5, ye - 1, -5, camara->cameraDetails);
+			billBoard[1] = new Billboard((WCHAR*)textura.c_str(), 6, 6, 5, ye - 1, -5, camara->cameraDetails);
 			if (this->frameArbol == 3) {
 				this->frameArbol = 1;
 			} else {
@@ -132,7 +130,6 @@ public:
 		for (int i = 0; i < billBoard.size(); i++)
 			billBoard[i]->Draw();
 		// Le decimos a winapi que haga el update en la ventana
-		SwapBuffers(hDC);
 		return this;
 	}
 	

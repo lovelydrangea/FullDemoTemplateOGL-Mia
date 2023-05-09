@@ -7,9 +7,9 @@ Entre los archivos mas destacados se tienen:
 
 | File | Dependency | Contains |  
 | ----------- | ----------- | ----------- |   
-|Utilities.h|N/A|Struct Ejes, SCR_WIDTH, SCR_HEIGHT, struct GameActions, Struct Vertex, Struct Texture, s2ws, loadFile, TextureFromFile, namespace UTILITIES_OGL	(Struct ImageDetails, Struct Vertices, Struct Maya, sumaNormal, normaliza, vectoresEsfera, Esfera, Plano, genNormal)|
-|KeyboardInput.h|Utilities.h| Class MouseInput, Struct Input	(enum Keys),	KEYS,	KeysEvents,	Init)
 |Logger.h|N/A|namespace logger|
+|Utilities.h|Logger.h|Struct Ejes, SCR_WIDTH, SCR_HEIGHT, struct GameActions, Struct Vertex, Struct Texture, s2ws, loadFile, TextureFromFile, namespace UTILITIES_OGL	(Struct ImageDetails, Struct Vertices, Struct Maya, sumaNormal, normaliza, vectoresEsfera, Esfera, Plano, genNormal)|
+|KeyboardInput.h|Utilities.h| Class MouseInput, Struct Input	(enum Keys),	KEYS,	KeysEvents,	Init)
 |GamePadRR.h|N/A|class GamePadRR|
 |material.h|N/A|zeroVec3,	Struct Material, Struct Light|
 |shader.h|material.h|class Shader|
@@ -18,7 +18,7 @@ Entre los archivos mas destacados se tienen:
 |mesh.h|Utilities.h, material.h, shader.h, KDTree.h|class Mesh|
 |camera.h|Utilities.h|enum Camera_Movement, class Camera|
 |Billboard.h|Utilities.h, camera.h, shader.h|class Billboard|
-|Model.h|Utilities.h, material.h, shader.h, mesh.h, camera.h, KDTree.h, CollitionDetection.h|class Model|
+|Model.h|Logger.h,Utilities.h, material.h, shader.h, mesh.h, camera.h, KDTree.h, CollitionDetection.h|class Model|
 |SkyDome.h|Utilities.h, Model.h, camera.h, shader.h|class SkyDome	extends of Model|
 |Terreno.h|Utilities.h, Model.h, camera.h, shader.h|class Terreno extends of Model|
 |Scene.h|camera.h, Model.h, SkyDome.h, Terreno.h, Billboard.h|class Scene|

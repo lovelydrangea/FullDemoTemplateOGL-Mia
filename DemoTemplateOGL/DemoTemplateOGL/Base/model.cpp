@@ -1,39 +1,38 @@
 #include "Model.h"
 
 Model::Model() {
-    this->hWnd = NULL;
     this->cameraDetails = NULL;
     this->gammaCorrection = false;
     defaultShader = false;
 }
-Model::Model(HWND hWnd, string const& path, Camera* camera, bool rotationX, bool rotationY, bool gamma){
+Model::Model(string const& path, Camera* camera, bool rotationX, bool rotationY, bool gamma){
     this->cameraDetails = camera;
     gammaCorrection = gamma;
-    loadModel(hWnd, path, rotationX, rotationY);
+    loadModel(path, rotationX, rotationY);
     defaultShader = false;
     buildKDtree();
     // Creamos el cubo AABB apartir del arbol de puntos del modelo cargado
     vector<Vertex> cuboAABB = init_cube(this->kdTree.getRoot()->m_center.x, this->kdTree.getRoot()->m_center.y, this->kdTree.getRoot()->m_center.z, this->kdTree.getRoot()->m_halfWidth, this->kdTree.getRoot()->m_halfHeight, this->kdTree.getRoot()->m_halfDepth);
     vector<unsigned int> cuboIndex = getCubeIndex();
-    this->AABB = new Model(hWnd, cuboAABB, cuboAABB.size(), cuboIndex, cuboIndex.size());
+    this->AABB = new Model(cuboAABB, cuboAABB.size(), cuboIndex, cuboIndex.size());
 }
-Model::Model(HWND hWnd, vector<Vertex> vertices, unsigned int numVertices, vector<unsigned int> indices, unsigned int numIndices) {
+Model::Model(vector<Vertex> vertices, unsigned int numVertices, vector<unsigned int> indices, unsigned int numIndices) {
     vector<Texture> textures;
     vector<Material> materials;
     meshes.push_back(Mesh(vertices, indices, textures, materials));
     buildKDtree();
 }
-Model::Model(HWND hWnd, string const& path, glm::vec3 actualPosition, Camera *cam, bool rotationX, bool rotationY, bool gamma) {
+Model::Model(string const& path, glm::vec3 actualPosition, Camera *cam, bool rotationX, bool rotationY, bool gamma) {
     cameraDetails = cam;
     this->setTranslate(&actualPosition);
     this->gammaCorrection = gamma;
-    Model::loadModel(hWnd, path, rotationX, rotationY);
+    Model::loadModel(path, rotationX, rotationY);
     this->defaultShader = false;
     this->buildKDtree();
     // Creamos el cubo AABB apartir del arbol de puntos del modelo cargado
     vector<Vertex> cuboAABB = init_cube(this->kdTree.getRoot()->m_center.x, this->kdTree.getRoot()->m_center.y, this->kdTree.getRoot()->m_center.z, this->kdTree.getRoot()->m_halfWidth, this->kdTree.getRoot()->m_halfHeight, this->kdTree.getRoot()->m_halfDepth);
     vector<unsigned int> cuboIndex = getCubeIndex();
-    this->AABB = new Model(hWnd, cuboAABB, cuboAABB.size(), cuboIndex, cuboIndex.size());
+    this->AABB = new Model(cuboAABB, cuboAABB.size(), cuboIndex, cuboIndex.size());
 }
 
 Model::~Model() {
@@ -138,8 +137,6 @@ glm::mat4 Model::makeTransNextPosition() {
     glm::vec3 pos = *this->getNextTranslate();
     return  glm::translate(glm::mat4(1), pos);//glm::mat4(1) *glm::mat4(1)* glm::mat4(1);
 }
-HWND Model::getHWND() { return this->hWnd; }
-void Model::setHWND(HWND hWnd) { this->hWnd = hWnd; }
 bool Model::getDefaultShader() { return this->defaultShader; }
 void Model::setDefaultShader(bool defaultShader) { this->defaultShader = defaultShader; }
 
@@ -290,19 +287,17 @@ vector<Material> Model::loadMaterial(aiMaterial* mat) {
 }
 
 // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
-void Model::loadModel(HWND hWnd, string const& path, bool rotationX, bool rotationY)
+void Model::loadModel(string const& path, bool rotationX, bool rotationY)
 {
-    this->hWnd = hWnd;
     // read file via ASSIMP
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
     // check for errors
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
     {
-        wstring err(L"ERROR::ASSIMP:: ");
-        err.append(s2ws(importer.GetErrorString()));
-        MessageBox(hWnd, err.c_str(), L"ERROR LOAD OBJ", 0);
-        cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
+        string err("ERROR::ASSIMP:: ");
+        err.append(importer.GetErrorString());
+        LOGGER::LOGS::getLOGGER().infoMB(err, "ERROR LOAD OBJ");
         return;
     }
     // retrieve the directory path of the filepath
@@ -446,7 +441,7 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type,
         if (!skip)
         {   // if texture hasn't been loaded already, load it
             Texture texture;
-            texture.id = TextureFromFile(hWnd, str.C_Str(), this->directory, rotationX, rotationY);
+            texture.id = TextureFromFile(str.C_Str(), this->directory, rotationX, rotationY);
             texture.type = typeName;
             texture.path = str.C_Str();
             textures.push_back(texture);

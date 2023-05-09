@@ -71,7 +71,7 @@ private:
 	}
 public:
 	Camera* cameraDetails = NULL;
-	Billboard(HWND hWnd, WCHAR textura[], float ancho, float alto, float x, float y, float z, Camera* camera) {
+	Billboard(WCHAR textura[], float ancho, float alto, float x, float y, float z, Camera* camera) {
 		cameraDetails = camera;
 		int mapAlturaX, mapAlturaY, mapAlturaComp;
 		this->alto = alto;
