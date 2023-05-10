@@ -17,9 +17,9 @@ Entre los archivos mas destacados se tienen:
 |CollitionDetection.h|KDTree.h|SolveEquision,	checkCollision,	print_queue, findCollision|
 |mesh.h|Utilities.h, material.h, shader.h, KDTree.h|class Mesh|
 |camera.h|Utilities.h|enum Camera_Movement, class Camera|
-|Billboard.h|Utilities.h, camera.h, shader.h|class Billboard|
 |Model.h|Logger.h,Utilities.h, material.h, shader.h, mesh.h, camera.h, KDTree.h, CollitionDetection.h|class Model|
-|SkyDome.h|Utilities.h, Model.h, camera.h, shader.h|class SkyDome	extends of Model|
+|Billboard.h|Model.h, Utilities.h, camera.h, shader.h|class Billboard extends of Model|
+|SkyDome.h|Utilities.h, Model.h, camera.h, shader.h|class SkyDome extends of Model|
 |Terreno.h|Utilities.h, Model.h, camera.h, shader.h|class Terreno extends of Model|
 |Scene.h|camera.h, Model.h, SkyDome.h, Terreno.h, Billboard.h|class Scene|
 |Scenario.h|Scene.h|class Scenario|

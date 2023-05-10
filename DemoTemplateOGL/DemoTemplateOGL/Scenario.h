@@ -97,38 +97,40 @@ public:
 		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 //		glClearColor(255.0f, 255.0f, 255.0f, 255.0f);
 
+		// Actualizamos la camara
+		camara->cameraDetails->CamaraUpdate(camara->getRotY(), camara->getTranslate());
+
 		if (this->animacion > 25) { // Timer se ejecuta cada 1000/30 = 33.333 ms
 			float ye = terreno->Superficie(5, -5);
 			Billboard* temporal = billBoard[1];
-			wstring textura = L"billboards/Arbol"+
-							  (this->frameArbol==1?L"":to_wstring(this->frameArbol)) + L".png";
+			wstring textura = L"billboards/Arbol" +
+				(this->frameArbol == 1 ? L"" : to_wstring(this->frameArbol)) + L".png";
 			billBoard[1] = new Billboard((WCHAR*)textura.c_str(), 6, 6, 5, ye - 1, -5, camara->cameraDetails);
 			if (this->frameArbol == 3) {
 				this->frameArbol = 1;
-			} else {
+			}
+			else {
 				this->frameArbol++;
 			}
 			this->animacion = 0;
 			delete temporal;
-		} else {
+		}
+		else {
 			animacion++;
 		}
-		// Actualizamos la camara
-		camara->cameraDetails->CamaraUpdate(camara->getRotY(), camara->getTranslate());
-
 		// Decimos que dibuje la media esfera
 		sky->Draw();
 		// Ahora el terreno
 		terreno->Draw();
 
+		// Dibujamos cada billboard que este cargado en el arreglo de billboards.
+		for (int i = 0; i < billBoard.size(); i++)
+			billBoard[i]->Draw();
 		// Dibujamos cada modelo que este cargado en nuestro arreglo de modelos
 		for (int i = 0; i < ourModel.size(); i++) {
 			ourModel[i]->Draw();
 		}
 
-		// Dibujamos cada billboard que este cargado en el arreglo de billboards.
-		for (int i = 0; i < billBoard.size(); i++)
-			billBoard[i]->Draw();
 		// Le decimos a winapi que haga el update en la ventana
 		return this;
 	}

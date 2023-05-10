@@ -27,21 +27,26 @@ public:
     vector<Texture>      textures;
     vector<Material>     materials;
     unsigned int VAO;
+    int EBOGLDrawType = GL_STATIC_DRAW;
+    int VBOGLDrawType = GL_STATIC_DRAW;
 
     // constructor
-    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures, vector<Material> materials) {
+    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures, vector<Material> materials, int VBOGLDrawType = GL_STATIC_DRAW, int EBOGLDrawType = GL_STATIC_DRAW) {
         this->vertices = vertices;
         this->indices = indices;
         this->textures = textures;
         this->materials = materials;
+        this->VBOGLDrawType = VBOGLDrawType;
+        this->EBOGLDrawType = EBOGLDrawType;
         // now that we have all the required data, set the vertex buffers and its attribute pointers.
         setupMesh();
     }
-    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures) {
+    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures, int VBOGLDrawType = GL_STATIC_DRAW, int EBOGLDrawType = GL_STATIC_DRAW) {
         this->vertices = vertices;
         this->indices = indices;
         this->textures = textures;
-
+        this->VBOGLDrawType = VBOGLDrawType;
+        this->EBOGLDrawType = EBOGLDrawType;
         // now that we have all the required data, set the vertex buffers and its attribute pointers.
         setupMesh();
     }
@@ -54,7 +59,11 @@ public:
         unsigned int normalNr = 1;
         unsigned int heightNr = 1;
         glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
+        if (this->VBOGLDrawType == GL_DYNAMIC_DRAW) {
+            glCullFace(GL_FRONT);
+            glEnable(GL_BLEND);
+        }else
+            glCullFace(GL_BACK);
         //        glEnable(GL_TEXTURE_2D);
         for (unsigned int i = 0; i < textures.size() || i < materials.size(); i++) {
             if (i < textures.size()) {
@@ -99,9 +108,15 @@ public:
 
         // draw mesh
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (const void*)indices[0]);
-        glBindVertexArray(0);
-
+        if (this->VBOGLDrawType == GL_DYNAMIC_DRAW) {
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_DYNAMIC_DRAW);
+            glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (const void*)indices[0]);
+            glDisable(GL_BLEND);
+        } else {
+            glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (const void*)indices[0]);
+            glBindVertexArray(0);
+        }
         // always good practice to set everything back to defaults once configured.
         glActiveTexture(GL_TEXTURE0);
         //        glDisable(GL_TEXTURE_2D);
@@ -123,21 +138,21 @@ private:
         // A great thing about structs is that their memory layout is sequential for all its items.
         // The effect is that we can simply pass a pointer to the struct and it translates perfectly to a glm::vec3/2 array which
         // again translates to 3/2 floats which translates to a byte array.
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], this->VBOGLDrawType);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], this->EBOGLDrawType);
 
         // set the vertex attribute pointers
         // vertex Positions
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex,Position));//0
-        // vertex normals
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
         // vertex texture coords
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+        // vertex normals
         glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
         // vertex tangent
         glEnableVertexAttribArray(3);
         glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));

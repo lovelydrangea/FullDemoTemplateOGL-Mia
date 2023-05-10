@@ -99,8 +99,8 @@
     <ClInclude Include="Base\Model.h">
       <Filter>Header Files\Base</Filter>
     </ClInclude>
-    <ClInclude Include="Base\Billboard.h">
-      <Filter>Header Files\Base</Filter>
+    <ClInclude Include="Billboard.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

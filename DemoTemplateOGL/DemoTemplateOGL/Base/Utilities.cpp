@@ -410,7 +410,7 @@ unsigned char* loadFile(char const* filename, int* x, int* y, int* comp, int req
 	return tmp;
 }
 
-unsigned int TextureFromFile(const char* path, const std::string& directory, bool rotateX, bool rotateY, bool alpha, struct UTILITIES_OGL::ImageDetails* img) {
+unsigned int TextureFromFile(const char* path, const std::string& directory, bool rotateX, bool rotateY, bool *alpha, struct UTILITIES_OGL::ImageDetails* img) {
 	std::string filename = std::string(path);
 	if (!directory.empty())
 		filename = directory + '/' + filename;
@@ -432,10 +432,12 @@ unsigned int TextureFromFile(const char* path, const std::string& directory, boo
 			format = GL_RGBA;
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 		}
-		if (alpha) {
+		if (alpha != NULL && *alpha) {
 			format = GL_RGBA;
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 		}
+		if (format == GL_RGBA && alpha != NULL)
+			*alpha = true;
 		glBindTexture(GL_TEXTURE_2D, textureID);
 		//        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);   //Requires GL 1.4. Removed from GL 3.1 and above.
 		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
@@ -446,6 +448,7 @@ unsigned int TextureFromFile(const char* path, const std::string& directory, boo
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		delete[]data;
 	}
 	else {

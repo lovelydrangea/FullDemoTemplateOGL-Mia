@@ -14,8 +14,8 @@ struct Light {
 };
 
 in vec3 FragPos;  
-in vec3 Normal;  
 in vec2 TexCoords;
+in vec3 Normal;  
   
 out vec4 FragColor;
 
@@ -25,6 +25,7 @@ uniform Light light;
 
 uniform int textureSample = 1;
 uniform sampler2D texture_diffuse1;
+uniform vec4 color;
 
 void main()
 {    
@@ -45,7 +46,10 @@ void main()
         
     vec3 result = ambient + diffuse + specular;
     if (textureSample == 1) {
-        FragColor = vec4(result, 1.0) * texture(texture_diffuse1, TexCoords); //
+        vec4 texColor = texture(texture_diffuse1, TexCoords);
+        if(texColor.a < 0.1)
+            discard;
+        FragColor = vec4(result, 1.0) * texColor; //
     } else {
         FragColor = vec4(result, 1.0); //
     }
