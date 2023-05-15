@@ -30,11 +30,11 @@ private:
     // camera Attributes
     float DistanceFromPlayer = 15;
     float angleAroundPlayer = 0;
-    glm::vec3 Position = glm::vec3(0.0f, 0.0f, 0.0f);;
-    glm::vec3 Front = glm::vec3(0.0f, 0.0f, 0.0f);;
-    glm::vec3 Up = glm::vec3(0.0f, 0.0f, 0.0f);;
-    glm::vec3 Right = glm::vec3(0.0f, 0.0f, 0.0f);;
-    glm::vec3 WorldUp = glm::vec3(0.0f, 0.0f, 0.0f);;
+    glm::vec3 Position = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 Front = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 Up = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 Right = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 WorldUp = glm::vec3(0.0f, 0.0f, 0.0f);
     // euler Angles
     float Yaw = 0;
     float Pitch = 20;

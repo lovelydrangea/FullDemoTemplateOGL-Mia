@@ -16,6 +16,9 @@
 #include <FreeImage.h>
 
 #ifndef UTILITIES_OGL_H
+// FLAG TO DISPLAY ERRORS ON MessageBox
+#define SHOWLOGGERMB
+
 #define UTILITIES_OGL_H
 // ejemplo de uso de enumeracion para definir cual eje se utilizara
 enum Ejes { EjeX, EjeY, EjeZ };
@@ -106,5 +109,38 @@ namespace UTILITIES_OGL {
 }
 extern unsigned char* loadFile(char const* filename, int* x, int* y, int* comp, int req_comp, bool rotateX = false, bool rotateY = true);
 extern unsigned int TextureFromFile(const char* path, const std::string& directory, bool rotateX = false, bool rotateY = true, bool *alpha = NULL, struct UTILITIES_OGL::ImageDetails* img = NULL);
+
+#pragma once
+#ifndef LOGGER_H
+#define LOGGER_H
+
+namespace LOGGER {
+	class LOG {
+	private:
+		void* WINDOW;
+		std::string name;
+	public:
+		LOG();
+		LOG(std::string filename);
+		LOG(std::string filename, void* hwnd);
+		std::string getLogger();
+		void info(const std::string log, const std::string title);
+		void info(const std::string log);
+		void info(const char* log);
+		void info(const char* log, const char *title);
+		void setWindow(void* hwnd);
+		void* getWindow();
+	};
+
+	class LOGS {
+	private:
+		static std::vector<LOG> log;
+	public:
+		static void* WINDOW;
+		static LOG getLOGGER();
+		static LOG getLOGGER(std::string filename);
+	};
+}
+#endif
 
 #endif

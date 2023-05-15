@@ -8,6 +8,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include "Utilities.h"
 #include "material.h"
 
 class Shader
@@ -53,10 +54,8 @@ public:
                 gShaderFile.close();
                 geometryCode = gShaderStream.str();
             }
-        }
-        catch (std::ifstream::failure& e)
-        {
-            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+        } catch (std::ifstream::failure& e) {
+            LOGGER::LOGS::getLOGGER("shader").info("ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ", "ERROR SHADER");
         }
         const char* vShaderCode = vertexCode.c_str();
         const char* fShaderCode = fragmentCode.c_str();
@@ -173,22 +172,21 @@ private:
     {
         GLint success;
         GLchar infoLog[1024];
-        if (type != "PROGRAM")
-        {
+        if (type != "PROGRAM") {
             glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-            if (!success)
-            {
+            if (!success) {
                 glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-                std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+                std::string error = "";
+                error.append("ERROR::SHADER_COMPILATION_ERROR of type: ").append(type).append("\n").append(infoLog).append("\n -- --------------------------------------------------- -- ").append("\n\r");
+                LOGGER::LOGS::getLOGGER("shader").info(error, "ERROR SHADER");
             }
-        }
-        else
-        {
+        } else {
             glGetProgramiv(shader, GL_LINK_STATUS, &success);
-            if (!success)
-            {
+            if (!success) {
                 glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-                std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+                std::string error = "";
+                error.append("ERROR::PROGRAM_LINKING_ERROR of type: ").append(type).append("\n").append(infoLog).append("\n -- --------------------------------------------------- -- ").append("\n\r");
+                LOGGER::LOGS::getLOGGER("shader").info(error, "ERROR SHADER");
             }
         }
     }

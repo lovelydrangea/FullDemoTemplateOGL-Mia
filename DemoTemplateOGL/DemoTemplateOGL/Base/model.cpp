@@ -297,7 +297,7 @@ void Model::loadModel(string const& path, bool rotationX, bool rotationY)
     {
         string err("ERROR::ASSIMP:: ");
         err.append(importer.GetErrorString());
-        LOGGER::LOGS::getLOGGER().infoMB(err, "ERROR LOAD OBJ");
+        LOGGER::LOGS::getLOGGER().info(err, "ERROR LOAD OBJ");
         return;
     }
     // retrieve the directory path of the filepath

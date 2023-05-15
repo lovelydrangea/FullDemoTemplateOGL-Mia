@@ -149,7 +149,6 @@
     <ClInclude Include="WinAPIHeaders\framework.h" />
     <ClInclude Include="InputDevices\GamePadRR.h" />
     <ClInclude Include="Base\glext.h" />
-    <ClInclude Include="Base\Logger.h" />
     <ClInclude Include="Scenario.h" />
     <ClInclude Include="KDTree\KDTree.h" />
     <ClInclude Include="InputDevices\KeyboardInput.h" />
@@ -171,7 +170,6 @@
     <ClCompile Include="Base\glad.c" />
     <ClCompile Include="KDTree\KDTree.cpp" />
     <ClCompile Include="InputDevices\KeyboardInput.cpp" />
-    <ClCompile Include="Base\Logger.cpp" />
     <ClCompile Include="Base\Model.cpp" />
     <ClCompile Include="Base\Utilities.cpp" />
   </ItemGroup>

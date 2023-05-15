@@ -10,7 +10,6 @@
 #include <assimp/postprocess.h>
 
 #include "Utilities.h"
-#include "Logger.h"
 #include "material.h"
 #include "mesh.h"
 #include "shader.h"

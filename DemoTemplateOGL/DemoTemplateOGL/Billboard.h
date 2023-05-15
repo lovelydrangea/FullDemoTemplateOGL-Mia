@@ -92,10 +92,7 @@ public:
 	}
 
 	~Billboard(){
-		if (gpuDemo != NULL) {
-			delete gpuDemo;
-			gpuDemo = NULL;
-		}
+		//nos aseguramos de disponer de los recursos previamente reservados
 	}
 
 	// Usa el shader default para poder imprimir el billboard

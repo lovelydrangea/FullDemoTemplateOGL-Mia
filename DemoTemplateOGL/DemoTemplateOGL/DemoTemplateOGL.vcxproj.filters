@@ -90,9 +90,6 @@
     <ClInclude Include="Base\wglext.h">
       <Filter>Header Files\Base</Filter>
     </ClInclude>
-    <ClInclude Include="Base\Logger.h">
-      <Filter>Header Files\Base</Filter>
-    </ClInclude>
     <ClInclude Include="Base\Scene.h">
       <Filter>Header Files\Base</Filter>
     </ClInclude>
@@ -121,9 +118,6 @@
     </ClCompile>
     <ClCompile Include="InputDevices\KeyboardInput.cpp">
       <Filter>Source Files\InputDevices</Filter>
-    </ClCompile>
-    <ClCompile Include="Base\Logger.cpp">
-      <Filter>Source Files\Base</Filter>
     </ClCompile>
     <ClCompile Include="Base\Model.cpp">
       <Filter>Source Files\Base</Filter>

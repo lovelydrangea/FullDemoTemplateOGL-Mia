@@ -12,7 +12,87 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "Utilities.h"
-#include "Logger.h"
+
+std::wstring s2ws(const std::string& s) {
+	int len;
+	int slength = (int)s.length() + 1;
+	len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
+	wchar_t* buf = new wchar_t[len];
+	MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
+	std::wstring r(buf);
+	delete[] buf;
+	return r;
+}
+
+LOGGER::LOG::LOG() {
+	name = "output";
+	WINDOW = NULL;
+}
+LOGGER::LOG::LOG(std::string filename) {
+	name = filename;
+	WINDOW = NULL;
+}
+LOGGER::LOG::LOG(std::string filename, void* hwnd) {
+	name = filename;
+	WINDOW = hwnd;
+}
+std::string LOGGER::LOG::getLogger() {
+	return this->name;
+}
+void LOGGER::LOG::info(const std::string log) {
+	info(log.c_str(), "Information");
+}
+void LOGGER::LOG::info(const std::string log, const std::string title) {
+	info(log.c_str(), title.c_str());
+}
+void LOGGER::LOG::info(const char* log) {
+	info(log, "Information");
+}
+void LOGGER::LOG::info(const char* log, const char *title) {
+	std::string filename(log);
+	filename.append(".log");
+	std::ofstream f(filename, std::ios::app);
+	if (f.is_open()) {
+		f << "INFO:: " << log << std::endl;
+		f.close();
+	}
+	bool loggerMB = false;
+#ifdef SHOWLOGGERMB
+	loggerMB = true;
+#endif
+	if (loggerMB){
+		std::string slog(log), stitle(title);
+		std::wstring wlog = s2ws(slog), wtitle = s2ws(stitle);
+		const wchar_t* buf = wlog.c_str();
+		const wchar_t* bufT = wtitle.c_str();
+		MessageBox((HWND)this->WINDOW, buf, bufT, 0);
+	}
+}
+void LOGGER::LOG::setWindow(void* hwnd) {
+	LOGGER::LOGS::WINDOW = hwnd;
+	this->WINDOW = hwnd;
+}
+void* LOGGER::LOG::getWindow() {
+	return this->WINDOW;
+}
+
+LOGGER::LOG LOGGER::LOGS::getLOGGER() {
+	return getLOGGER("output");
+}
+LOGGER::LOG LOGGER::LOGS::getLOGGER(std::string filename) {
+	if (log.size() > 0) {
+		for (LOG l : log) {
+			if (_strcmpi(l.getLogger().c_str(), filename.c_str()) == 0)
+				return l;
+		}
+	}
+	LOG l(filename, LOGGER::LOGS::WINDOW);
+	log.push_back(l);
+	return l;
+}
+
+std::vector<LOGGER::LOG> LOGGER::LOGS::log;
+void* LOGGER::LOGS::WINDOW = NULL;
 
 // Global Variables:
 struct Vertex;
@@ -59,17 +139,6 @@ Vertex::Vertex(glm::vec3 pos, glm::vec2 texCoord, glm::vec3 normal, glm::vec3 co
 	this->Normal = normal;
 	this->Tangent = color;
 	this->Bitangent = color;
-}
-
-std::wstring s2ws(const std::string& s) {
-	int len;
-	int slength = (int)s.length() + 1;
-	len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
-	wchar_t* buf = new wchar_t[len];
-	MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
-	std::wstring r(buf);
-	delete[] buf;
-	return r;
 }
 
 struct UTILITIES_OGL::ImageDetails;
@@ -452,7 +521,7 @@ unsigned int TextureFromFile(const char* path, const std::string& directory, boo
 		delete[]data;
 	}
 	else {
-		LOGGER::LOGS::getLOGGER().infoMB("Texture failed to load at path: " + filename, "ERROR LOAD OBJ");
+		LOGGER::LOGS::getLOGGER().info("Texture failed to load at path: " + filename, "ERROR LOAD OBJ");
 	}
 	if (img != NULL) {
 		img->format = format;

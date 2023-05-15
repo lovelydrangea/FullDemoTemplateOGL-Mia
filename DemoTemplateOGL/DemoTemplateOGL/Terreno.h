@@ -54,10 +54,6 @@ public:
 
 	~Terreno() {
 		//nos aseguramos de disponer de los recursos previamente reservados
-		if (gpuDemo != NULL) {
-			delete gpuDemo;
-			gpuDemo = NULL;
-		}
 	}
 
 	void Draw() {

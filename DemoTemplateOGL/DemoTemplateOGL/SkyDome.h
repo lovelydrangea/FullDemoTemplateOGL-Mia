@@ -40,10 +40,6 @@ public:
 
 	~SkyDome() {
 		//nos aseguramos de disponer de los recursos previamente reservados
-		if (gpuDemo != NULL){
-			delete gpuDemo;
-			gpuDemo = NULL;
-		}
 	}
 
 	// Usa el shader default para poder imprimir el skydome

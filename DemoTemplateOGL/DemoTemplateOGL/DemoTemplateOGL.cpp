@@ -60,7 +60,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // Si no logra activar OpenGL 2 o superior termina el programa
     if (prepareRenderWindow(hInstance, nCmdShow))
         return 1;
-
     LOGGER::LOGS::getLOGGER().setWindow(hWnd);
 
     // game loop

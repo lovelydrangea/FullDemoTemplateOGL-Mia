@@ -7,12 +7,11 @@ Entre los archivos mas destacados se tienen:
 
 | File | Dependency | Contains |  
 | ----------- | ----------- | ----------- |   
-|Logger.h|N/A|namespace logger|
-|Utilities.h|Logger.h|Struct Ejes, SCR_WIDTH, SCR_HEIGHT, struct GameActions, Struct Vertex, Struct Texture, s2ws, loadFile, TextureFromFile, namespace UTILITIES_OGL	(Struct ImageDetails, Struct Vertices, Struct Maya, sumaNormal, normaliza, vectoresEsfera, Esfera, Plano, genNormal)|
+|Utilities.h|N/A|namespace LOGGER (class LOG, class LOGS),Struct Ejes, SCR_WIDTH, SCR_HEIGHT, struct GameActions, Struct Vertex, Struct Texture, s2ws, loadFile, TextureFromFile, namespace UTILITIES_OGL	(Struct ImageDetails, Struct Vertices, Struct Maya, sumaNormal, normaliza, vectoresEsfera, Esfera, Plano, genNormal)|
 |KeyboardInput.h|Utilities.h| Class MouseInput, Struct Input	(enum Keys),	KEYS,	KeysEvents,	Init)
 |GamePadRR.h|N/A|class GamePadRR|
 |material.h|N/A|zeroVec3,	Struct Material, Struct Light|
-|shader.h|material.h|class Shader|
+|shader.h|Utilities.h, material.h|class Shader|
 |KDTree.h|N/A|class Node, class KDTree|
 |CollitionDetection.h|KDTree.h|SolveEquision,	checkCollision,	print_queue, findCollision|
 |mesh.h|Utilities.h, material.h, shader.h, KDTree.h|class Mesh|
