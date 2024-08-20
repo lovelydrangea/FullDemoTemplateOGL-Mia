@@ -19,6 +19,7 @@ private:
 	std::vector<Billboard*> billBoard;
 	std::vector<Model*> ourModel;
 	Model* camara;
+	Water* water;
 	float angulo;
 	int animacion = 0;
 	int frameArbol = 1;
@@ -45,18 +46,21 @@ public:
 		sky = new SkyDome(32, 32, 20, (WCHAR*)L"skydome/earth.jpg", main->cameraDetails);
 		//creamos el terreno
 		terreno = new Terreno((WCHAR*)L"skydome/terreno.jpg", (WCHAR*)L"skydome/texterr2.jpg", 400, 400, main->cameraDetails);
+		water = new Water((WCHAR*)L"textures/terreno.bmp", (WCHAR*)L"textures/water.bmp", 20, 20, camara->cameraDetails);
+		glm::vec3 translate;
+		glm::vec3 scale;
+		glm::vec3 rotation;
+		translate = glm::vec3(0.0f, 20.0f, 30.0f);
+		water->setTranslate(&translate);
 		// load models
 		// -----------
 		ourModel.push_back(main);
 		Model* model;
-		glm::vec3 translate;
-		glm::vec3 scale;
-		glm::vec3 rotation;
 		model = new Model("models/fogata.obj", main->cameraDetails);
 		translate = glm::vec3(0.0f, 10.0f, 25.0f);
 		model->setTranslate(&translate);
 		rotation = glm::vec3(1.0f, 0.0f, 0.0f); //rotation X
-		model->setRotX(45); // 45° rotation
+		model->setRotX(45); // 45ï¿½ rotation
 		ourModel.push_back(model);
 		model= new Model("models/pez.obj", main->cameraDetails);
 		translate = glm::vec3(0.0f, 7.0f, 50.0f);
@@ -122,10 +126,11 @@ public:
 		sky->Draw();
 		// Ahora el terreno
 		terreno->Draw();
-
+		water->Draw();
 		// Dibujamos cada billboard que este cargado en el arreglo de billboards.
 		for (int i = 0; i < billBoard.size(); i++)
 			billBoard[i]->Draw();
+
 		// Dibujamos cada modelo que este cargado en nuestro arreglo de modelos
 		for (int i = 0; i < ourModel.size(); i++) {
 			ourModel[i]->Draw();

@@ -1,5 +1,6 @@
 #ifndef _terreno
 #define _terreno
+#include "Base/Model.h"
 
 class Terreno : public Model {
 
@@ -7,20 +8,21 @@ private:
 	float anchof;
 	float proff;
 	float deltax, deltaz;
+	int mapAlturaX, mapAlturaY;
 
 public:
 	int verx, verz;
 	Camera* cameraDetails = NULL;
 	//el nombre numerico de la textura en cuestion, por lo pronto una
 
-	Terreno(WCHAR alturas[], WCHAR textura[], float ancho, float prof, Camera* camera) {
+	Terreno(WCHAR alturas[], WCHAR textura[], float ancho, float prof, Camera* camera, int VBOGLDrawType = GL_STATIC_DRAW, int EBOGLDrawType = GL_STATIC_DRAW) {
 		cameraDetails = camera;
 		vector<unsigned int> indices;
 		vector<Texture>      textures;
 		vector<Material> materials;
 		vector<Vertex>       vertices;
 		unsigned int planoTextura;
-		int mapAlturaX, mapAlturaY, mapAlturaComp;
+		int mapAlturaComp;
 		anchof = ancho;
 		proff = prof;
 		//cargamos la textura de la figura
@@ -32,14 +34,14 @@ public:
 		text.assign(tex.begin(), tex.end());
 		UTILITIES_OGL::Maya terreno = UTILITIES_OGL::Plano(mapAlturaX, mapAlturaY, ancho, prof, mapaAlturas, mapAlturaComp, 30);
 		UTILITIES_OGL::vectoresEsfera(terreno, vertices, indices, mapAlturaX * mapAlturaY * 3, mapAlturaX * mapAlturaY * 6);
-		delete terreno.maya;
-		delete terreno.indices;
+		delete[] terreno.maya;
+		delete[] terreno.indices;
 		verx = mapAlturaX;
 		verz = mapAlturaY;
 		deltax = anchof / verx;
 		deltaz = proff / verz;
 		//disponemos la textura del gdi.
-		delete []mapaAlturas;
+		delete[]mapaAlturas;
 
 		// cargamos la textura de la figura
 		wstring n(textura);
@@ -48,7 +50,7 @@ public:
 
 		Texture t = { planoTextura , "texture_height", texturan.c_str() };
 		textures.push_back(t);
-		meshes.push_back(Mesh(vertices, indices, textures, materials));
+		meshes.push_back(Mesh(vertices, indices, textures, materials, VBOGLDrawType, EBOGLDrawType));
 		setDefaultShader(false);
 	}
 
@@ -153,12 +155,24 @@ public:
 
 		// render the loaded model
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+		// translate it down so it's at the center of the scene
+//		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); 
+		model = glm::translate(model, *getTranslate()); // translate it down so it's at the center of the scene
 //			model = glm::translate(model, glm::vec3(cameraDetails.Position->x, cameraDetails.Position->y - 5, cameraDetails.Position->z)); // translate it down so it's at the center of the scene
-		//model = glm::scale(model, glm::vec3(0.0025f, 0.0025f, 0.0025f));	// it's a bit too big for our scene, so scale it down
-//			model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+//			model = glm::scale(model, glm::vec3(0.0025f, 0.0025f, 0.0025f));	// it's a bit too big for our scene, so scale it down
+		if (this->getRotX() != 0)
+			model = glm::rotate(model, glm::radians(this->getRotX()), glm::vec3(1, 0, 0));
+		if (this->getRotY() != 0)
+			model = glm::rotate(model, glm::radians(this->getRotY()), glm::vec3(0, 1, 0));
+		if (this->getRotZ() != 0)
+			model = glm::rotate(model, glm::radians(this->getRotZ()), glm::vec3(0, 0, 1));
 		shader.setMat4("model", model);
 	}
+
+	float getAncho() { return anchof; }
+	void  setAncho(float ancho) { anchof = ancho; }
+	int   getMapAlturaX() { return mapAlturaX; }
+	int   getMapAlturaY() { return mapAlturaY; }
 };
 
 #endif 

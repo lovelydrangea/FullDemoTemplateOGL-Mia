@@ -24,8 +24,8 @@ public:
 		unsigned int esferaTextura;
 		UTILITIES_OGL::Maya cuadro = UTILITIES_OGL::Esfera(stacks, slices, radio, 0.5, 1);
 		UTILITIES_OGL::vectoresEsfera(cuadro, vertices, indices, stacks * slices * 3, stacks * slices * 6);
-		delete cuadro.maya;
-		delete cuadro.indices;
+		delete[] cuadro.maya;
+		delete[] cuadro.indices;
 		// cargamos la textura de la figura
 		wstring n(nombre);
 		string textura(n.begin(), n.end());

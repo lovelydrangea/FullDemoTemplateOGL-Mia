@@ -3,6 +3,7 @@
 #include "SkyDome.h"
 #include "Terreno.h"
 #include "Billboard.h"
+#include "Water.h"
 
 class Scene {
 	public:

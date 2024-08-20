@@ -97,6 +97,7 @@ void* LOGGER::LOGS::WINDOW = NULL;
 // Global Variables:
 struct Vertex;
 struct Texture;
+struct GameTime;
 struct GameActions;
 GameActions::~GameActions() {
 	if (angle != NULL) delete angle;
@@ -530,4 +531,10 @@ unsigned int TextureFromFile(const char* path, const std::string& directory, boo
 		img->width = width;
 	}
 	return textureID;
+}
+
+long get_nanos() {
+	struct timespec ts;
+	timespec_get(&ts, TIME_UTC);
+	return (long)ts.tv_sec * 1000000000L + ts.tv_nsec;
 }

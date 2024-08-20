@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <time.h>
 #include <map>
 #include <vector>
 #include "../WinAPIHeaders/framework.h"
@@ -24,8 +25,15 @@
 enum Ejes { EjeX, EjeY, EjeZ };
 
 // Tamanio de la ventana
+extern long get_nanos();
 extern unsigned int SCR_WIDTH;
 extern unsigned int SCR_HEIGHT;
+
+extern struct GameTime {
+	long lastTick = 0;
+	long deltaTime = 0;
+};
+extern GameTime gameTime;
 
 extern struct GameActions {
 	// float /// x = 0 -> quiet; x > 0 -> move positive; x < 0 -> move negative

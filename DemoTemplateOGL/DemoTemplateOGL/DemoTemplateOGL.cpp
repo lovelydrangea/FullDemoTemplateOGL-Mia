@@ -42,6 +42,7 @@ void mouseActions();
 unsigned int SCR_WIDTH = 800;
 unsigned int SCR_HEIGHT = 600;
 bool newContext = false; // Bandera para identificar si OpenGL 2.0 > esta activa
+struct GameTime gameTime;
 
 // Objecto de escena y render
 Scene *OGLobj;
@@ -80,17 +81,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     
     OGLobj = new Scenario(model); // Creamos nuestra escena con esa posicion de inicio
     SetTimer(hWnd, Timer1, 1000/30, (TIMERPROC)WndProc);// Asignamos el timer con un render de 30 fps
-    renderiza = false;
+    renderiza = true;
     MSG msg = { 0 };
 
     int running = 1;
-
+    
     // configure global opengl state
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
     while (running) {
+        gameTime.deltaTime = get_nanos() - gameTime.lastTick;
+        gameTime.lastTick = get_nanos();
         if (renderiza) {
             GameActions actions;
             // render
@@ -120,8 +123,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                 delete OGLobj;
                 OGLobj = escena;
             }
-            renderiza = false;
-        } else if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
+//            renderiza = false;
+        }
+        if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
             if (msg.message == WM_QUIT){
                 running = 0;
             }
@@ -156,8 +160,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         }break;
         case WM_TIMER: {
             OGLobj->setAngulo(OGLobj->getAngulo() + 1.5);
-            if (!renderiza)
-                renderiza = true;
+//            if (!renderiza)
+//                renderiza = true;
         } break;
         case WM_PAINT: {
         }break;
@@ -171,7 +175,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         case WM_SIZE: {
             if (newContext) {
                 //esta opcion del switch se ejecuta una sola vez al arrancar y si se
-                //afecta el tamaño de la misma se dispara de nuevo
+                //afecta el tamaï¿½o de la misma se dispara de nuevo
                 int height = HIWORD(lParam),
                     width = LOWORD(lParam);
                 if (height == 0)
