@@ -1,7 +1,7 @@
 #ifndef _billb
 #define _billb
 #include "Base/Utilities.h"
-#include "Base/Model.h"
+#include "Base/model.h"
 #include <glad/glad.h>
 
 #include <glm/glm.hpp>
@@ -73,7 +73,7 @@ public:
 		unsigned int texturaB;
 		glm::vec3 origin = glm::vec3(x, y, z);
 		setTranslate(&origin);
-		wstring tex(textura);
+		wstring tex((const wchar_t*)textura);
 		string text(tex.begin(), tex.end());
 		bool alpha = true;
 		texturaB = TextureFromFile(text.c_str(), this->directory, false, true, &alpha);

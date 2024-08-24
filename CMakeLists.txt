@@ -1,0 +1,38 @@
+cmake_minimum_required(VERSION 3.5.0)
+project(FullDemoTemplateOGL VERSION 0.1.0)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+add_subdirectory(${CMAKE_SOURCE_DIR}/ExternalResources/glfw-3.3.2/)
+add_subdirectory(${CMAKE_SOURCE_DIR}/ExternalResources/glm/)
+add_subdirectory(${CMAKE_SOURCE_DIR}/ExternalResources/FreeImage/)
+
+include_directories(FullDemoTemplateOGL
+    ${CMAKE_SOURCE_DIR}/ExternalResources/glfw-3.3.2/include/
+    ${CMAKE_SOURCE_DIR}/ExternalResources/glad/include/
+    ${CMAKE_SOURCE_DIR}/ExternalResources/glm/
+    ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/
+    add_subdirectory(${CMAKE_SOURCE_DIR}/ExternalResources/FreeImage/Source/)
+    )
+link_directories(FullDemoTemplateOGL
+    ${CMAKE_SOURCE_DIR}/ExternalResources/glfw-3.3.2/build/src/
+    )
+
+add_executable(FullDemoTemplateOGL 
+    ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/Base/glad.c
+    ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/Base/model.cpp
+    ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/Base/Utilities.cpp
+    ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/InputDevices/KeyboardInput.cpp
+    ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/KDTree/KDTree.cpp
+    ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/KDTree/CollitionDetection.cpp
+    ${CMAKE_SOURCE_DIR}/linux_main.cpp
+)
+
+target_link_libraries(FullDemoTemplateOGL glfw)
+target_link_libraries(FullDemoTemplateOGL glm)
+target_link_libraries(FullDemoTemplateOGL FreeImage)
+find_package(assimp REQUIRED)
+if (assimp_FOUND)
+    set(ASSIMP_LIBRARY "assimp")
+    add_library(${ASSIMP_LIBRARY} SHARED IMPORTED)
+    set_target_properties(${ASSIMP_LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_DIR}/assimp/libassimp.so")
+    target_link_libraries(${PROJECT_NAME} ${ASSIMP_LIBRARIES})
+endif(assimp_FOUND)

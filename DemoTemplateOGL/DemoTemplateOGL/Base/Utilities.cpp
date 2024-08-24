@@ -12,8 +12,19 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "Utilities.h"
+#ifdef __linux__
+#include <locale>
+#include <codecvt>
+#include <string>
+#define _strcmpi(x,y) strcasecmp(x,y)
+#endif
 
 std::wstring s2ws(const std::string& s) {
+#ifdef __linux__
+    std::wstring wideString = 
+        std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(s);
+    return wideString;
+#else
 	int len;
 	int slength = (int)s.length() + 1;
 	len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
@@ -22,6 +33,7 @@ std::wstring s2ws(const std::string& s) {
 	std::wstring r(buf);
 	delete[] buf;
 	return r;
+#endif
 }
 
 LOGGER::LOG::LOG() {
@@ -62,10 +74,14 @@ void LOGGER::LOG::info(const char* log, const char *title) {
 #endif
 	if (loggerMB){
 		std::string slog(log), stitle(title);
+#ifdef _WIN32 
 		std::wstring wlog = s2ws(slog), wtitle = s2ws(stitle);
 		const wchar_t* buf = wlog.c_str();
 		const wchar_t* bufT = wtitle.c_str();
 		MessageBox((HWND)this->WINDOW, buf, bufT, 0);
+#else
+		std::cout << stitle << ": " << slog << std::endl;
+#endif
 	}
 }
 void LOGGER::LOG::setWindow(void* hwnd) {
@@ -142,9 +158,11 @@ Vertex::Vertex(glm::vec3 pos, glm::vec2 texCoord, glm::vec3 normal, glm::vec3 co
 	this->Bitangent = color;
 }
 
+#ifdef _WIN32 
 struct UTILITIES_OGL::ImageDetails;
 struct UTILITIES_OGL::Vertices;
 struct UTILITIES_OGL::Maya;
+#endif
 
 //generamos las normales a traves de punteros del vector, es una forma comun de manejarlos
 glm::vec3 UTILITIES_OGL::genNormal(float* v1, float* v2, float* v3) {
@@ -445,6 +463,10 @@ UTILITIES_OGL::Maya UTILITIES_OGL::Plano(int vertx, int vertz, float anchof, flo
 
 unsigned char* loadFile(char const* filename, int* x, int* y, int* comp, int req_comp, bool rotateX, bool rotateY) {
 	unsigned char* data = NULL, * tmp = NULL;
+#ifdef __linux__ 
+	if (FreeImage_IsPluginEnabled(FIF_BMP) == -1 || FreeImage_IsPluginEnabled(FIF_BMP) == FALSE )
+		FreeImage_Initialise();
+#endif
 	FREE_IMAGE_FORMAT formato = FreeImage_GetFileType(filename, 0);
 	FIBITMAP* imagen = FreeImage_Load(formato, filename);
 	if (imagen != NULL) {

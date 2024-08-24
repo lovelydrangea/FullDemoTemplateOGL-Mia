@@ -21,7 +21,11 @@
 #define KEYB_CAMERA input.V
 #define KEYB_HMOVEMENT input.Shift
 
+#ifdef _WIN32 
 	extern class MouseInput {
+#else
+	class MouseInput {
+#endif
 	private:
 		glm::vec2 prevP;
 		glm::vec2 currP;

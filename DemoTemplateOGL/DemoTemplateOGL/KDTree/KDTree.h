@@ -18,7 +18,7 @@
 #include <cmath>
 #include <queue>
 #include <utility>
-#include <glm\glm.hpp>
+#include <glm/glm.hpp>
 
 class Node
 {

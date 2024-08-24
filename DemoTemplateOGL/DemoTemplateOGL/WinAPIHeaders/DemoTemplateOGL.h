@@ -1,8 +1,10 @@
 #pragma once
 
-#include "resource.h"
-#include <windows.h>
-#include <windowsx.h>
+#ifdef _WIN32 
+    #include "resource.h"
+    #include <windows.h>
+    #include <windowsx.h>
+#endif
 #include <glad/glad.h>
 
 #include <glm/glm.hpp>

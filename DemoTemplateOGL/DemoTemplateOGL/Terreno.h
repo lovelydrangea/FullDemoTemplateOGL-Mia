@@ -1,6 +1,6 @@
 #ifndef _terreno
 #define _terreno
-#include "Base/Model.h"
+#include "Base/model.h"
 
 class Terreno : public Model {
 
@@ -26,11 +26,11 @@ public:
 		anchof = ancho;
 		proff = prof;
 		//cargamos la textura de la figura
-		wstring tex(alturas);
+		wstring tex((const wchar_t*)alturas);
 		string text(tex.begin(), tex.end());
 		unsigned char* mapaAlturas = loadFile(text.c_str(), &mapAlturaX, &mapAlturaY, &mapAlturaComp, 0);
 		//en caso del puntero de la imagen sea nulo se brica esta opcion
-		tex.assign(textura);
+		tex.assign((const wchar_t*)textura);
 		text.assign(tex.begin(), tex.end());
 		UTILITIES_OGL::Maya terreno = UTILITIES_OGL::Plano(mapAlturaX, mapAlturaY, ancho, prof, mapaAlturas, mapAlturaComp, 30);
 		UTILITIES_OGL::vectoresEsfera(terreno, vertices, indices, mapAlturaX * mapAlturaY * 3, mapAlturaX * mapAlturaY * 6);
@@ -44,7 +44,7 @@ public:
 		delete[]mapaAlturas;
 
 		// cargamos la textura de la figura
-		wstring n(textura);
+		wstring n((const wchar_t*)textura);
 		string texturan(n.begin(), n.end());
 		planoTextura = TextureFromFile(texturan.c_str(), this->directory);
 

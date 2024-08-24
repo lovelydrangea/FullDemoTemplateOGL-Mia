@@ -1,4 +1,8 @@
-#include "Model.h"
+#include "model.h"
+#ifdef __linux__ 
+#define ZeroMemory(x,y) memset(x,0,y)
+#endif
+
 
 Model::Model() {
     this->cameraDetails = NULL;

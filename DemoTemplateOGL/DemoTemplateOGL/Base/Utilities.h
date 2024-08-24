@@ -29,13 +29,23 @@ extern long get_nanos();
 extern unsigned int SCR_WIDTH;
 extern unsigned int SCR_HEIGHT;
 
+#ifdef _WIN32 
 extern struct GameTime {
+#else
+struct GameTime {
+#endif
 	long lastTick = 0;
 	long deltaTime = 0;
+	GameTime(){
+	}
 };
 extern GameTime gameTime;
 
+#ifdef _WIN32 
 extern struct GameActions {
+#else
+struct GameActions {
+#endif
 	// float /// x = 0 -> quiet; x > 0 -> move positive; x < 0 -> move negative
 	float advance = 0;
 	float hAdvance = 0;
@@ -60,7 +70,11 @@ extern struct GameActions {
 };
 
 // Estructura Vertice que contiene las propiedades del mesh
+#ifdef _WIN32 
 extern struct Vertex {
+#else
+struct Vertex {
+#endif
 	// position
 	glm::vec3 Position;
 	// normal
@@ -76,7 +90,11 @@ extern struct Vertex {
 };
 
 // Estructura de Texture para guardar el ID de la textura y su tipo
+#ifdef _WIN32 
 extern struct Texture {
+#else
+struct Texture {
+#endif
 	unsigned int id;
 	std::string type;
 	std::string path;
@@ -86,7 +104,11 @@ extern std::wstring s2ws(const std::string& s);
 
 namespace UTILITIES_OGL {
 
+#ifdef _WIN32 
 	extern struct ImageDetails {
+#else
+	struct ImageDetails {
+#endif
 		int width;
 		int height;
 		int nrComponents;
@@ -94,7 +116,11 @@ namespace UTILITIES_OGL {
 	};
 
 	//estructura para manejar primitivos con posicion, normal y uv's
+#ifdef _WIN32 
 	extern struct Vertices {
+#else
+	struct Vertices {
+#endif
 		float Posx, Posy, Posz;
 		float Normx, Normy, Normz;
 		float u, v;
@@ -102,7 +128,11 @@ namespace UTILITIES_OGL {
 
 	//En honor a nuestros ancestros llamaremos "Maya" a la malla
 	//estructura que contiene datos de los vertices y sus indices
+#ifdef _WIN32 
 	extern struct Maya {
+#else
+	struct Maya {
+#endif
 		Vertices* maya;
 		unsigned int* indices;
 	};

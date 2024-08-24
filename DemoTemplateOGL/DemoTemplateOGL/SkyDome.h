@@ -1,7 +1,7 @@
 #ifndef _Sky
 #define _Sky
 #include "Base/Utilities.h"
-#include "Base/Model.h"
+#include "Base/model.h"
 
 #include <string>
 #include <fstream>
@@ -27,7 +27,7 @@ public:
 		delete[] cuadro.maya;
 		delete[] cuadro.indices;
 		// cargamos la textura de la figura
-		wstring n(nombre);
+		wstring n((const wchar_t*)nombre);
 		string textura(n.begin(), n.end());
 		esferaTextura = TextureFromFile(textura.c_str(), this->directory);
 		Texture t = { esferaTextura , "texture_diffuse", textura.c_str() };
