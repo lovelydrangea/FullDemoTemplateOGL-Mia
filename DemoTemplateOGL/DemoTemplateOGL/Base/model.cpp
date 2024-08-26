@@ -46,10 +46,25 @@ Model::~Model() {
         delete gpuDemo;
         gpuDemo = NULL;
     }
+    if (animator != NULL){
+        delete animator;
+        animator = NULL;
+    }
     for (int i = 0; i < textures_loaded.size(); i++) {
         glDeleteTextures(1, &(textures_loaded[i].id));
     }
 }
+
+std::unordered_map<string, BoneInfo>& Model::GetBoneInfoMap() { return m_BoneInfoMap; }
+int& Model::GetBoneCount() { return m_BoneCounter; }    
+
+void Model::SetVertexBoneDataToDefault(Vertex& vertex){
+    for (int i = 0; i < MAX_BONE_INFLUENCE; i++) {
+        vertex.m_BoneIDs[i] = -1;
+        vertex.m_Weights[i] = 0.0f;
+    }
+}
+
 // draws the model, and thus all its meshes
 void Model::prepShader(Shader& gpuDemo) {
     glm::vec3 lightColor;
@@ -100,6 +115,12 @@ void Model::Draw() {
     else gpuDemo->desuse();
 }
 void Model::Draw(Shader& shader) {
+    if (animator != NULL){
+        animator->UpdateAnimation(gameTime.deltaTime / 100);
+        vector<glm::mat4>* transforms = animator->GetFinalBoneMatrices();
+        for (int i = 0; i < transforms->size(); ++i)
+            shader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms->at(i));
+    }
     for (unsigned int i = 0; i < meshes.size(); i++)
         meshes[i].Draw(shader);
 }
@@ -241,10 +262,14 @@ glm::vec3* Model::getNextRotationVector() {
     return &this->nextRotation;
 }
 
+void Model::setAnimator(Animator *animator){
+    this->animator = animator;
+}
+
 void Model::buildKDtree() {
     std::list<Node::vecType> point_list;
-    for (int i = 0; i < meshes.size(); i++)
-        for (int j = 0; j < meshes[i].vertices.size(); j++)
+    for (unsigned int i = 0; i < meshes.size(); i++)
+        for (unsigned int j = 0; j < meshes[i].vertices.size(); j++)
             point_list.push_back(Node::vecType(meshes[i].vertices[j].Position, 1));
     kdTree.makeTree(point_list);
 }
@@ -343,6 +368,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, bool rotationX, bool
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
         Vertex vertex;
+        SetVertexBoneDataToDefault(vertex);
         glm::vec3 vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
         // positions
         vector.x = mesh->mVertices[i].x;
@@ -418,6 +444,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, bool rotationX, bool
     std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height", rotationX, rotationY);
     textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
+    ExtractBoneWeightForVertices(vertices,mesh,scene);
     // return a mesh object created from the extracted mesh data
     return Mesh(vertices, indices, textures, materials);
 }
@@ -453,6 +480,43 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type,
         }
     }
     return textures;
+}
+
+void Model::SetVertexBoneData(Vertex& vertex, int boneID, float weight){
+    for (int i = 0; i < MAX_BONE_INFLUENCE; ++i){
+        if (vertex.m_BoneIDs[i] < 0){
+            vertex.m_Weights[i] = weight;
+            vertex.m_BoneIDs[i] = boneID;
+            break;
+        }
+    }
+}
+
+void Model::ExtractBoneWeightForVertices(vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene){
+    for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex){
+        int boneID = -1;
+        std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+        if (m_BoneInfoMap.find(boneName) == m_BoneInfoMap.end()){
+            BoneInfo newBoneInfo;
+            newBoneInfo.id = m_BoneCounter;
+            newBoneInfo.offset = UTILITIES_OGL::aiMatrix4x4ToGlm(mesh->mBones[boneIndex]->mOffsetMatrix);
+            m_BoneInfoMap[boneName] = newBoneInfo;
+            boneID = m_BoneCounter;
+            m_BoneCounter++;
+        } else {
+            boneID = m_BoneInfoMap[boneName].id;
+        }
+        assert(boneID != -1);
+        auto weights = mesh->mBones[boneIndex]->mWeights;
+        int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+
+        for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex){
+            int vertexId = weights[weightIndex].mVertexId;
+            float weight = weights[weightIndex].mWeight;
+            assert(vertexId <= vertices.size());
+            SetVertexBoneData(vertices[vertexId], boneID, weight);
+        }
+    }
 }
 
 bool Model::colisionaCon(Model* objeto, bool collitionMove) {
@@ -548,7 +612,7 @@ vector<unsigned int> Model::getCubeIndex() {
     22, 21, 20,
     23, 22, 20
     };
-    for (int i = 0; i < cubeIndexSize; i++)
+    for (unsigned int i = 0; i < cubeIndexSize; i++)
         indices.push_back(cubeIndex[i]);
     return indices;
 }

@@ -15,10 +15,12 @@
 #include "glext.h"
 #include "wglext.h"
 #include <FreeImage.h>
+#include <assimp/matrix4x4.h>
 
 #ifndef UTILITIES_OGL_H
 // FLAG TO DISPLAY ERRORS ON MessageBox
 #define SHOWLOGGERMB
+#define MAX_BONE_INFLUENCE 4
 
 #define UTILITIES_OGL_H
 // ejemplo de uso de enumeracion para definir cual eje se utilizara
@@ -29,23 +31,13 @@ extern long get_nanos();
 extern unsigned int SCR_WIDTH;
 extern unsigned int SCR_HEIGHT;
 
-#ifdef _WIN32 
-extern struct GameTime {
-#else
 struct GameTime {
-#endif
 	long lastTick = 0;
 	long deltaTime = 0;
-	GameTime(){
-	}
 };
 extern GameTime gameTime;
 
-#ifdef _WIN32 
-extern struct GameActions {
-#else
 struct GameActions {
-#endif
 	// float /// x = 0 -> quiet; x > 0 -> move positive; x < 0 -> move negative
 	float advance = 0;
 	float hAdvance = 0;
@@ -70,11 +62,7 @@ struct GameActions {
 };
 
 // Estructura Vertice que contiene las propiedades del mesh
-#ifdef _WIN32 
-extern struct Vertex {
-#else
 struct Vertex {
-#endif
 	// position
 	glm::vec3 Position;
 	// normal
@@ -87,14 +75,23 @@ struct Vertex {
 	glm::vec3 Bitangent;
 	Vertex();
 	Vertex(glm::vec3 pos, glm::vec2 texCoord, glm::vec3 normal, glm::vec3 color);
+
+    //bone indexes which will influence this vertex
+    int m_BoneIDs[MAX_BONE_INFLUENCE];
+    //weights from each bone
+    float m_Weights[MAX_BONE_INFLUENCE];
 };
 
+struct BoneInfo {
+    /*id is index in finalBoneMatrices*/
+    int id;
+
+    /*offset matrix transforms vertex from model space to bone space*/
+    glm::mat4 offset;
+
+};
 // Estructura de Texture para guardar el ID de la textura y su tipo
-#ifdef _WIN32 
-extern struct Texture {
-#else
 struct Texture {
-#endif
 	unsigned int id;
 	std::string type;
 	std::string path;
@@ -104,11 +101,7 @@ extern std::wstring s2ws(const std::string& s);
 
 namespace UTILITIES_OGL {
 
-#ifdef _WIN32 
-	extern struct ImageDetails {
-#else
 	struct ImageDetails {
-#endif
 		int width;
 		int height;
 		int nrComponents;
@@ -116,30 +109,46 @@ namespace UTILITIES_OGL {
 	};
 
 	//estructura para manejar primitivos con posicion, normal y uv's
-#ifdef _WIN32 
-	extern struct Vertices {
-#else
 	struct Vertices {
-#endif
 		float Posx, Posy, Posz;
 		float Normx, Normy, Normz;
 		float u, v;
 	};
 
+struct AssimpNodeData {
+    glm::mat4 transformation;
+    std::string name;
+    int childrenCount;
+    std::vector<AssimpNodeData> children;
+};
+
+struct KeyPosition {
+    glm::vec3 position;
+    double timeStamp;
+};
+
+struct KeyRotation {
+    glm::quat orientation;
+    double timeStamp;
+};
+
+struct KeyScale {
+    glm::vec3 scale;
+    double timeStamp;
+};
+
 	//En honor a nuestros ancestros llamaremos "Maya" a la malla
 	//estructura que contiene datos de los vertices y sus indices
-#ifdef _WIN32 
-	extern struct Maya {
-#else
 	struct Maya {
-#endif
 		Vertices* maya;
 		unsigned int* indices;
 	};
 
+	extern glm::mat4 aiMatrix4x4ToGlm(aiMatrix4x4& from);
+	extern void calculateNormals(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices);
 	extern void sumaNormal(float* v1, float* v2);
 	extern void normaliza(float* v1);
-	extern void vectoresEsfera(Maya esfera, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, int iv, int ii);
+	extern void vectoresEsfera(Maya esfera, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, unsigned int iv, unsigned int ii);
 	extern Maya Esfera(int stacks, int slices, float radio, float inicio, float final);
 	extern Maya Plano(int vertx, int vertz, float anchof, float profz);
 	extern Maya Plano(int vertx, int vertz, float anchof, float profz, unsigned char* altura, int nrComponents = 4, float tile = 1);

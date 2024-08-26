@@ -10,7 +10,7 @@ include_directories(FullDemoTemplateOGL
     ${CMAKE_SOURCE_DIR}/ExternalResources/glad/include/
     ${CMAKE_SOURCE_DIR}/ExternalResources/glm/
     ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/
-    add_subdirectory(${CMAKE_SOURCE_DIR}/ExternalResources/FreeImage/Source/)
+    ${CMAKE_SOURCE_DIR}/ExternalResources/FreeImage/Source/
     )
 link_directories(FullDemoTemplateOGL
     ${CMAKE_SOURCE_DIR}/ExternalResources/glfw-3.3.2/build/src/
@@ -20,10 +20,13 @@ add_executable(FullDemoTemplateOGL
     ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/Base/glad.c
     ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/Base/model.cpp
     ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/Base/Utilities.cpp
+    ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/Base/Animation.cpp
+    ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/Base/Animator.cpp
+    ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/Base/Bone.cpp
     ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/InputDevices/KeyboardInput.cpp
     ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/KDTree/KDTree.cpp
     ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/KDTree/CollitionDetection.cpp
-    ${CMAKE_SOURCE_DIR}/linux_main.cpp
+    ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/DemoTemplateOGL.cpp
 )
 
 target_link_libraries(FullDemoTemplateOGL glfw)

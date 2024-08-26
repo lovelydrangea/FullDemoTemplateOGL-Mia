@@ -4,6 +4,8 @@
 #include "Terreno.h"
 #include "Billboard.h"
 #include "Water.h"
+#include "Animator.h"
+#include "Animation.h"
 
 class Scene {
 	public:

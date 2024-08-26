@@ -112,6 +112,7 @@ void* LOGGER::LOGS::WINDOW = NULL;
 
 // Global Variables:
 struct Vertex;
+struct BoneInfo;
 struct Texture;
 struct GameTime;
 struct GameActions;
@@ -162,7 +163,60 @@ Vertex::Vertex(glm::vec3 pos, glm::vec2 texCoord, glm::vec3 normal, glm::vec3 co
 struct UTILITIES_OGL::ImageDetails;
 struct UTILITIES_OGL::Vertices;
 struct UTILITIES_OGL::Maya;
+struct KeyPosition;
+struct KeyRotation;
+struct KeyScale;
+struct AssimpNodeData;
 #endif
+
+glm::mat4 UTILITIES_OGL::aiMatrix4x4ToGlm(aiMatrix4x4& from) {
+    glm::mat4 to;
+    to[0][0] = (GLfloat)from.a1; to[0][1] = (GLfloat)from.b1;  to[0][2] = (GLfloat)from.c1; to[0][3] = (GLfloat)from.d1;
+    to[1][0] = (GLfloat)from.a2; to[1][1] = (GLfloat)from.b2;  to[1][2] = (GLfloat)from.c2; to[1][3] = (GLfloat)from.d2;
+    to[2][0] = (GLfloat)from.a3; to[2][1] = (GLfloat)from.b3;  to[2][2] = (GLfloat)from.c3; to[2][3] = (GLfloat)from.d3;
+    to[3][0] = (GLfloat)from.a4; to[3][1] = (GLfloat)from.b4;  to[3][2] = (GLfloat)from.c4; to[3][3] = (GLfloat)from.d4;
+    return to;
+}
+
+void UTILITIES_OGL::calculateNormals(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) {
+    unsigned int numVertices = vertices.size();
+    unsigned int numIndices = indices.size();
+    // Check if vertices or indices are empty
+    // Initialize normals
+    for (Vertex& vertex : vertices) {
+        vertex.Normal.x = 0;
+		vertex.Normal.y = 0;
+		vertex.Normal.z = 0;
+    }
+
+    // Calculate normals for each triangle
+    for (unsigned int i = 0; i < indices.size(); i += 3) {
+		unsigned int idx0 = indices[i];
+        unsigned int idx1 = indices[i + 1];
+        unsigned int idx2 = indices[i + 2];
+		if (idx0 >= vertices.size() || idx1 >= vertices.size() || idx2 >= vertices.size()){
+			std::cout << idx0 << ", " << idx1 << ", " << idx2 << " - " << vertices.size() << std::endl;
+			continue;
+		}
+        glm::vec3 v0 = vertices[idx0].Position;
+        glm::vec3 v1 = vertices[idx1].Position;
+        glm::vec3 v2 = vertices[idx2].Position;
+
+        glm::vec3 edge1 = v1 - v0;
+        glm::vec3 edge2 = v2 - v0;
+        glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
+
+        // Add the normal to each vertex of the triangle
+        vertices[idx0].Normal += normal;
+        vertices[idx1].Normal += normal;
+        vertices[idx2].Normal += normal;
+    }
+
+    // Normalize the normals
+    for (Vertex& vertex : vertices) {
+        vertex.Normal = glm::normalize(vertex.Normal);
+    }
+}
 
 //generamos las normales a traves de punteros del vector, es una forma comun de manejarlos
 glm::vec3 UTILITIES_OGL::genNormal(float* v1, float* v2, float* v3) {
@@ -192,8 +246,8 @@ void UTILITIES_OGL::normaliza(float* v1){
 	*(v1 + 2) /= magnitud;
 }
 
-void UTILITIES_OGL::vectoresEsfera(Maya esfera, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, int iv, int ii) {
-	for (int i = 0; i < iv || i < ii; i++) {
+void UTILITIES_OGL::vectoresEsfera(Maya esfera, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, unsigned int iv, unsigned int ii) {
+	for (unsigned int i = 0; i < iv || i < ii; i++) {
 		if (i < iv) {
 			Vertex v;
 			v.Position.x = esfera.maya[i].Posx;
@@ -217,13 +271,13 @@ void UTILITIES_OGL::vectoresEsfera(Maya esfera, std::vector<Vertex>& vertices, s
 UTILITIES_OGL::Maya UTILITIES_OGL::Esfera(int stacks, int slices, float radio, float inicio, float final) {
 	//Cargamos la estructura con los espacios de memoria necesarios
 	Vertices* verticesxyzSD = new Vertices[stacks * slices * 3];
-	unsigned int* indices = new unsigned int[stacks * slices * 6];
+	unsigned int* indices = new unsigned int[(stacks-1) * (slices-1) * 6]{0};
 	//generamos un objeto para poder transportar los punteros
 	Maya salida;
 	//a darle que es mole de olla!
-	for (int i = 0; i < slices; i++)
+	for (unsigned int i = 0; i < slices; i++)
 	{
-		for (int j = 0; j < stacks; j++)
+		for (unsigned int j = 0; j < stacks; j++)
 		{
 			int indice = (i * stacks + j);
 			verticesxyzSD[indice].Posx = radio * cos(((double)j / (stacks - 1)) * (M_PI * (final - inicio)) + M_PI * inicio - M_PI / 2.0) *
@@ -245,10 +299,10 @@ UTILITIES_OGL::Maya UTILITIES_OGL::Esfera(int stacks, int slices, float radio, f
 
 	//ahora la parte mas importante de crear vertices es el algoritmo para unirlos, en este caso sustituiremos
 	//a un algoritmo con un un grupo de indices
-	int indice = 0;
-	for (int i = 0; i < slices - 1; i++)
+	unsigned int indice = 0;
+	for (unsigned int i = 0; i < slices - 1; i++)
 	{
-		for (int j = 0; j < stacks - 1; j++)
+		for (unsigned int j = 0; j < stacks - 1; j++)
 		{
 			indices[indice++] = i * stacks + j;
 			indices[indice++] = (i + 1) * stacks + j + 1;
@@ -270,7 +324,7 @@ UTILITIES_OGL::Maya UTILITIES_OGL::Esfera(int stacks, int slices, float radio, f
 UTILITIES_OGL::Maya UTILITIES_OGL::Plano(int vertx, int vertz, float anchof, float profz){
 	//Cargamos la estructura con los espacios de memoria necesarios
 	Vertices* verticesxyzSD = new Vertices[vertx * vertz * 3];
-	unsigned int* indices = new unsigned int[vertx * vertz * 6];
+	unsigned int* indices = new unsigned int[(vertx-1) * (vertz-1) * 6]{0};
 
 	//es la separacion entre vertices, se le resta 1 para que el lado correcto
 	//imagine que el ancho es de 10 y tiene 10 vertices, entonces le daria un deltax
@@ -280,9 +334,9 @@ UTILITIES_OGL::Maya UTILITIES_OGL::Plano(int vertx, int vertz, float anchof, flo
 	float deltaz = profz / (vertz - 1);
 
 	//crea los vertices
-	for (int z = 0; z < vertz; z++)
+	for (unsigned int z = 0; z < vertz; z++)
 	{
-		for (int x = 0; x < vertx; x++)
+		for (unsigned int x = 0; x < vertx; x++)
 		{
 			verticesxyzSD[z * vertx + x].Posx = (float)x * deltax;
 			verticesxyzSD[z * vertx + x].Posy = 0.0;
@@ -296,9 +350,9 @@ UTILITIES_OGL::Maya UTILITIES_OGL::Plano(int vertx, int vertz, float anchof, flo
 	}
 
 	//calcula los uv's
-	for (int z = 0; z < vertz; z++)
+	for (unsigned int z = 0; z < vertz; z++)
 	{
-		for (int x = 0; x < vertx; x++)
+		for (unsigned int x = 0; x < vertx; x++)
 		{
 			verticesxyzSD[z * vertx + x].u = (float)x / (vertx - 1);
 			verticesxyzSD[z * vertx + x].v = (float)z / (vertz - 1);
@@ -307,9 +361,9 @@ UTILITIES_OGL::Maya UTILITIES_OGL::Plano(int vertx, int vertz, float anchof, flo
 
 	glm::vec3 aux;
 	//crea las normales
-	for (int z = 0; z < (vertz - 1); z++)
+	for (unsigned int z = 0; z < (vertz - 1); z++)
 	{
-		for (int x = 0; x < (vertx - 1); x++)
+		for (unsigned int x = 0; x < (vertx - 1); x++)
 		{
 			aux = genNormal(&verticesxyzSD[z * vertx + x].Posx, &verticesxyzSD[(z + 1) * vertx + (x + 1)].Posx,
 				&verticesxyzSD[z * vertx + (x + 1)].Posx);
@@ -328,9 +382,9 @@ UTILITIES_OGL::Maya UTILITIES_OGL::Plano(int vertx, int vertz, float anchof, flo
 	}
 
 	//Normaliza las normales
-	for (int z = 0; z < vertz; z++)
+	for (unsigned int z = 0; z < vertz; z++)
 	{
-		for (int x = 0; x < vertx; x++)
+		for (unsigned int x = 0; x < vertx; x++)
 		{
 			normaliza(&verticesxyzSD[z * vertx + x].Normx);
 		}
@@ -338,10 +392,10 @@ UTILITIES_OGL::Maya UTILITIES_OGL::Plano(int vertx, int vertz, float anchof, flo
 
 	//ahora la parte mas importante de crear vertices es el algoritmo para unirlos, en este caso sustituiremos
 	//a un algoritmo con un un grupo de indices
-	int indice = 0;
-	for (int i = 0; i < vertz - 1; i++)
+	unsigned int indice = 0;
+	for (unsigned int i = 0; i < vertz - 1; i++)
 	{
-		for (int j = 0; j < vertx - 1; j++)
+		for (unsigned int j = 0; j < vertx - 1; j++)
 		{
 			indices[indice++] = i * vertz + j;
 			indices[indice++] = (i + 1) * vertz + j + 1;
@@ -366,7 +420,7 @@ UTILITIES_OGL::Maya UTILITIES_OGL::Plano(int vertx, int vertz, float anchof, flo
 UTILITIES_OGL::Maya UTILITIES_OGL::Plano(int vertx, int vertz, float anchof, float profz, unsigned char* altura, int nrComponents, float tile) {
 	//Cargamos la estructura con los espacios de memoria necesarios
 	Vertices* verticesxyzSD = new Vertices[vertx * vertz * 3];
-	unsigned int* indices = new unsigned int[vertx * vertz * 6];
+	unsigned int* indices = new unsigned int[(vertx-1) * (vertz-1) * 6]{0};
 
 	//es la separacion entre vertices, se le resta 1 para que el lado correcto
 	//imagine que el ancho es de 10 y tiene 10 vertices, entonces le daria un deltax
@@ -376,9 +430,9 @@ UTILITIES_OGL::Maya UTILITIES_OGL::Plano(int vertx, int vertz, float anchof, flo
 	float deltaz = profz / (vertz - 1);
 
 	//crea los vertices
-	for (int z = 0; z < vertz; z++)
+	for (unsigned int z = 0; z < vertz; z++)
 	{
-		for (int x = 0; x < vertx; x++)
+		for (unsigned int x = 0; x < vertx; x++)
 		{
 			verticesxyzSD[z * vertx + x].Posx = (float)x * deltax - anchof / 2.0;
 			verticesxyzSD[z * vertx + x].Posy = (float)altura[z * vertx * nrComponents + x * nrComponents] / 10.0; // nrComponents -> 4
@@ -392,9 +446,9 @@ UTILITIES_OGL::Maya UTILITIES_OGL::Plano(int vertx, int vertz, float anchof, flo
 	}
 
 	//calcula los uv's
-	for (int z = 0; z < vertz; z++)
+	for (unsigned int z = 0; z < vertz; z++)
 	{
-		for (int x = 0; x < vertx; x++)
+		for (unsigned int x = 0; x < vertx; x++)
 		{
 			verticesxyzSD[z * vertx + x].u = (float)(x * tile) / (vertx - 1);
 			verticesxyzSD[z * vertx + x].v = (float)(z * tile) / (vertz - 1);
@@ -403,9 +457,9 @@ UTILITIES_OGL::Maya UTILITIES_OGL::Plano(int vertx, int vertz, float anchof, flo
 
 	glm::vec3 aux;
 	//crea las normales
-	for (int z = 0; z < (vertz - 1); z++)
+	for (unsigned int z = 0; z < (vertz - 1); z++)
 	{
-		for (int x = 0; x < (vertx - 1); x++)
+		for (unsigned int x = 0; x < (vertx - 1); x++)
 		{
 			aux = genNormal(&verticesxyzSD[z * vertx + x].Posx, &verticesxyzSD[z * vertx + (x + 1)].Posx,
 				&verticesxyzSD[(z + 1) * vertx + (x + 1)].Posx);
@@ -424,9 +478,9 @@ UTILITIES_OGL::Maya UTILITIES_OGL::Plano(int vertx, int vertz, float anchof, flo
 	}
 
 	//Normaliza las normales
-	for (int z = 0; z < vertz; z++)
+	for (unsigned int z = 0; z < vertz; z++)
 	{
-		for (int x = 0; x < vertx; x++)
+		for (unsigned int x = 0; x < vertx; x++)
 		{
 			normaliza(&verticesxyzSD[z * vertx + x].Normx);
 
@@ -436,10 +490,10 @@ UTILITIES_OGL::Maya UTILITIES_OGL::Plano(int vertx, int vertz, float anchof, flo
 
 	//ahora la parte mas importante de crear vertices es el algoritmo para unirlos, en este caso sustituiremos
 	//a un algoritmo con un un grupo de indices
-	int indice = 0;
-	for (int i = 0; i < vertz - 1; i++)
+	unsigned int indice = 0;
+	for (unsigned int i = 0; i < vertz - 1; i++)
 	{
-		for (int j = 0; j < vertx - 1; j++)
+		for (unsigned int j = 0; j < vertx - 1; j++)
 		{
 			indices[indice++] = i * vertz + j;
 			indices[indice++] = (i + 1) * vertz + j + 1;
@@ -447,7 +501,8 @@ UTILITIES_OGL::Maya UTILITIES_OGL::Plano(int vertx, int vertz, float anchof, flo
 
 
 			indices[indice++] = (i + 1) * vertz + j;
-			indices[indice++] = (i + 1) * vertz + j + 1; indices[indice++] = i * vertz + j;
+			indices[indice++] = (i + 1) * vertz + j + 1; 
+			indices[indice++] = i * vertz + j;
 		}
 	}
 
@@ -541,7 +596,7 @@ unsigned int TextureFromFile(const char* path, const std::string& directory, boo
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		delete[]data;
+		delete[] data;
 	}
 	else {
 		LOGGER::LOGS::getLOGGER().info("Texture failed to load at path: " + filename, "ERROR LOAD OBJ");

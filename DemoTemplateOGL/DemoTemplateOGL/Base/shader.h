@@ -1,14 +1,13 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include <glad/glad.h>
+#include "Utilities.h"
 #include <glm/glm.hpp>
 
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include "Utilities.h"
 #include "material.h"
 
 class Shader
@@ -54,7 +53,7 @@ public:
                 gShaderFile.close();
                 geometryCode = gShaderStream.str();
             }
-        } catch (std::ifstream::failure& e) {
+        } catch (...) { //std::ifstream::failure& e
             LOGGER::LOGS::getLOGGER("shader").info("ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ", "ERROR SHADER");
         }
         const char* vShaderCode = vertexCode.c_str();

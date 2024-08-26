@@ -5,7 +5,6 @@
 #include <windows.h>
 #include <windowsx.h>
 #endif
-#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -68,6 +67,14 @@ public:
 		translate = glm::vec3(0.0f, 7.0f, 50.0f);
 		model->setTranslate(&translate);
 		ourModel.push_back(model);
+		model= new Model("models/dancing_vampire.dae", main->cameraDetails);
+		translate = glm::vec3(0.0f, terreno->Superficie(0.0f, 60.0f) , 60.0f);
+		scale = glm::vec3(50.0f, 50.0f, 50.0f);	// it's a bit too big for our scene, so scale it down
+		model->setTranslate(&translate);
+//		model->setScale(&scale);
+		ourModel.push_back(model);
+		Animation *ani = new Animation("models/dancing_vampire.dae", model->GetBoneInfoMap(), model->GetBoneCount());
+	    model->setAnimator(new Animator(ani));
 //		model = new Model("models/IronMan.obj", main);
 //		translate = glm::vec3(0.0f, 20.0f, 30.0f);
 //		scale = glm::vec3(0.025f, 0.025f, 0.025f);	// it's a bit too big for our scene, so scale it down

@@ -23,7 +23,7 @@ public:
 		vector<Material> materials;
 		unsigned int esferaTextura;
 		UTILITIES_OGL::Maya cuadro = UTILITIES_OGL::Esfera(stacks, slices, radio, 0.5, 1);
-		UTILITIES_OGL::vectoresEsfera(cuadro, vertices, indices, stacks * slices * 3, stacks * slices * 6);
+		UTILITIES_OGL::vectoresEsfera(cuadro, vertices, indices, stacks * slices * 3, (stacks - 1) * (slices - 1) * 6);
 		delete[] cuadro.maya;
 		delete[] cuadro.indices;
 		// cargamos la textura de la figura

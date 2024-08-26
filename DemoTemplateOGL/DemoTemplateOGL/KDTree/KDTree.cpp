@@ -28,13 +28,20 @@ bool Node::isLastInnerNode()
 	return false;
 }
 
-Node::~Node() {}
+Node::~Node() {
+	if (m_left != NULL)
+		delete m_left;
+	if (m_right != NULL)
+		delete m_right;
+}
 
 
 // implementation of KDTree
 
 KDTree::KDTree() {}
-KDTree::~KDTree() {}
+KDTree::~KDTree() {
+	delete m_root;
+}
 
 /*
 * @tbrief Give plist, sort it according to the axis and set the first half in the given left and the rest in the given right list and return the last element in the left list.

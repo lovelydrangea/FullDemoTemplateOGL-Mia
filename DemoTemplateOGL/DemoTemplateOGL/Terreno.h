@@ -33,7 +33,7 @@ public:
 		tex.assign((const wchar_t*)textura);
 		text.assign(tex.begin(), tex.end());
 		UTILITIES_OGL::Maya terreno = UTILITIES_OGL::Plano(mapAlturaX, mapAlturaY, ancho, prof, mapaAlturas, mapAlturaComp, 30);
-		UTILITIES_OGL::vectoresEsfera(terreno, vertices, indices, mapAlturaX * mapAlturaY * 3, mapAlturaX * mapAlturaY * 6);
+		UTILITIES_OGL::vectoresEsfera(terreno, vertices, indices, mapAlturaX * mapAlturaY * 3, (mapAlturaX - 1) * (mapAlturaY - 1) * 6);
 		delete[] terreno.maya;
 		delete[] terreno.indices;
 		verx = mapAlturaX;

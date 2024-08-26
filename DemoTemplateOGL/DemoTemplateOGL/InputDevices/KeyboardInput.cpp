@@ -21,7 +21,7 @@ bool MouseInput::getRbtn() { return rbtn; }
 void MouseInput::setLbtn(bool v) { lbtn = v; }
 void MouseInput::setRbtn(bool v) { rbtn = v; }
 glm::vec2 MouseInput::getDelta() { return delta; }
-glm::vec2 MouseInput::setPosition(float x, float y, bool isDelta) {
+glm::vec2 MouseInput::setPosition(double x, double y, bool isDelta) {
 	prevP = currP;
 	currP.x = x;
 	currP.y = y;

@@ -1,15 +1,13 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include <glad/glad.h> 
-
+#include "Utilities.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "Utilities.h"
 #include "material.h"
 #include "mesh.h"
 #include "shader.h"
@@ -22,6 +20,7 @@
 #include <map>
 #include <vector>
 #include "camera.h"
+#include "Animator.h"
 using namespace std;
 
 class Model {
@@ -40,6 +39,14 @@ private:
     float nextRotY = 0;
     float nextRotZ = 0;
     glm::vec3 nextRotation = glm::vec3(0.0f, 0.0f, 0.0f);
+    std::unordered_map<string, BoneInfo> m_BoneInfoMap;
+    int m_BoneCounter = 0;
+	Animator* animator = NULL;
+
+    void SetVertexBoneDataToDefault(Vertex& vertex);
+    void SetVertexBoneData(Vertex& vertex, int boneID, float weight);
+    void ExtractBoneWeightForVertices(vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene);
+    
 
 public:
     // model data 
@@ -98,6 +105,10 @@ public:
     void buildKDtree();
     bool colisionaCon(Model* objeto, bool collitionMove = false);
     std::pair<Node*, Node*> nodoColisionCon(Model* objeto, bool collitionMove = false);
+
+    std::unordered_map<string, BoneInfo>& GetBoneInfoMap();
+    int& GetBoneCount();
+    void setAnimator(Animator *animator);
 private:
     vector<Vertex> init_cube(float x, float y, float z, float width, float height, float depth);
     vector<unsigned int> getCubeIndex();

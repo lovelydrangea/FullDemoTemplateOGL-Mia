@@ -1,12 +1,11 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <glad/glad.h>
+#include "Utilities.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vector>
-#include "Utilities.h"
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Camera_Movement {
@@ -165,7 +164,7 @@ public:
     glm::vec3 Transforma(glm::vec3 &v, float grados2, int eje = 0)
     {
         float Matriz[4][4];
-        float grados = grados2 * 3.141516 / 180.0;
+        double grados = grados2 * 3.141516 / 180.0;
 
         Identidad(Matriz);
 
@@ -222,7 +221,7 @@ public:
     bool getFirstPerson() {
         return firstPerson;
     }
-    void calculateAngleAroundPlayer(float val) {
+    void calculateAngleAroundPlayer(double val) {
         angleAroundPlayer -= val * 0.5;
     }
     void calculateZoomPlayer(float val) {

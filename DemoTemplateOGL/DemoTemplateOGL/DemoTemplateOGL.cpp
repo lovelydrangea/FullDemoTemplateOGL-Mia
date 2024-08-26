@@ -14,12 +14,18 @@
 #include "Base/wglext.h"
 #include "Base/model.h"
 
+#ifdef _WIN32 
 #include "InputDevices/GamePadRR.h"
+#else
+#include <GLFW/glfw3.h>
+#endif
 #include "Base/Scene.h"
 #include "Scenario.h"
 
 #define MAX_LOADSTRING 100
 #define Timer1 100
+bool renderiza;                     // Variable para controlar el render
+#ifdef _WIN32 
 HINSTANCE hInst;                                // current instance
 HWND hWnd;
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
@@ -27,14 +33,18 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 HDC dc;
 HGLRC rc;
 GamePadRR* gamPad;                  // Manejador de gamepad
-bool renderiza;                     // Variable para controlar el render
-
-// Callback principal de la ventana en WINAPI
-LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-
 // Funciones para activar OpenGL version > 2.0
 int prepareRenderWindow(HINSTANCE hInstance, int nCmdShow);
 bool SetUpPixelFormat(HDC hDC, PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB, PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB);
+// Callback principal de la ventana en WINAPI
+LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
+#else
+GLFWwindow* window;
+void window_size_callback(GLFWwindow* window, int width, int height);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+#endif
 bool checkInput(GameActions* actions, Scene *scene);
 void mouseActions();
 
@@ -47,6 +57,7 @@ struct GameTime gameTime;
 // Objecto de escena y render
 Scene *OGLobj;
 
+#ifdef _WIN32 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -57,15 +68,30 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_DEMOTEMPLATEOGL, szWindowClass, MAX_LOADSTRING);
-
     // Si no logra activar OpenGL 2 o superior termina el programa
     if (prepareRenderWindow(hInstance, nCmdShow))
         return 1;
     LOGGER::LOGS::getLOGGER().setWindow(hWnd);
-
     // game loop
     gamPad = new GamePadRR(1); // Obtenemos el primer gamepad conectado
-
+    SetTimer(hWnd, Timer1, 1000/30, (TIMERPROC)WndProc);// Asignamos el timer con un render de 30 fps
+    MSG msg = { 0 };
+#else
+int main(int argc, char** argv){
+    if (!glfwInit()){
+        return -1;
+    }
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    window = glfwCreateWindow(SCR_WIDTH,SCR_HEIGHT, "DemoTemplateOGL", NULL, NULL);
+    glfwMakeContextCurrent(window);
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)){
+        cout << "No opengl load"<< endl;
+        glfwTerminate();
+        return -1;
+    }
+#endif
     // Main character with it's camera
     glm::vec3 translate, scale, v(0, 0, -1);
     translate = glm::vec3(5.0f, 10.0f, -5.0f);
@@ -80,9 +106,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     model->setTranslate(&translate);
     
     OGLobj = new Scenario(model); // Creamos nuestra escena con esa posicion de inicio
-    SetTimer(hWnd, Timer1, 1000/30, (TIMERPROC)WndProc);// Asignamos el timer con un render de 30 fps
     renderiza = true;
-    MSG msg = { 0 };
 
     int running = 1;
     
@@ -90,10 +114,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-
+    gameTime.lastTick = get_nanos() / 1000 /1000;
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+#ifndef _WIN32
+    glfwSetKeyCallback(window, key_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+    glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
+    glfwSetWindowSizeCallback(window, window_size_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
+    while(!glfwWindowShouldClose(window)){
+        gameTime.deltaTime = get_nanos() / 1000 / 1000 - gameTime.lastTick;
+        gameTime.lastTick = get_nanos() / 1000 / 1000;
+        glfwPollEvents();
+        OGLobj->setAngulo(OGLobj->getAngulo() + 1.5 * gameTime.deltaTime);
+#else
     while (running) {
-        gameTime.deltaTime = get_nanos() - gameTime.lastTick;
-        gameTime.lastTick = get_nanos();
+        gameTime.deltaTime = get_nanos() / 1000 / 1000 - gameTime.lastTick;
+        gameTime.lastTick = get_nanos() / 1000 / 1000;
+#endif
         if (renderiza) {
             GameActions actions;
             // render
@@ -118,13 +156,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                 }
             }
             Scene *escena = OGLobj->Render();
-            SwapBuffers(dc);
             if (escena != OGLobj) {
                 delete OGLobj;
                 OGLobj = escena;
             }
 //            renderiza = false;
+#ifdef _WIN32
+            SwapBuffers(dc);
+#else
+            glfwSwapBuffers(window);
+#endif
         }
+#ifdef _WIN32
         if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
             if (msg.message == WM_QUIT){
                 running = 0;
@@ -132,13 +175,98 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
+#endif
     }
+#ifndef _WIN32
+	glfwTerminate();
+#endif
     if (OGLobj != NULL) delete OGLobj;
     if (camera != NULL) delete camera;
     if (model != NULL) delete model;
+#ifdef _WIN32
     return (int) msg.wParam;
+#else
+	return 0;
+#endif
 }
 
+void mouseActions() {
+#ifdef _WIN32 
+    POINT p;
+    GetCursorPos(&p);
+    ScreenToClient(hWnd, &p);
+    cDelta.setPosition(p.x, p.y, cDelta.getLbtn() || cDelta.getRbtn());
+#else
+    double x, y;
+    glfwGetCursorPos(window, &x, &y);
+    cDelta.setPosition(x, y, cDelta.getLbtn() || cDelta.getRbtn());
+#endif
+}
+
+bool checkInput(GameActions *actions, Scene* scene) {
+    bool checkCollition = false;
+#ifdef _WIN32 
+    if (gamPad->IsConnected()) {
+        //convierto a flotante el valor analogico de tipo entero
+        double grados = (float)gamPad->GetState().Gamepad.sThumbLX / 32767.0;
+        //debido a que los controles se aguadean con el uso entonces ya no dan el cero
+        //en el centro, por eso lo comparo con una ventana de aguadencia de mi control
+        if (grados > 0.19 || grados < -0.19)
+            //model->CamaraGiraY(grados * 3.0);
+            actions->setAngle(grados * 3.0);
+        float velocidad = (float)gamPad->GetState().Gamepad.sThumbLY / 32767;
+        if (velocidad > 0.19 || velocidad < -0.19) {
+            //model->movePosition(velocidad);
+            actions->advance = velocidad;
+            checkCollition = true;
+        }
+#else
+    if (false) {
+        cout << "This should be the gamepad code \n";
+#endif
+    } else {
+        mouseActions();
+        checkCollition = KeysEvents(actions);
+    }
+    Model* OGLobj = scene->getMainModel();
+    if (actions->firstPerson) {
+        OGLobj->cameraDetails->setFirstPerson(!OGLobj->cameraDetails->getFirstPerson());
+    }
+    if (actions->sideAdvance != 0) {
+        OGLobj->setNextRotY(OGLobj->getNextRotY() + (5.0 * actions->sideAdvance));
+        checkCollition = true;
+    }
+    if (actions->hAdvance != 0) {
+        glm::vec3 pos = *OGLobj->getTranslate();
+        pos.x += actions->hAdvance * 0.5 * glm::cos(glm::radians(OGLobj->getRotY()));
+        pos.z += actions->hAdvance * 0.5 * glm::sin(glm::radians(OGLobj->getRotY()));
+        OGLobj->setNextTranslate(&pos);
+        checkCollition = true;
+    }
+    if (actions->advance != 0) {
+        glm::vec3 pos = *OGLobj->getTranslate();
+        pos.x += actions->advance * 0.5 * glm::sin(glm::radians(OGLobj->getRotY()));
+        pos.z += actions->advance * 0.5 * glm::cos(glm::radians(OGLobj->getRotY()));
+        OGLobj->setNextTranslate(&pos);
+        checkCollition = true;
+    }
+    if (actions->getAngle() != NULL) {
+        OGLobj->cameraDetails->calculateAngleAroundPlayer((*actions->getAngle()) * 3.0);
+    }
+    if (actions->getPitch() != NULL) {
+        OGLobj->cameraDetails->setPitch(OGLobj->cameraDetails->getPitch() + (*actions->getPitch()) * 0.50 * 3.0);
+    }
+    if (actions->getZoom() != NULL) {
+        OGLobj->cameraDetails->setZoom(OGLobj->cameraDetails->getZoom() + *actions->getZoom() * 0.50);
+    }
+    if (actions->getPlayerZoom() != NULL) {
+        OGLobj->cameraDetails->calculateZoomPlayer(*actions->getPlayerZoom() * 0.50);
+    }
+
+    return checkCollition;
+}
+
+#ifdef _WIN32
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
@@ -210,71 +338,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         } break;
     }
     return DefWindowProc(hWnd, message, wParam, lParam);
-}
-
-void mouseActions() {
-    POINT p;
-    GetCursorPos(&p);
-    ScreenToClient(hWnd, &p);
-    cDelta.setPosition(p.x, p.y, cDelta.getLbtn() || cDelta.getRbtn());
-}
-
-bool checkInput(GameActions *actions, Scene* scene) {
-    bool checkCollition = false;
-    if (gamPad->IsConnected()) {
-        //convierto a flotante el valor analogico de tipo entero
-        float grados = (float)gamPad->GetState().Gamepad.sThumbLX / 32767.0;
-        //debido a que los controles se aguadean con el uso entonces ya no dan el cero
-        //en el centro, por eso lo comparo con una ventana de aguadencia de mi control
-        if (grados > 0.19 || grados < -0.19)
-            //model->CamaraGiraY(grados * 3.0);
-            actions->setAngle(grados * 3.0);
-        float velocidad = (float)gamPad->GetState().Gamepad.sThumbLY / 32767;
-        if (velocidad > 0.19 || velocidad < -0.19) {
-            //model->movePosition(velocidad);
-            actions->advance = velocidad;
-            checkCollition = true;
-        }
-    } else {
-        mouseActions();
-        checkCollition = KeysEvents(actions);
-    }
-    Model* OGLobj = scene->getMainModel();
-    if (actions->firstPerson) {
-        OGLobj->cameraDetails->setFirstPerson(!OGLobj->cameraDetails->getFirstPerson());
-    }
-    if (actions->sideAdvance != 0) {
-        OGLobj->setNextRotY(OGLobj->getNextRotY() + (5.0 * actions->sideAdvance));
-        checkCollition = true;
-    }
-    if (actions->hAdvance != 0) {
-        glm::vec3 pos = *OGLobj->getTranslate();
-        pos.x += actions->hAdvance * 0.5 * glm::cos(glm::radians(OGLobj->getRotY()));
-        pos.z += actions->hAdvance * 0.5 * glm::sin(glm::radians(OGLobj->getRotY()));
-        OGLobj->setNextTranslate(&pos);
-        checkCollition = true;
-    }
-    if (actions->advance != 0) {
-        glm::vec3 pos = *OGLobj->getTranslate();
-        pos.x += actions->advance * 0.5 * glm::sin(glm::radians(OGLobj->getRotY()));
-        pos.z += actions->advance * 0.5 * glm::cos(glm::radians(OGLobj->getRotY()));
-        OGLobj->setNextTranslate(&pos);
-        checkCollition = true;
-    }
-    if (actions->getAngle() != NULL) {
-        OGLobj->cameraDetails->calculateAngleAroundPlayer((*actions->getAngle()) * 3.0);
-    }
-    if (actions->getPitch() != NULL) {
-        OGLobj->cameraDetails->setPitch(OGLobj->cameraDetails->getPitch() + (*actions->getPitch()) * 0.50 * 3.0);
-    }
-    if (actions->getZoom() != NULL) {
-        OGLobj->cameraDetails->setZoom(OGLobj->cameraDetails->getZoom() + *actions->getZoom() * 0.50);
-    }
-    if (actions->getPlayerZoom() != NULL) {
-        OGLobj->cameraDetails->calculateZoomPlayer(*actions->getPlayerZoom() * 0.50);
-    }
-
-    return checkCollition;
 }
 
 bool SetUpPixelFormat(HDC hDC, PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB, PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB) {
@@ -409,3 +472,33 @@ int prepareRenderWindow(HINSTANCE hInstance, int nCmdShow) {
     newContext = true;
     return 0;
 }
+#else
+void window_size_callback(GLFWwindow* window, int width, int height){
+    if (height == 0)
+        width = 1;
+    SCR_HEIGHT = height;
+    SCR_WIDTH = width;
+    glViewport(0, 0, width, height);
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
+    char k = (key == GLFW_KEY_LEFT_SHIFT)? input.Shift : key;
+    if (action == GLFW_PRESS || action == GLFW_REPEAT)
+        KEYS[k] = true;
+    else
+        if (k == KEYB_CAMERA || k == KEYB_HMOVEMENT)
+            KEYS[k] = false;
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods){
+    if (button == GLFW_MOUSE_BUTTON_RIGHT)
+        cDelta.setRbtn(action == GLFW_PRESS);
+    else if (button == GLFW_MOUSE_BUTTON_LEFT)
+        cDelta.setLbtn(action == GLFW_PRESS);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
+    char delta = yoffset;
+    cDelta.setMouseWheel(delta);
+}
+#endif

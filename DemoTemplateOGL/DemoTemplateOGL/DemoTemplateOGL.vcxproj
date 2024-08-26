@@ -142,6 +142,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Base\Animation.h" />
+    <ClInclude Include="Base\Animator.h" />
+    <ClInclude Include="Base\Bone.h" />
     <ClInclude Include="Billboard.h" />
     <ClInclude Include="Base\camera.h" />
     <ClInclude Include="KDTree\CollitionDetection.h" />
@@ -166,6 +169,9 @@
     <ClInclude Include="Base\wglext.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Base\Animation.cpp" />
+    <ClCompile Include="Base\Animator.cpp" />
+    <ClCompile Include="Base\Bone.cpp" />
     <ClCompile Include="KDTree\CollitionDetection.cpp" />
     <ClCompile Include="DemoTemplateOGL.cpp" />
     <ClCompile Include="Base\glad.c" />

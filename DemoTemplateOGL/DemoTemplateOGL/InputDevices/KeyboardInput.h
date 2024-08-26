@@ -21,11 +21,7 @@
 #define KEYB_CAMERA input.V
 #define KEYB_HMOVEMENT input.Shift
 
-#ifdef _WIN32 
-	extern class MouseInput {
-#else
-	class MouseInput {
-#endif
+class MouseInput {
 	private:
 		glm::vec2 prevP;
 		glm::vec2 currP;
@@ -38,7 +34,7 @@
 		float getDY();
 		float getDX();
 		glm::vec2 getDelta();
-		glm::vec2 setPosition(float x, float y, bool isDelta = false);
+		glm::vec2 setPosition(double x, double y, bool isDelta = false);
 		glm::vec2 setPosition(glm::vec2 d, bool isDelta = false);
 		bool getLbtn();
 		bool getRbtn();
@@ -46,7 +42,7 @@
 		void setRbtn(bool v);
 		char getMouseWheel();
 		void setMouseWheel(char x);
-	};
+};
 	extern struct Input input;
 	extern bool KEYS[256];
 	extern bool KeysEvents(GameActions *obj);
