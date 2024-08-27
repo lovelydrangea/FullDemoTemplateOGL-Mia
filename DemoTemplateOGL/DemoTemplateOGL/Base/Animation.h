@@ -10,6 +10,12 @@
 
 #include "Bone.h"
 
+class Animation_Exception : std::exception {
+    public:
+        Animation_Exception();
+        const char* what();
+};
+
 class Animation {
 public:
     Animation();
@@ -27,8 +33,8 @@ private:
     void ReadMissingBones(const aiAnimation* animation, std::unordered_map<std::string, BoneInfo>& boneInfoMap, int& boneCount);
     void ReadHeirarchyData(UTILITIES_OGL::AssimpNodeData& dest, const aiNode* src);
 
-    double m_Duration;
-    double m_TicksPerSecond;
+    double m_Duration = 0;
+    double m_TicksPerSecond = 0;
     std::vector<Bone> m_Bones;
     UTILITIES_OGL::AssimpNodeData m_RootNode;
     std::unordered_map<std::string, BoneInfo> m_BoneInfoMap;

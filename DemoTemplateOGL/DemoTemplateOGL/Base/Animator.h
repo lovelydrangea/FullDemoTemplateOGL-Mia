@@ -11,7 +11,7 @@ public:
 
     Animator(Animation* Animation);
 	
-    void UpdateAnimation(float dt);
+    void UpdateAnimation(float dt, glm::mat4 parentTransform = glm::mat4(1.0f));
 	
     void PlayAnimation(Animation* pAnimation);
 	
@@ -24,7 +24,7 @@ public:
 private:
     std::vector<glm::mat4> m_FinalBoneMatrices;
     Animation* m_CurrentAnimation;
-    double m_CurrentTime;
-    double m_DeltaTime;	
+    double m_CurrentTime = 0.0;
+    double m_DeltaTime = 0.0;
 };
 #endif

@@ -107,14 +107,20 @@ public:
 
         // draw mesh
         glBindVertexArray(VAO);
-        if (this->VBOGLDrawType == GL_DYNAMIC_DRAW) {
-            glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glBufferData(GL_ARRAY_BUFFER, (GLsizei)vertices.size() * sizeof(Vertex), &vertices[0], GL_DYNAMIC_DRAW);
-            glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, (const void*)indices[0]);
-            glDisable(GL_BLEND);
-        } else {
-            glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, (const void*)indices[0]);
-            glBindVertexArray(0);
+        switch (this->VBOGLDrawType){
+            case GL_DYNAMIC_DRAW:
+                glBindBuffer(GL_ARRAY_BUFFER, VBO);
+                glBufferData(GL_ARRAY_BUFFER, (GLsizei)vertices.size() * sizeof(Vertex), &vertices[0], GL_DYNAMIC_DRAW);
+                glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, (const void*)indices[0]);
+                glDisable(GL_BLEND);
+                break;
+            case GL_LINE_LOOP:
+                glDrawElements(GL_LINE_LOOP, (GLsizei)indices.size(), GL_UNSIGNED_INT, (const void*)indices[0]);
+                glBindVertexArray(0);
+                break;
+            default:
+                glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, (const void*)indices[0]);
+                glBindVertexArray(0);
         }
         // always good practice to set everything back to defaults once configured.
         glActiveTexture(GL_TEXTURE0);

@@ -67,14 +67,32 @@ public:
 		translate = glm::vec3(0.0f, 7.0f, 50.0f);
 		model->setTranslate(&translate);
 		ourModel.push_back(model);
-		model= new Model("models/dancing_vampire.dae", main->cameraDetails);
+		model = new Model("models/dancing_vampire.dae", main->cameraDetails);
 		translate = glm::vec3(0.0f, terreno->Superficie(0.0f, 60.0f) , 60.0f);
-		scale = glm::vec3(50.0f, 50.0f, 50.0f);	// it's a bit too big for our scene, so scale it down
+		scale = glm::vec3(0.1f, 0.1f, 0.1f);	// it's a bit too big for our scene, so scale it down
 		model->setTranslate(&translate);
-//		model->setScale(&scale);
+		model->setScale(&scale);
+		model->setRotY(90);
 		ourModel.push_back(model);
-		Animation *ani = new Animation("models/dancing_vampire.dae", model->GetBoneInfoMap(), model->GetBoneCount());
-	    model->setAnimator(new Animator(ani));
+		try{
+			Animation *ani = new Animation("models/dancing_vampire.dae", model->GetBoneInfoMap(), model->GetBoneCount());
+		    model->setAnimator(new Animator(ani));
+		}catch(...){
+			cout << "Could not load animation!\n";
+		}
+		model = new Model("models/Silly_Dancing.dae", main->cameraDetails);
+		translate = glm::vec3(10.0f, terreno->Superficie(0.0f, 60.0f) , 60.0f);
+		scale = glm::vec3(0.1f, 0.1f, 0.1f);	// it's a bit too big for our scene, so scale it down
+		model->setTranslate(&translate);
+		model->setScale(&scale);
+		model->setRotY(180);
+		ourModel.push_back(model);
+		try{
+			Animation *ani = new Animation("models/Silly_Dancing.dae", model->GetBoneInfoMap(), model->GetBoneCount());
+		    model->setAnimator(new Animator(ani));
+		}catch(...){
+			cout << "Could not load animation!\n";
+		}
 //		model = new Model("models/IronMan.obj", main);
 //		translate = glm::vec3(0.0f, 20.0f, 30.0f);
 //		scale = glm::vec3(0.025f, 0.025f, 0.025f);	// it's a bit too big for our scene, so scale it down

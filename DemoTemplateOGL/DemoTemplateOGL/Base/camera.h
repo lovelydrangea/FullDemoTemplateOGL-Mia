@@ -44,6 +44,7 @@ private:
     glm::mat4 projection;
     // Obtenemos la vista
     glm::mat4 view;
+    float characterHeight = 0;
     bool firstPerson = false;
 
     // calculates the front vector from the Camera's (updated) Euler Angles
@@ -95,8 +96,10 @@ public:
             getPosition().x = pTrans->x - offsetX;
             getPosition().z = pTrans->z - offsetZ;
             getPosition().y = pTrans->y + dVertical;
-        } else
+        } else {
             setPosition(*pTrans);
+            getPosition().y += characterHeight;
+        }
     }
 
     glm::mat4 CamaraUpdate(float pRotY, glm::vec3 *pTrans) {
@@ -273,6 +276,8 @@ public:
         else this->Pitch = Pitch; //cameraDetails.Pitch = &this->Pitch; 
     }
     // camera options
+    float getCharacterHeight() { return characterHeight; }
+    void setCharacterHeight(float characterHeight) { this->characterHeight = characterHeight; }
     float getMovementSpeed() { return MovementSpeed; };
     void setMovementSpeed(float MovementSpeed) { this->MovementSpeed = MovementSpeed; //cameraDetails.MovementSpeed = &this->MovementSpeed; 
     }

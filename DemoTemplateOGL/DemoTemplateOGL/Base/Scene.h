@@ -22,9 +22,10 @@ class Scene {
 			std::vector<Model*> *ourModel = getLoadedModels();
 			Model *camara = getMainModel();
 			for (int i = 0; i < ourModel->size(); i++) {
-				if ((*ourModel)[i] != camara) {
-					if (camara->colisionaCon((*ourModel)[i], collitionMovement)) {
-						return (*ourModel)[i];
+				Model *model = (*ourModel)[i];
+				if (model != camara) {
+					if (camara->colisionaCon(*model, collitionMovement)) {
+						return model;
 					}
 				}
 			}

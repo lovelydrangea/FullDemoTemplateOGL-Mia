@@ -1,16 +1,22 @@
 #include "Animation.h"
 
+Animation_Exception::Animation_Exception(){ }
+const char* Animation_Exception::what(){
+    return "Failed at load the animation sequence";
+}
+
 Animation::Animation() {};
 
 Animation::Animation(std::string const& animationPath, std::unordered_map<std::string, BoneInfo>& boneInfoMap, int& boneCount) {
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate);
-    assert(scene && scene->mRootNode);
-    auto animation = scene->mAnimations[0];
-    m_Duration = animation->mDuration;
-    m_TicksPerSecond = animation->mTicksPerSecond;
-    ReadHeirarchyData(m_RootNode, scene->mRootNode);
-    ReadMissingBones(animation, boneInfoMap, boneCount);
+    const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+    if (scene && scene->mRootNode && scene->mNumAnimations > 0) {
+        aiAnimation* animation = scene->mAnimations[0];
+        m_Duration = animation->mDuration;
+        m_TicksPerSecond = animation->mTicksPerSecond;
+        ReadHeirarchyData(m_RootNode, scene->mRootNode);
+        ReadMissingBones(animation, boneInfoMap, boneCount);
+    } else throw Animation_Exception();
 }
 
 Animation::~Animation() { }

@@ -101,11 +101,15 @@ int main(int argc, char** argv){
     Model* model = new Model("models/BaseSpiderman.obj", translate, camera);
     model->setTranslate(&translate);
     camera->setFront(v);
+    camera->setCharacterHeight(4.0);
     scale = glm::vec3(1.0f, 1.0f, 1.0f);	// it's a bit too big for our scene, so scale it down
     model->setScale(&scale);
     model->setTranslate(&translate);
     
     OGLobj = new Scenario(model); // Creamos nuestra escena con esa posicion de inicio
+    translate = glm::vec3(5.0f, OGLobj->getTerreno()->Superficie(model->getNextTranslate()->x, model->getNextTranslate()->z), -5.0f);
+    model->setTranslate(&translate);
+    model->setNextTranslate(&translate);
     renderiza = true;
 
     int running = 1;
@@ -138,21 +142,17 @@ int main(int argc, char** argv){
             // ------
             bool checkCollition = checkInput(&actions, OGLobj);
             if (checkCollition) { // Bandera para buscar colisiones sobre Camara/Modelo
-                // Posicionamos la camara/modelo pixeles arriba de su posicion en el terreno
-                model->getNextTranslate()->y = OGLobj->getTerreno()->Superficie(model->getNextTranslate()->x, model->getNextTranslate()->z) + 1.7;
                 if (OGLobj->lookForCollition(true) != NULL) { // Llamamos a la funcion de colision 
                     model->setNextTranslate(model->getTranslate());
                     model->setNextRotX(model->getRotX());
                     model->setNextRotY(model->getRotY());
                     model->setNextRotZ(model->getRotZ());
-                    model->setNextRotationVector(model->getRotationVector());
                 } else {
                     //model->CamaraAvanza();
                     model->setTranslate(model->getNextTranslate());
                     model->setRotX(model->getNextRotX());
                     model->setRotY(model->getNextRotY());
                     model->setRotZ(model->getNextRotZ());
-                    model->setRotationVector(model->getNextRotationVector());
                 }
             }
             Scene *escena = OGLobj->Render();
@@ -240,6 +240,9 @@ bool checkInput(GameActions *actions, Scene* scene) {
         glm::vec3 pos = *OGLobj->getTranslate();
         pos.x += actions->hAdvance * 0.5 * glm::cos(glm::radians(OGLobj->getRotY()));
         pos.z += actions->hAdvance * 0.5 * glm::sin(glm::radians(OGLobj->getRotY()));
+        // Posicionamos la camara/modelo pixeles arriba de su posicion en el terreno
+        pos.y = scene->getTerreno()->Superficie(pos.x, pos.z);
+
         OGLobj->setNextTranslate(&pos);
         checkCollition = true;
     }
@@ -247,6 +250,8 @@ bool checkInput(GameActions *actions, Scene* scene) {
         glm::vec3 pos = *OGLobj->getTranslate();
         pos.x += actions->advance * 0.5 * glm::sin(glm::radians(OGLobj->getRotY()));
         pos.z += actions->advance * 0.5 * glm::cos(glm::radians(OGLobj->getRotY()));
+        // Posicionamos la camara/modelo pixeles arriba de su posicion en el terreno
+        pos.y = scene->getTerreno()->Superficie(pos.x, pos.z);
         OGLobj->setNextTranslate(&pos);
         checkCollition = true;
     }
@@ -287,7 +292,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             int value = lParam;
         }break;
         case WM_TIMER: {
-            OGLobj->setAngulo(OGLobj->getAngulo() + 1.5);
+            if (OGLobj != NULL)
+                OGLobj->setAngulo(OGLobj->getAngulo() + 1.5);
 //            if (!renderiza)
 //                renderiza = true;
         } break;

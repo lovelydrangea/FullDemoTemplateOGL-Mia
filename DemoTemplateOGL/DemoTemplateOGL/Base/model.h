@@ -65,7 +65,7 @@ public:
     // constructor, expects a filepath to a 3D model.
     Model();
     Model(string const& path, Camera* camera, bool rotationX = false, bool rotationY = true, bool gamma = false);
-    Model(vector<Vertex> vertices, unsigned int numVertices, vector<unsigned int> indices, unsigned int numIndices);
+    Model(vector<Vertex> vertices, unsigned int numVertices, vector<unsigned int> indices, unsigned int numIndices, Camera* camera);
     Model(string const& path, glm::vec3 actualPosition, Camera* cam, bool rotationX = false, bool rotationY = true, bool gamma = false);
     ~Model();
     // draws the model, and thus all its meshes
@@ -92,19 +92,17 @@ public:
     float getRotY();
     float getRotZ();
     glm::vec3* getRotationVector();
-    void setRotationVector(glm::vec3* vector);
     float getNextRotX();
     float getNextRotY();
     float getNextRotZ();
     glm::vec3* getNextRotationVector();
-    void setNextRotationVector(glm::vec3* vector);
     void setNextRotX(float rotationAngle);
     void setNextRotY(float rotationAngle);
     void setNextRotZ(float rotationAngle);
 
     void buildKDtree();
-    bool colisionaCon(Model* objeto, bool collitionMove = false);
-    std::pair<Node*, Node*> nodoColisionCon(Model* objeto, bool collitionMove = false);
+    bool colisionaCon(Model& objeto, bool collitionMove = false);
+    bool nodoColisionCon(Model& objeto, std::pair<Node*, Node*>& nodeCollitions, bool collitionMove = false);
 
     std::unordered_map<string, BoneInfo>& GetBoneInfoMap();
     int& GetBoneCount();

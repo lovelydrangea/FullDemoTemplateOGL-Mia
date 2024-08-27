@@ -18,12 +18,17 @@ Model::Model(string const& path, Camera* camera, bool rotationX, bool rotationY,
     // Creamos el cubo AABB apartir del arbol de puntos del modelo cargado
     vector<Vertex> cuboAABB = init_cube(this->kdTree.getRoot()->m_center.x, this->kdTree.getRoot()->m_center.y, this->kdTree.getRoot()->m_center.z, this->kdTree.getRoot()->m_halfWidth, this->kdTree.getRoot()->m_halfHeight, this->kdTree.getRoot()->m_halfDepth);
     vector<unsigned int> cuboIndex = getCubeIndex();
-    this->AABB = new Model(cuboAABB, cuboAABB.size(), cuboIndex, cuboIndex.size());
+    this->AABB = new Model(cuboAABB, cuboAABB.size(), cuboIndex, cuboIndex.size(), camera);
+    for (Mesh &m : this->AABB->meshes)
+        m.VBOGLDrawType = GL_LINE_LOOP;
 }
-Model::Model(vector<Vertex> vertices, unsigned int numVertices, vector<unsigned int> indices, unsigned int numIndices) {
+Model::Model(vector<Vertex> vertices, unsigned int numVertices, vector<unsigned int> indices, unsigned int numIndices, Camera* camera) {
     vector<Texture> textures;
     vector<Material> materials;
     meshes.push_back(Mesh(vertices, indices, textures, materials));
+    this->defaultShader = false;
+    gpuDemo = NULL;
+    this->cameraDetails = camera;
     buildKDtree();
 }
 Model::Model(string const& path, glm::vec3 actualPosition, Camera *cam, bool rotationX, bool rotationY, bool gamma) {
@@ -36,7 +41,9 @@ Model::Model(string const& path, glm::vec3 actualPosition, Camera *cam, bool rot
     // Creamos el cubo AABB apartir del arbol de puntos del modelo cargado
     vector<Vertex> cuboAABB = init_cube(this->kdTree.getRoot()->m_center.x, this->kdTree.getRoot()->m_center.y, this->kdTree.getRoot()->m_center.z, this->kdTree.getRoot()->m_halfWidth, this->kdTree.getRoot()->m_halfHeight, this->kdTree.getRoot()->m_halfDepth);
     vector<unsigned int> cuboIndex = getCubeIndex();
-    this->AABB = new Model(cuboAABB, cuboAABB.size(), cuboIndex, cuboIndex.size());
+    this->AABB = new Model(cuboAABB, cuboAABB.size(), cuboIndex, cuboIndex.size(), cam);
+    for (Mesh &m : this->AABB->meshes)
+        m.VBOGLDrawType = GL_LINE_LOOP;
 }
 
 Model::~Model() {
@@ -116,46 +123,45 @@ void Model::Draw() {
 }
 void Model::Draw(Shader& shader) {
     if (animator != NULL){
-        animator->UpdateAnimation(gameTime.deltaTime / 100);
+        animator->UpdateAnimation(gameTime.deltaTime / 100,glm::mat4(1));
         vector<glm::mat4>* transforms = animator->GetFinalBoneMatrices();
         for (int i = 0; i < transforms->size(); ++i)
             shader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms->at(i));
     }
     for (unsigned int i = 0; i < meshes.size(); i++)
         meshes[i].Draw(shader);
+//    if (this->AABB)
+//        this->AABB->Draw();
 }
 glm::mat4 Model::makeTransScale(const glm::mat4& prevTransformations) const {
-    glm::mat4 model;
-    if (this->rotation.x != 0 || this->rotation.y != 0 || this->rotation.z != 0) {
-        if (this->rotation.x != 0)
-            model = prevTransformations * glm::rotate(makeTrans(), glm::radians(this->rotX), glm::vec3(1,0,0));
-        if (this->rotation.y != 0)
-            model = prevTransformations * glm::rotate(makeTrans(), glm::radians(this->rotY), glm::vec3(0,1,0));
-        if (this->rotation.z != 0)
-            model = prevTransformations * glm::rotate(makeTrans(), glm::radians(this->rotZ), glm::vec3(0,0,1));
-    } else
-        model = prevTransformations * makeTrans();
+    glm::mat4 model = makeTrans() * prevTransformations;
     if (hasScale)
         model = glm::scale(model, scale);
+    if (this->rotation.x != 0 || this->rotation.y != 0 || this->rotation.z != 0) {
+        if (this->rotation.x != 0)
+            model = glm::rotate(model, glm::radians(this->rotX), glm::vec3(1,0,0));
+        if (this->rotation.y != 0)
+            model = glm::rotate(model, glm::radians(this->rotY), glm::vec3(0,1,0));
+        if (this->rotation.z != 0)
+            model = glm::rotate(model, glm::radians(this->rotZ), glm::vec3(0,0,1));
+    }
     return model;
 }
 glm::mat4 Model::makeTrans() const {
     return  glm::translate(glm::mat4(1), translate);//glm::mat4(1) *glm::mat4(1)* glm::mat4(1);
 }
 glm::mat4 Model::makeTransScaleNextPosition(const glm::mat4& prevTransformations) {
-    glm::mat4 model;
-    if (this->nextRotation.x != 0 || this->nextRotation.y != 0 || this->nextRotation.z != 0) {
-        if (this->nextRotation.x != 0)
-            model = prevTransformations * glm::rotate(makeTransNextPosition(), glm::radians(this->nextRotX), glm::vec3(1, 0, 0));
-        if (this->nextRotation.y != 0)
-            model = prevTransformations * glm::rotate(makeTransNextPosition(), glm::radians(this->nextRotY), glm::vec3(0, 1, 0));
-        if (this->nextRotation.z != 0)
-            model = prevTransformations * glm::rotate(makeTransNextPosition(), glm::radians(this->nextRotZ), glm::vec3(0, 0, 1));
-    }
-    else
-        model = prevTransformations * makeTransNextPosition();
+    glm::mat4 model = makeTransNextPosition() * prevTransformations;
     if (hasScale)
         model = glm::scale(model, scale);
+    if (this->nextRotation.x != 0 || this->nextRotation.y != 0 || this->nextRotation.z != 0) {
+        if (this->nextRotation.x != 0)
+            model = glm::rotate(model, glm::radians(this->nextRotX), glm::vec3(1, 0, 0));
+        if (this->nextRotation.y != 0)
+            model = glm::rotate(model, glm::radians(this->nextRotY), glm::vec3(0, 1, 0));
+        if (this->nextRotation.z != 0)
+            model = glm::rotate(model, glm::radians(this->nextRotZ), glm::vec3(0, 0, 1));
+    }
     return model;
 }
 glm::mat4 Model::makeTransNextPosition() {
@@ -174,6 +180,7 @@ void Model::setTranslate(glm::vec3* translate) {
         this->translate = *translate;
         this->hasTranslate = true;
     }
+    if (AABB != NULL) AABB->setTranslate(translate);
 }
 void Model::setNextTranslate(glm::vec3* translate) {
     if (translate == NULL) {
@@ -181,6 +188,7 @@ void Model::setNextTranslate(glm::vec3* translate) {
     } else {
         this->nextTranslate = *translate;
     }
+    if (AABB != NULL) AABB->setNextTranslate(translate);
 }
 void Model::setScale(glm::vec3* scale) {
     if (scale == NULL) {
@@ -191,31 +199,38 @@ void Model::setScale(glm::vec3* scale) {
         this->scale = *scale;
         this->hasScale = true;
     }
+    if (AABB != NULL) AABB->setScale(scale);
 }
 
 void Model::setRotX(float rotationAngle) {
     this->rotX = rotationAngle;
-    this->rotation.x = 1;
+    this->rotation.x = rotationAngle == 0 ? 0 : 1;
+    if (AABB != NULL) AABB->setRotX(rotationAngle);
 }
 void Model::setRotY(float rotationAngle) {
     this->rotY = rotationAngle;
-    this->rotation.y = 1;
+    this->rotation.y = rotationAngle == 0 ? 0 : 1;
+    if (AABB != NULL) AABB->setRotY(rotationAngle);
 }
 void Model::setRotZ(float rotationAngle) {
     this->rotZ = rotationAngle;
-    this->rotation.z = 1;
+    this->rotation.z = rotationAngle == 0 ? 0 : 1;
+    if (AABB != NULL) AABB->setRotZ(rotationAngle);
 }
 void Model::setNextRotX(float rotationAngle) {
     this->nextRotX = rotationAngle;
-    this->nextRotation.x = 1;
+    this->nextRotation.x = rotationAngle == 0 ? 0 : 1;
+    if (AABB != NULL) AABB->setNextRotX(rotationAngle);
 }
 void Model::setNextRotY(float rotationAngle) {
     this->nextRotY = rotationAngle;
-    this->nextRotation.y = 1;
+    this->nextRotation.y = rotationAngle == 0 ? 0 : 1;
+    if (AABB != NULL) AABB->setNextRotY(rotationAngle);
 }
 void Model::setNextRotZ(float rotationAngle) {
     this->nextRotZ = rotationAngle;
-    this->nextRotation.z = 1;
+    this->nextRotation.z = rotationAngle == 0 ? 0 : 1;
+    if (AABB != NULL) AABB->setNextRotZ(rotationAngle);
 }
 
 glm::vec3* Model::getTranslate() {
@@ -241,12 +256,6 @@ float Model::getRotZ() {
 
 glm::vec3* Model::getRotationVector() {
     return &this->rotation;
-}
-void Model::setRotationVector(glm::vec3* vector) {
-    this->rotation = *vector;
-}
-void Model::setNextRotationVector(glm::vec3* vector) {
-    this->nextRotation = *vector;
 }
 float Model::getNextRotX() {
     return this->nextRotX;
@@ -519,17 +528,18 @@ void Model::ExtractBoneWeightForVertices(vector<Vertex>& vertices, aiMesh* mesh,
     }
 }
 
-bool Model::colisionaCon(Model* objeto, bool collitionMove) {
-    std::pair<Node*, Node*> innerCollisionNodes = this->nodoColisionCon(objeto, collitionMove);
-    if (innerCollisionNodes.first)
+bool Model::colisionaCon(Model& objeto, bool collitionMove) {
+    std::pair<Node*, Node*> innerCollisionNodes;
+    bool ret = this->nodoColisionCon(objeto, innerCollisionNodes, collitionMove);
+    if (ret && innerCollisionNodes.first)
         return true;
     return false;
 }
-std::pair<Node*, Node*> Model::nodoColisionCon(Model* objeto, bool collitionMove) {
+bool Model::nodoColisionCon(Model& objeto, std::pair<Node*, Node*>& nodeCollitions, bool collitionMove) {
     if (collitionMove)
-        return findCollision(this->kdTree.getRoot(), this->makeTransScaleNextPosition(glm::mat4(1)), objeto->kdTree.getRoot(), objeto->makeTransScale(glm::mat4(1)));
+        return findCollision(nodeCollitions, *this->kdTree.getRoot(), this->makeTransScaleNextPosition(glm::mat4(1)), *objeto.kdTree.getRoot(), objeto.makeTransScale(glm::mat4(1)));
     else
-        return findCollision(this->kdTree.getRoot(), this->makeTransScale(glm::mat4(1)), objeto->kdTree.getRoot(), objeto->makeTransScale(glm::mat4(1)));
+        return findCollision(nodeCollitions, *this->kdTree.getRoot(), this->makeTransScale(glm::mat4(1)), *objeto.kdTree.getRoot(), objeto.makeTransScale(glm::mat4(1)));
 }
 
 vector<Vertex> Model::init_cube(float x, float y, float z, float width, float height, float depth){
