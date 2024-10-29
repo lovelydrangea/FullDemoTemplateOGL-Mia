@@ -142,7 +142,7 @@ int main(int argc, char** argv){
             // ------
             bool checkCollition = checkInput(&actions, OGLobj);
             if (checkCollition) { // Bandera para buscar colisiones sobre Camara/Modelo
-                if (OGLobj->lookForCollition(true) != NULL) { // Llamamos a la funcion de colision 
+                if (false && OGLobj->lookForCollition(true) != NULL) { // Llamamos a la funcion de colision 
                     model->setNextTranslate(model->getTranslate());
                     model->setNextRotX(model->getRotX());
                     model->setNextRotY(model->getRotY());
@@ -489,8 +489,8 @@ void window_size_callback(GLFWwindow* window, int width, int height){
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
     char k = (key == GLFW_KEY_LEFT_SHIFT)? input.Shift : key;
-    if (action == GLFW_PRESS || action == GLFW_REPEAT)
-        KEYS[k] = true;
+    if (action == GLFW_PRESS || action == GLFW_REPEAT || action == GLFW_RELEASE)
+        KEYS[k] = GLFW_RELEASE == action ? false : true;
     else
         if (k == KEYB_CAMERA || k == KEYB_HMOVEMENT)
             KEYS[k] = false;

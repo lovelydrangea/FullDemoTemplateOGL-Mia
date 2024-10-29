@@ -61,13 +61,15 @@ void LOGGER::LOG::info(const char* log) {
 	info(log, "Information");
 }
 void LOGGER::LOG::info(const char* log, const char *title) {
-	std::string filename(log);
+#ifdef DEBUGFILE
+	std::string filename(this->name);
 	filename.append(".log");
 	std::ofstream f(filename, std::ios::app);
 	if (f.is_open()) {
 		f << "INFO:: " << log << std::endl;
 		f.close();
 	}
+#endif
 	bool loggerMB = false;
 #ifdef SHOWLOGGERMB
 	loggerMB = true;
@@ -516,11 +518,17 @@ UTILITIES_OGL::Maya UTILITIES_OGL::Plano(int vertx, int vertz, float anchof, flo
 	return salida;
 }
 
-unsigned char* loadFile(char const* filename, int* x, int* y, int* comp, int req_comp, bool rotateX, bool rotateY) {
+unsigned char* loadFile(char const* fileName, int* x, int* y, int* comp, int req_comp, bool rotateX, bool rotateY) {
 	unsigned char* data = NULL, * tmp = NULL;
+	const char *filename = fileName;
 #ifdef __linux__ 
 	if (FreeImage_IsPluginEnabled(FIF_BMP) == -1 || FreeImage_IsPluginEnabled(FIF_BMP) == FALSE )
 		FreeImage_Initialise();
+	std::string sfilename(fileName);
+	for (int i = 0; i < sfilename.length(); i++)
+		if (sfilename[i] == '\\')
+			sfilename[i] = '/';
+	filename = sfilename.c_str();
 #endif
 	FREE_IMAGE_FORMAT formato = FreeImage_GetFileType(filename, 0);
 	FIBITMAP* imagen = FreeImage_Load(formato, filename);

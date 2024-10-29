@@ -366,3 +366,6 @@ build/
 
 .vscode/
 .vscode/settings.json
+DemoTemplateOGL/.vs
+DemoTemplateOGL/x64/Debug/DemoTemplateOGL.exe
+DemoTemplateOGL/x64/Release/DemoTemplateOGL.exe
