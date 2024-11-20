@@ -12,7 +12,7 @@ Bone::Bone(const std::string& name, int ID, const aiNodeAnim* channel)
         data.position.y = aiPosition.y;
         data.position.z = aiPosition.z;
         data.timeStamp = timeStamp;
-        m_Positions.push_back(data);
+        m_Positions.emplace_back(data);
     }
 
     m_NumRotations = channel->mNumRotationKeys;
@@ -25,7 +25,7 @@ Bone::Bone(const std::string& name, int ID, const aiNodeAnim* channel)
         data.orientation.z = aiOrientation.z;
         data.orientation.w = aiOrientation.w;
         data.timeStamp = timeStamp;
-        m_Rotations.push_back(data);
+        m_Rotations.emplace_back(data);
     }
 
     m_NumScalings = channel->mNumScalingKeys;
@@ -37,7 +37,7 @@ Bone::Bone(const std::string& name, int ID, const aiNodeAnim* channel)
         data.scale.y = scale.y;
         data.scale.z = scale.z;
         data.timeStamp = timeStamp;
-        m_Scales.push_back(data);
+        m_Scales.emplace_back(data);
     }
 }
 	

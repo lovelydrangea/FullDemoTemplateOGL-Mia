@@ -10,20 +10,26 @@
 
 #include <vector>
 #include "Base/camera.h"
+#include "Base/Billboard.h"
 #include <iostream>
 #include "Base/Scene.h"
+#include "Texto.h"
+#include "Billboard2D.h"
 
 class Scenario : public Scene {
 private:
 	SkyDome* sky;
 	Terreno* terreno;
 	std::vector<Billboard*> billBoard;
+	std::vector<Billboard2D*> billBoard2D;
 	std::vector<Model*> ourModel;
 	Model* camara;
 	Water* water;
 	float angulo;
 	int animacion = 0;
 	int frameArbol = 1;
+	std::vector<Texto*> ourText;
+
 public:
 	Scenario(Camera *cam) {
 		glm::vec3 translate;
@@ -55,25 +61,25 @@ public:
 		water->setTranslate(&translate);
 		// load models
 		// -----------
-		ourModel.push_back(main);
+		ourModel.emplace_back(main);
 		Model* model;
 		model = new Model("models/fogata.obj", main->cameraDetails);
 		translate = glm::vec3(0.0f, 10.0f, 25.0f);
 		model->setTranslate(&translate);
 		rotation = glm::vec3(1.0f, 0.0f, 0.0f); //rotation X
 		model->setRotX(45); // 45� rotation
-		ourModel.push_back(model);
+		ourModel.emplace_back(model);
 		model= new Model("models/pez.obj", main->cameraDetails);
 		translate = glm::vec3(0.0f, 7.0f, 50.0f);
 		model->setTranslate(&translate);
-		ourModel.push_back(model);
+		ourModel.emplace_back(model);
 		model = new Model("models/dancing_vampire.dae", main->cameraDetails);
 		translate = glm::vec3(0.0f, terreno->Superficie(0.0f, 60.0f) , 60.0f);
 		scale = glm::vec3(0.1f, 0.1f, 0.1f);	// it's a bit too big for our scene, so scale it down
 		model->setTranslate(&translate);
 		model->setScale(&scale);
 		model->setRotY(90);
-		ourModel.push_back(model);
+		ourModel.emplace_back(model);
 		try{
 			Animation *ani = new Animation("models/dancing_vampire.dae", model->GetBoneInfoMap(), model->GetBoneCount());
 		    model->setAnimator(new Animator(ani));
@@ -86,7 +92,7 @@ public:
 		model->setTranslate(&translate);
 		model->setScale(&scale);
 		model->setRotY(180);
-		ourModel.push_back(model);
+		ourModel.emplace_back(model);
 		try{
 			Animation *ani = new Animation("models/Silly_Dancing.dae", model->GetBoneInfoMap(), model->GetBoneCount());
 		    model->setAnimator(new Animator(ani));
@@ -98,30 +104,34 @@ public:
 //		scale = glm::vec3(0.025f, 0.025f, 0.025f);	// it's a bit too big for our scene, so scale it down
 //		model->setScale(&scale);
 //		model->setTranslate(&translate);
-//		ourModel.push_back(model);
+//		ourModel.emplace_back(model);
 		model = new Model("models/backpack.obj", main->cameraDetails, false, false);
 		translate = glm::vec3(20.0f, 14.0f, 0.0f);
 		scale = glm::vec3(1.0f, 1.0f, 1.0f);	// it's a bit too big for our scene, so scale it down
 		model->setTranslate(&translate);
 		model->setScale(&scale);
-		ourModel.push_back(model);
+		ourModel.emplace_back(model);
 		inicializaBillboards();
+		ourText.emplace_back(new Texto(L"Esta es una prueba", 20, 0, 0, SCR_HEIGHT, 0, camara));
+		billBoard2D.emplace_back(new Billboard2D((WCHAR*)L"billboards/awesomeface.png", 6, 6, 100, 200, 0, camara->cameraDetails));
+		scale = glm::vec3(100.0f, 100.0f, 0.0f);	// it's a bit too big for our scene, so scale it down
+		billBoard2D.back()->setScale(&scale);
 	}
 
 	void inicializaBillboards() {
 		float ye = terreno->Superficie(0, 0);
-		billBoard.push_back(new Billboard((WCHAR*)L"billboards/Arbol.png", 6, 6, 0, ye - 1, 0, camara->cameraDetails));
+		billBoard.emplace_back(new Billboard((WCHAR*)L"billboards/Arbol.png", 6, 6, 0, ye - 1, 0, camara->cameraDetails));
 
 		ye = terreno->Superficie(5, -5);
-		billBoard.push_back(new Billboard((WCHAR*)L"billboards/Arbol2.png", 6, 6, 5, ye - 1, -5, camara->cameraDetails));
+		billBoard.emplace_back(new Billboard((WCHAR*)L"billboards/Arbol2.png", 6, 6, 5, ye - 1, -5, camara->cameraDetails));
 
 		ye = terreno->Superficie(-9, -15);
-		billBoard.push_back(new Billboard((WCHAR*)L"billboards/Arbol3.png", 8, 8, -9, ye - 1, -15, camara->cameraDetails));
+		billBoard.emplace_back(new Billboard((WCHAR*)L"billboards/Arbol3.png", 8, 8, -9, ye - 1, -15, camara->cameraDetails));
 	}
 
 	//el metodo render toma el dispositivo sobre el cual va a dibujar
 	//y hace su tarea ya conocida
-	Scenario* Render() {
+	Scene* Render() {
 		//borramos el biffer de color y el z para el control de profundidad a la 
 		//hora del render a nivel pixel.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -157,12 +167,21 @@ public:
 		// Dibujamos cada billboard que este cargado en el arreglo de billboards.
 		for (int i = 0; i < billBoard.size(); i++)
 			billBoard[i]->Draw();
-
+		for (int i = 0; i < billBoard2D.size(); i++)
+			billBoard2D[i]->Draw();
 		// Dibujamos cada modelo que este cargado en nuestro arreglo de modelos
 		for (int i = 0; i < ourModel.size(); i++) {
 			ourModel[i]->Draw();
 		}
-
+		for (int i = 0; i < ourText.size(); i++) {
+			ourText[i]->Draw();
+		}
+		std::wstring wCoordenadas =  L"X: " + std::to_wstring(getMainModel()->getTranslate()->x) +
+									L" Y: " + std::to_wstring(getMainModel()->getTranslate()->y) +
+									L" Z: " + std::to_wstring(getMainModel()->getTranslate()->z);
+		// No es optimo ya que crea el texto cada renderizado....
+		Texto coordenadas(wCoordenadas, 15, 0, 0, 0, 0, camara);
+		coordenadas.Draw();
 		// Le decimos a winapi que haga el update en la ventana
 		return this;
 	}
@@ -201,7 +220,14 @@ public:
 		if (billBoard.size() > 0)
 			for (int i = 0; i < billBoard.size(); i++)
 				delete billBoard[i];
+		if (billBoard2D.size() > 0)
+			for (int i = 0; i < billBoard2D.size(); i++)
+				delete billBoard2D[i];
 		this->billBoard.clear();
+		if (ourText.size() > 0)
+			for (int i = 0; i < ourText.size(); i++)
+				delete ourText[i];
+		this->ourText.clear();
 		if (ourModel.size() > 0)
 			for (int i = 0; i < ourModel.size(); i++)
 				if (ourModel[i] != camara)

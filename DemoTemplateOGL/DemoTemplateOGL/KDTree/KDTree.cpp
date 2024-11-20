@@ -63,9 +63,9 @@ KDTree::vecType KDTree::splitListByMedian(int axis, std::list<KDTree::vecType>& 
 	for (auto& x : plist)
 	{
 		if (count < med)
-			left.push_back(x);
+			left.emplace_back(x);
 		else
-			right.push_back(x);
+			right.emplace_back(x);
 		++count;
 	}
 	median = left.back();

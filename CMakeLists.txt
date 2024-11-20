@@ -4,6 +4,7 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/ExternalResources/glfw-3.3.2/)
 add_subdirectory(${CMAKE_SOURCE_DIR}/ExternalResources/glm/)
 add_subdirectory(${CMAKE_SOURCE_DIR}/ExternalResources/FreeImage/)
+add_subdirectory(${CMAKE_SOURCE_DIR}/ExternalResources/freetype/)
 
 include_directories(FullDemoTemplateOGL
     ${CMAKE_SOURCE_DIR}/ExternalResources/glfw-3.3.2/include/
@@ -11,9 +12,11 @@ include_directories(FullDemoTemplateOGL
     ${CMAKE_SOURCE_DIR}/ExternalResources/glm/
     ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/
     ${CMAKE_SOURCE_DIR}/ExternalResources/FreeImage/Source/
+    ${CMAKE_SOURCE_DIR}/ExternalResources/freetype/include/
     )
 link_directories(FullDemoTemplateOGL
     ${CMAKE_SOURCE_DIR}/ExternalResources/glfw-3.3.2/build/src/
+    ${CMAKE_SOURCE_DIR}/ExternalResources/freetype/
     )
 
 add_executable(FullDemoTemplateOGL 
@@ -26,12 +29,16 @@ add_executable(FullDemoTemplateOGL
     ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/InputDevices/KeyboardInput.cpp
     ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/KDTree/KDTree.cpp
     ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/KDTree/CollitionDetection.cpp
+    ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/Base/Billboard.cpp
+    ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/Base/font_atlas.cpp
+    ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/Texto.cpp
     ${CMAKE_SOURCE_DIR}/DemoTemplateOGL/DemoTemplateOGL/DemoTemplateOGL.cpp
 )
 
 target_link_libraries(FullDemoTemplateOGL glfw)
 target_link_libraries(FullDemoTemplateOGL glm)
 target_link_libraries(FullDemoTemplateOGL FreeImage)
+target_link_libraries(FullDemoTemplateOGL freetype)
 find_package(assimp REQUIRED)
 if (assimp_FOUND)
     set(ASSIMP_LIBRARY "assimp")

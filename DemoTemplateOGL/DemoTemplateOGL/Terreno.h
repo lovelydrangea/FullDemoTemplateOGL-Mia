@@ -49,8 +49,8 @@ public:
 		planoTextura = TextureFromFile(texturan.c_str(), this->directory);
 
 		Texture t = { planoTextura , "texture_height", texturan.c_str() };
-		textures.push_back(t);
-		meshes.push_back(Mesh(vertices, indices, textures, materials, VBOGLDrawType, EBOGLDrawType));
+		textures.emplace_back(t);
+		meshes.emplace_back(vertices, indices, textures, materials, VBOGLDrawType, EBOGLDrawType);
 		setDefaultShader(false);
 	}
 

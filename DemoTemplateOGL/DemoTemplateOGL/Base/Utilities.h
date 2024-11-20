@@ -101,6 +101,8 @@ struct Texture {
 
 extern std::wstring s2ws(const std::string& s);
 
+extern unsigned int GetSizeOfType(unsigned int type);
+
 namespace UTILITIES_OGL {
 
 	struct ImageDetails {

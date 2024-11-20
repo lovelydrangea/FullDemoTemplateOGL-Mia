@@ -151,7 +151,7 @@ void print_queue(std::queue<std::pair<Node*, Node*>> q) {
 bool findCollision(std::pair<Node*, Node*>& collistionNodes, Node& firstShape, glm::mat4 firstTransScale, Node& secondShape, glm::mat4 secondTransScale) {
 	std::queue<std::pair<Node*, Node*>> queue;
 	bool ret = false;
-	queue.push(std::pair<Node*, Node*>(&firstShape, &secondShape));
+	queue.emplace(std::pair<Node*, Node*>(&firstShape, &secondShape));
 
 	while (!queue.empty()) {
 		std::pair<Node*, Node*>& curPair = queue.front();
@@ -164,18 +164,18 @@ bool findCollision(std::pair<Node*, Node*>& collistionNodes, Node& firstShape, g
 					break;
 				}
 				else if (curPair.second->isLastInnerNode() && curPair.first != nullptr) {
-					queue.push(std::pair<Node*, Node*>(curPair.first->m_left, curPair.second));
-					queue.push(std::pair<Node*, Node*>(curPair.first->m_right, curPair.second));
+					queue.emplace(std::pair<Node*, Node*>(curPair.first->m_left, curPair.second));
+					queue.emplace(std::pair<Node*, Node*>(curPair.first->m_right, curPair.second));
 				}
 				else if (curPair.first->isLastInnerNode() && curPair.second != nullptr) {
-					queue.push(std::pair<Node*, Node*>(curPair.first, curPair.second->m_left));
-					queue.push(std::pair<Node*, Node*>(curPair.first, curPair.second->m_right));
+					queue.emplace(std::pair<Node*, Node*>(curPair.first, curPair.second->m_left));
+					queue.emplace(std::pair<Node*, Node*>(curPair.first, curPair.second->m_right));
 				}
 				else {
-					queue.push(std::pair<Node*, Node*>(curPair.first->m_left, curPair.second->m_left));
-					queue.push(std::pair<Node*, Node*>(curPair.first->m_right, curPair.second->m_left));
-					queue.push(std::pair<Node*, Node*>(curPair.first->m_left, curPair.second->m_right));
-					queue.push(std::pair<Node*, Node*>(curPair.first->m_right, curPair.second->m_right));
+					queue.emplace(std::pair<Node*, Node*>(curPair.first->m_left, curPair.second->m_left));
+					queue.emplace(std::pair<Node*, Node*>(curPair.first->m_right, curPair.second->m_left));
+					queue.emplace(std::pair<Node*, Node*>(curPair.first->m_left, curPair.second->m_right));
+					queue.emplace(std::pair<Node*, Node*>(curPair.first->m_right, curPair.second->m_right));
 				}
 			}
 //		}

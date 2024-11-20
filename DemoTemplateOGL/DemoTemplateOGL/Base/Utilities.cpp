@@ -81,7 +81,13 @@ void LOGGER::LOG::info(const char* log, const char *title) {
 		const wchar_t* buf = wlog.c_str();
 		const wchar_t* bufT = wtitle.c_str();
 		MessageBox((HWND)this->WINDOW, buf, bufT, 0);
+#elif __linux__
+		std::string command = "xmessage -center -title \"" + stitle + "\" \"" + slog + "\"";
+		system(command.c_str());
+		std::cout << stitle << ": " << slog << std::endl;
 #else
+		std::string command = "/usr/bin/osascript -e \"display dialog \\\"" + slog + "\\\"\"";
+		system(command.c_str());
 		std::cout << stitle << ": " << slog << std::endl;
 #endif
 	}
@@ -111,6 +117,18 @@ LOGGER::LOG LOGGER::LOGS::getLOGGER(std::string filename) {
 
 std::vector<LOGGER::LOG> LOGGER::LOGS::log;
 void* LOGGER::LOGS::WINDOW = NULL;
+
+unsigned int GetSizeOfType(unsigned int type) {
+		//This function returns the size of a single element of this type in bytes
+		switch (type)
+		{
+		case GL_FLOAT:          return 4;
+		case GL_UNSIGNED_INT:   return 4;
+		case GL_UNSIGNED_BYTE:  return 1;
+		}
+		assert(false);
+		return 0;
+}
 
 // Global Variables:
 struct Vertex;
@@ -260,10 +278,10 @@ void UTILITIES_OGL::vectoresEsfera(Maya esfera, std::vector<Vertex>& vertices, s
 			v.Normal.z = esfera.maya[i].Normz;
 			v.TexCoords.x = esfera.maya[i].u;
 			v.TexCoords.y = esfera.maya[i].v;
-			vertices.push_back(v);
+			vertices.emplace_back(v);
 		}
 		if (i < ii)
-			indices.push_back(esfera.indices[i]);
+			indices.emplace_back(esfera.indices[i]);
 
 	}
 }

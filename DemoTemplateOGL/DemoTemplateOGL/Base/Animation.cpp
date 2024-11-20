@@ -57,8 +57,8 @@ void Animation::ReadMissingBones(const aiAnimation* animation, std::unordered_ma
             boneInfoMap[boneName].id = boneCount;
             boneCount++;
         }
-        m_Bones.push_back(Bone(channel->mNodeName.data,
-            boneInfoMap[channel->mNodeName.data].id, channel));
+        m_Bones.emplace_back(channel->mNodeName.data,
+            boneInfoMap[channel->mNodeName.data].id, channel);
     }
 
     m_BoneInfoMap = boneInfoMap;
@@ -75,6 +75,6 @@ void Animation::ReadHeirarchyData(UTILITIES_OGL::AssimpNodeData& dest, const aiN
     for (unsigned int i = 0; i < src->mNumChildren; i++) {
         UTILITIES_OGL::AssimpNodeData newData;
         ReadHeirarchyData(newData, src->mChildren[i]);
-        dest.children.push_back(newData);
+        dest.children.emplace_back(newData);
     }
 }
