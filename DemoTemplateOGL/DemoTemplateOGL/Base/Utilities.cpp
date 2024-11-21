@@ -17,6 +17,15 @@
 #include <codecvt>
 #include <string>
 #define _strcmpi(x,y) strcasecmp(x,y)
+#define MB_ICONHAND                 0x00000010L
+#define MB_ICONQUESTION             0x00000020L
+#define MB_ICONEXCLAMATION          0x00000030L
+#define MB_ICONASTERISK             0x00000040L
+#define MB_USERICON                 0x00000080L
+#define MB_ICONWARNING              MB_ICONEXCLAMATION
+#define MB_ICONERROR                MB_ICONHAND
+#define MB_ICONINFORMATION          MB_ICONASTERISK
+#define MB_ICONSTOP                 MB_ICONHAND
 #endif
 
 std::wstring s2ws(const std::string& s) {
@@ -51,22 +60,58 @@ LOGGER::LOG::LOG(std::string filename, void* hwnd) {
 std::string LOGGER::LOG::getLogger() {
 	return this->name;
 }
+void LOGGER::LOG::exclamation(const std::string log) {
+	info(log.c_str(), "Exclamation");
+}
+void LOGGER::LOG::exclamation(const std::string log, const std::string title) {
+	processLog(log.c_str(), title.c_str(), "EXCL", MB_ICONEXCLAMATION);
+}
+void LOGGER::LOG::exclamation(const char* log) {
+	processLog(log, "Exclamation", "EXCL", MB_ICONEXCLAMATION);
+}
 void LOGGER::LOG::info(const std::string log) {
 	info(log.c_str(), "Information");
 }
 void LOGGER::LOG::info(const std::string log, const std::string title) {
-	info(log.c_str(), title.c_str());
+	processLog(log.c_str(), title.c_str(), "INFO", MB_ICONINFORMATION);
 }
 void LOGGER::LOG::info(const char* log) {
-	info(log, "Information");
+	processLog(log, "Information", "INFO", MB_ICONINFORMATION);
 }
-void LOGGER::LOG::info(const char* log, const char *title) {
+void LOGGER::LOG::warning(const std::string log) {
+	warning(log.c_str(), "Warning");
+}
+void LOGGER::LOG::warning(const std::string log, const std::string title) {
+	processLog(log.c_str(), title.c_str(), "WARN", MB_ICONINFORMATION);
+}
+void LOGGER::LOG::warning(const char* log) {
+	processLog(log, "Warning", "WARN", MB_ICONINFORMATION);
+}
+void LOGGER::LOG::error(const std::string log) {
+	error(log.c_str(), "Error");
+}
+void LOGGER::LOG::error(const std::string log, const std::string title) {
+	processLog(log.c_str(), title.c_str(), "ERROR", MB_ICONERROR);
+}
+void LOGGER::LOG::error(const char* log) {
+	processLog(log, "Error", " ERR", MB_ICONERROR);
+}
+void LOGGER::LOG::question(const std::string log) {
+	question(log.c_str(), "Question");
+}
+void LOGGER::LOG::question(const std::string log, const std::string title) {
+	processLog(log.c_str(), title.c_str(), "QUESTION", MB_ICONQUESTION);
+}
+void LOGGER::LOG::question(const char* log) {
+	processLog(log, "Question", "QSTO", MB_ICONQUESTION);
+}
+void LOGGER::LOG::processLog(const char* log, const char* title, const char* type, unsigned int MB_TYPE) {
 #ifdef DEBUGFILE
 	std::string filename(this->name);
 	filename.append(".log");
 	std::ofstream f(filename, std::ios::app);
 	if (f.is_open()) {
-		f << "INFO:: " << log << std::endl;
+		f << type << ":: " << log << std::endl;
 		f.close();
 	}
 #endif
@@ -74,13 +119,13 @@ void LOGGER::LOG::info(const char* log, const char *title) {
 #ifdef SHOWLOGGERMB
 	loggerMB = true;
 #endif
-	if (loggerMB){
+	if (loggerMB) {
 		std::string slog(log), stitle(title);
 #ifdef _WIN32 
 		std::wstring wlog = s2ws(slog), wtitle = s2ws(stitle);
 		const wchar_t* buf = wlog.c_str();
 		const wchar_t* bufT = wtitle.c_str();
-		MessageBox((HWND)this->WINDOW, buf, bufT, 0);
+		MessageBox((HWND)this->WINDOW, buf, bufT, MB_TYPE);
 #elif __linux__
 		std::string command = "xmessage -center -title \"" + stitle + "\" \"" + slog + "\"";
 		system(command.c_str());

@@ -47,6 +47,7 @@ void Billboard::reloadData(vector<Vertex> *vertices, glm::vec3 origin){
 		v.TexCoords = glm::vec2(*(verts + i + 3), *(verts + i + 4));
 		vertices->emplace_back(v);
 	}
+	buildKDtree();
 }
 
 Billboard::Billboard(int glTextura, WCHAR textura[], float x, float y, float z, Camera* camera) {

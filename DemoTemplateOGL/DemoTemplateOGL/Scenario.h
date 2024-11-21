@@ -80,12 +80,12 @@ public:
 		model->setScale(&scale);
 		model->setRotY(90);
 		ourModel.emplace_back(model);
-		try{
+/*		try{
 			Animation *ani = new Animation("models/dancing_vampire.dae", model->GetBoneInfoMap(), model->GetBoneCount());
 		    model->setAnimator(new Animator(ani));
 		}catch(...){
 			cout << "Could not load animation!\n";
-		}
+		}*/
 		model = new Model("models/Silly_Dancing.dae", main->cameraDetails);
 		translate = glm::vec3(10.0f, terreno->Superficie(0.0f, 60.0f) , 60.0f);
 		scale = glm::vec3(0.1f, 0.1f, 0.1f);	// it's a bit too big for our scene, so scale it down
@@ -93,12 +93,12 @@ public:
 		model->setScale(&scale);
 		model->setRotY(180);
 		ourModel.emplace_back(model);
-		try{
+/*		try{
 			Animation *ani = new Animation("models/Silly_Dancing.dae", model->GetBoneInfoMap(), model->GetBoneCount());
 		    model->setAnimator(new Animator(ani));
 		}catch(...){
 			cout << "Could not load animation!\n";
-		}
+		}*/
 //		model = new Model("models/IronMan.obj", main);
 //		translate = glm::vec3(0.0f, 20.0f, 30.0f);
 //		scale = glm::vec3(0.025f, 0.025f, 0.025f);	// it's a bit too big for our scene, so scale it down

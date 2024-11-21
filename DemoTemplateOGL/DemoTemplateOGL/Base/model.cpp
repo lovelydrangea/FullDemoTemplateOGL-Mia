@@ -15,21 +15,15 @@ Model::Model(string const& path, Camera* camera, bool rotationX, bool rotationY,
     loadModel(path, rotationX, rotationY);
     defaultShader = false;
     buildKDtree();
-    // Creamos el cubo AABB apartir del arbol de puntos del modelo cargado
-    vector<Vertex> cuboAABB = init_cube(this->kdTree.getRoot()->m_center.x, this->kdTree.getRoot()->m_center.y, this->kdTree.getRoot()->m_center.z, this->kdTree.getRoot()->m_halfWidth, this->kdTree.getRoot()->m_halfHeight, this->kdTree.getRoot()->m_halfDepth);
-    vector<unsigned int> cuboIndex = getCubeIndex();
-    this->AABB = new Model(cuboAABB, cuboAABB.size(), cuboIndex, cuboIndex.size(), camera);
-    for (Mesh &m : this->AABB->meshes)
-        m.VBOGLDrawType = GL_LINE_LOOP;
 }
 Model::Model(vector<Vertex> vertices, unsigned int numVertices, vector<unsigned int> indices, unsigned int numIndices, Camera* camera) {
     vector<Texture> textures;
     vector<Material> materials;
-    meshes.push_back(Mesh(vertices, indices, textures, materials));
+    meshes.emplace_back(vertices, indices, textures, materials);
     this->defaultShader = false;
     gpuDemo = NULL;
     this->cameraDetails = camera;
-    buildKDtree();
+//    buildKDtree();
 }
 Model::Model(string const& path, glm::vec3 actualPosition, Camera *cam, bool rotationX, bool rotationY, bool gamma) {
     cameraDetails = cam;
@@ -37,13 +31,7 @@ Model::Model(string const& path, glm::vec3 actualPosition, Camera *cam, bool rot
     this->gammaCorrection = gamma;
     Model::loadModel(path, rotationX, rotationY);
     this->defaultShader = false;
-    this->buildKDtree();
-    // Creamos el cubo AABB apartir del arbol de puntos del modelo cargado
-    vector<Vertex> cuboAABB = init_cube(this->kdTree.getRoot()->m_center.x, this->kdTree.getRoot()->m_center.y, this->kdTree.getRoot()->m_center.z, this->kdTree.getRoot()->m_halfWidth, this->kdTree.getRoot()->m_halfHeight, this->kdTree.getRoot()->m_halfDepth);
-    vector<unsigned int> cuboIndex = getCubeIndex();
-    this->AABB = new Model(cuboAABB, cuboAABB.size(), cuboIndex, cuboIndex.size(), cam);
-    for (Mesh &m : this->AABB->meshes)
-        m.VBOGLDrawType = GL_LINE_LOOP;
+    buildKDtree();
 }
 
 Model::~Model() {
@@ -130,8 +118,8 @@ void Model::Draw(Shader& shader) {
     }
     for (unsigned int i = 0; i < meshes.size(); i++)
         meshes[i].Draw(shader);
-//    if (this->AABB)
-//        this->AABB->Draw();
+    if (this->AABB)
+        this->AABB->Draw(shader);
 }
 glm::mat4 Model::makeTransScale(const glm::mat4& prevTransformations) const {
     glm::mat4 model = makeTrans() * prevTransformations;
@@ -276,11 +264,21 @@ void Model::setAnimator(Animator *animator){
 }
 
 void Model::buildKDtree() {
+	if (AABB != NULL)
+		delete AABB;
+    // Creamos el cubo AABB apartir del arbol de puntos del modelo cargado
     std::list<Node::vecType> point_list;
-    for (unsigned int i = 0; i < meshes.size(); i++)
+    for (unsigned int i = 0; i < meshes.size(); i++){
         for (unsigned int j = 0; j < meshes[i].vertices.size(); j++)
-            point_list.push_back(Node::vecType(meshes[i].vertices[j].Position, 1));
+            point_list.emplace_back(Node::vecType(meshes[i].vertices[j].Position, 1));
+    }
+    KDTree kdTree;
     kdTree.makeTree(point_list);
+    vector<Vertex> cuboAABB = init_cube(kdTree.getRoot()->m_center.x, kdTree.getRoot()->m_center.y, kdTree.getRoot()->m_center.z, kdTree.getRoot()->m_halfWidth, kdTree.getRoot()->m_halfHeight, kdTree.getRoot()->m_halfDepth);
+    vector<unsigned int> cuboIndex = getCubeIndex();
+    this->AABB = new Model(cuboAABB, cuboAABB.size(), cuboIndex, cuboIndex.size(), this->cameraDetails);
+    for (Mesh &m : this->AABB->meshes)
+        m.VBOGLDrawType = GL_LINE_LOOP;
 }
 
 vector<Material> Model::loadMaterial(aiMaterial* mat) {
@@ -318,8 +316,8 @@ vector<Material> Model::loadMaterial(aiMaterial* mat) {
     else material.hasShininess = false;
     vector<Material> m;
     if (matFound) {
-        material_loaded.push_back(material);
-        m.push_back(material);
+        material_loaded.emplace_back(material);
+        m.emplace_back(material);
     }
     return m;
 }
@@ -355,7 +353,7 @@ void Model::processNode(aiNode* node, const aiScene* scene, bool rotationX, bool
         // the node object only contains indices to index the actual objects in the scene. 
         // the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes.push_back(processMesh(mesh, scene, rotationX, rotationY));
+        meshes.emplace_back(processMesh(mesh, scene, rotationX, rotationY));
     }
     // after we've processed all of the meshes (if any) we then recursively process each of the children nodes
     for (unsigned int i = 0; i < node->mNumChildren; i++)
@@ -419,7 +417,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, bool rotationX, bool
         else
             vertex.TexCoords = glm::vec2(0.0f, 0.0f);
 
-        vertices.push_back(vertex);
+        vertices.emplace_back(vertex);
     }
     // now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
     for (unsigned int i = 0; i < mesh->mNumFaces; i++)
@@ -427,7 +425,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, bool rotationX, bool
         aiFace face = mesh->mFaces[i];
         // retrieve all indices of the face and store them in the indices vector
         for (unsigned int j = 0; j < face.mNumIndices; j++)
-            indices.push_back(face.mIndices[j]);
+            indices.emplace_back(face.mIndices[j]);
     }
     // process materials
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
@@ -473,7 +471,7 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type,
         {
             if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0)
             {
-                textures.push_back(textures_loaded[j]);
+                textures.emplace_back(textures_loaded[j]);
                 skip = true; // a texture with the same filepath has already been loaded, continue to next one. (optimization)
                 break;
             }
@@ -484,8 +482,8 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type,
             texture.id = TextureFromFile(str.C_Str(), this->directory, rotationX, rotationY);
             texture.type = typeName;
             texture.path = str.C_Str();
-            textures.push_back(texture);
-            textures_loaded.push_back(texture);  // store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
+            textures.emplace_back(texture);
+            textures_loaded.emplace_back(texture);  // store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
         }
     }
     return textures;
@@ -529,75 +527,95 @@ void Model::ExtractBoneWeightForVertices(vector<Vertex>& vertices, aiMesh* mesh,
 }
 
 bool Model::colisionaCon(Model& objeto, bool collitionMove) {
-    std::pair<Node*, Node*> innerCollisionNodes;
-    bool ret = this->nodoColisionCon(objeto, innerCollisionNodes, collitionMove);
-    if (ret && innerCollisionNodes.first)
-        return true;
-    return false;
-}
-bool Model::nodoColisionCon(Model& objeto, std::pair<Node*, Node*>& nodeCollitions, bool collitionMove) {
-    if (collitionMove)
-        return findCollision(nodeCollitions, *this->kdTree.getRoot(), this->makeTransScaleNextPosition(glm::mat4(1)), *objeto.kdTree.getRoot(), objeto.makeTransScale(glm::mat4(1)));
-    else
-        return findCollision(nodeCollitions, *this->kdTree.getRoot(), this->makeTransScale(glm::mat4(1)), *objeto.kdTree.getRoot(), objeto.makeTransScale(glm::mat4(1)));
+    // Obtener las matrices de transformación para ambos modelos
+    // collitionMove sirve para saber si el modelo principal a comparar va avanzar(true)
+    // o esta quieto(false)
+    glm::mat4 transform1 = collitionMove ? this->makeTransScaleNextPosition(glm::mat4(1)) : this->makeTransScale(glm::mat4(1)) ; // Para el cubo A
+    // Asumimos que el modelo a comparar esta quieto y no se esta moviendo
+    glm::mat4 transform2 = objeto.makeTransScale(glm::mat4(1)); // Para el cubo B
+
+    // Obtener los vértices de ambos cubos AABB
+    vector<Vertex> verticesCubo1 = this->AABB->meshes[0].vertices;
+    vector<Vertex> verticesCubo2 = objeto.AABB->meshes[0].vertices;
+
+            // Transformar los vértices de cada cubo usando sus respectivas matrices de transformación
+            for (Vertex& vertex : verticesCubo1) {
+                vertex.Position = glm::vec3(transform1 * glm::vec4(vertex.Position, 1.0f));
+            }
+            for (Vertex& vertex : verticesCubo2) {
+                vertex.Position = glm::vec3(transform2 * glm::vec4(vertex.Position, 1.0f));
+            }
+
+            // Obtener los ejes de separación
+            std::vector<glm::vec3> ejes = obtenerEjesSeparacion(transform1, transform2);
+
+            // Verificar si las proyecciones de los cubos se solapan en cada eje
+            for (const glm::vec3& eje : ejes) {
+                if (!proyectarYComprobarSolapamiento(verticesCubo1, verticesCubo2, eje)) {
+                    return false; // No hay solapamiento en este eje, no hay colisión
+                }
+            }
+
+    // Si las proyecciones se solapan en todos los ejes, hay colisión
+    return true;
 }
 
 vector<Vertex> Model::init_cube(float x, float y, float z, float width, float height, float depth){
     //Vertex* myVertex = (Vertex*)malloc(sizeof(Vertex) * 24 * 44);
     vector<Vertex> myVertex;
-    Vertex t = Vertex(glm::vec3(-width + x, -height + y, -depth + z), glm::vec2(1, 0), glm::vec3(0, 0, -1), glm::vec3(1, 1, 0));			//yellow
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(-width + x, height + y, -depth + z), glm::vec2(0, 0), glm::vec3(0, 0, -1), glm::vec3(1, 1, 0));
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(width + x, height + y, -depth + z), glm::vec2(0, 1), glm::vec3(0, 0, -1), glm::vec3(1, 1, 0));
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(width + x, -height + y, -depth + z), glm::vec2(1, 1), glm::vec3(0, 0, -1), glm::vec3(1, 1, 0));
-    myVertex.push_back(t);
+//    Vertex t = Vertex(glm::vec3(-width + x, -height + y, -depth + z), glm::vec2(1, 0), glm::vec3(0, 0, -1), glm::vec3(1, 1, 0));			//yellow
+    myVertex.emplace_back(glm::vec3(-width + x, -height + y, -depth + z), glm::vec2(1, 0), glm::vec3(0, 0, -1), glm::vec3(1, 1, 0));			//yellow
+//    t = Vertex(glm::vec3(-width + x, height + y, -depth + z), glm::vec2(0, 0), glm::vec3(0, 0, -1), glm::vec3(1, 1, 0));
+    myVertex.emplace_back(glm::vec3(-width + x, height + y, -depth + z), glm::vec2(0, 0), glm::vec3(0, 0, -1), glm::vec3(1, 1, 0));
+//    t = Vertex(glm::vec3(width + x, height + y, -depth + z), glm::vec2(0, 1), glm::vec3(0, 0, -1), glm::vec3(1, 1, 0));
+    myVertex.emplace_back(glm::vec3(width + x, height + y, -depth + z), glm::vec2(0, 1), glm::vec3(0, 0, -1), glm::vec3(1, 1, 0));
+//    t = Vertex(glm::vec3(width + x, -height + y, -depth + z), glm::vec2(1, 1), glm::vec3(0, 0, -1), glm::vec3(1, 1, 0));
+    myVertex.emplace_back(glm::vec3(width + x, -height + y, -depth + z), glm::vec2(1, 1), glm::vec3(0, 0, -1), glm::vec3(1, 1, 0));
 
-    t = Vertex(glm::vec3(-width + x, -height + y, depth + z), glm::vec2(1, 0), glm::vec3(0, 0, 1), glm::vec3(1, 1, 1));			//white
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(-width + x, height + y, depth + z), glm::vec2(0, 0), glm::vec3(0, 0, 1), glm::vec3(1, 1, 1));
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(width + x, height + y, depth + z), glm::vec2(0, 1), glm::vec3(0, 0, 1), glm::vec3(1, 1, 1));
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(width + x, -height + y, depth + z), glm::vec2(1, 1), glm::vec3(0, 0, 1), glm::vec3(1, 1, 1));
-    myVertex.push_back(t);
+//    t = Vertex(glm::vec3(-width + x, -height + y, depth + z), glm::vec2(1, 0), glm::vec3(0, 0, 1), glm::vec3(1, 1, 1));			//white
+    myVertex.emplace_back(glm::vec3(-width + x, -height + y, depth + z), glm::vec2(1, 0), glm::vec3(0, 0, 1), glm::vec3(1, 1, 1));			//white
+//    t = Vertex(glm::vec3(-width + x, height + y, depth + z), glm::vec2(0, 0), glm::vec3(0, 0, 1), glm::vec3(1, 1, 1));
+    myVertex.emplace_back(glm::vec3(-width + x, height + y, depth + z), glm::vec2(0, 0), glm::vec3(0, 0, 1), glm::vec3(1, 1, 1));
+//    t = Vertex(glm::vec3(width + x, height + y, depth + z), glm::vec2(0, 1), glm::vec3(0, 0, 1), glm::vec3(1, 1, 1));
+    myVertex.emplace_back(glm::vec3(width + x, height + y, depth + z), glm::vec2(0, 1), glm::vec3(0, 0, 1), glm::vec3(1, 1, 1));
+//    t = Vertex(glm::vec3(width + x, -height + y, depth + z), glm::vec2(1, 1), glm::vec3(0, 0, 1), glm::vec3(1, 1, 1));
+    myVertex.emplace_back(glm::vec3(width + x, -height + y, depth + z), glm::vec2(1, 1), glm::vec3(0, 0, 1), glm::vec3(1, 1, 1));
 
-    t = Vertex(glm::vec3(-width + x, -height + y, -depth + z), glm::vec2(0, 1), glm::vec3(0, -1, 0), glm::vec3(1, 0.5, 0));		//orange
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(-width + x, -height + y, depth + z), glm::vec2(1, 1), glm::vec3(0, -1, 0), glm::vec3(1, 0.5, 0));
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(width + x, -height + y, depth + z), glm::vec2(1, 0), glm::vec3(0, -1, 0), glm::vec3(1, 0.5, 0));
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(width + x, -height + y, -depth + z), glm::vec2(0, 0), glm::vec3(0, -1, 0), glm::vec3(1, 0.5, 0));
-    myVertex.push_back(t);
+//    t = Vertex(glm::vec3(-width + x, -height + y, -depth + z), glm::vec2(0, 1), glm::vec3(0, -1, 0), glm::vec3(1, 0.5, 0));		//orange
+    myVertex.emplace_back(glm::vec3(-width + x, -height + y, -depth + z), glm::vec2(0, 1), glm::vec3(0, -1, 0), glm::vec3(1, 0.5, 0));		//orange
+//    t = Vertex(glm::vec3(-width + x, -height + y, depth + z), glm::vec2(1, 1), glm::vec3(0, -1, 0), glm::vec3(1, 0.5, 0));
+    myVertex.emplace_back(glm::vec3(-width + x, -height + y, depth + z), glm::vec2(1, 1), glm::vec3(0, -1, 0), glm::vec3(1, 0.5, 0));
+//    t = Vertex(glm::vec3(width + x, -height + y, depth + z), glm::vec2(1, 0), glm::vec3(0, -1, 0), glm::vec3(1, 0.5, 0));
+    myVertex.emplace_back(glm::vec3(width + x, -height + y, depth + z), glm::vec2(1, 0), glm::vec3(0, -1, 0), glm::vec3(1, 0.5, 0));
+//    t = Vertex(glm::vec3(width + x, -height + y, -depth + z), glm::vec2(0, 0), glm::vec3(0, -1, 0), glm::vec3(1, 0.5, 0));
+    myVertex.emplace_back(glm::vec3(width + x, -height + y, -depth + z), glm::vec2(0, 0), glm::vec3(0, -1, 0), glm::vec3(1, 0.5, 0));
 
-    t = Vertex(glm::vec3(-width + x, height + y, -depth + z), glm::vec2(0, 1), glm::vec3(0, 1, 0), glm::vec3(1, 0, 0));			//red
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(-width + x, height + y, depth + z), glm::vec2(1, 1), glm::vec3(0, 1, 0), glm::vec3(1, 0, 0));
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(width + x, height + y, depth + z), glm::vec2(1, 0), glm::vec3(0, 1, 0), glm::vec3(1, 0, 0));
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(width + x, height + y, -depth + z), glm::vec2(0, 0), glm::vec3(0, 1, 0), glm::vec3(1, 0, 0));
-    myVertex.push_back(t);
+//    t = Vertex(glm::vec3(-width + x, height + y, -depth + z), glm::vec2(0, 1), glm::vec3(0, 1, 0), glm::vec3(1, 0, 0));			//red
+    myVertex.emplace_back(glm::vec3(-width + x, height + y, -depth + z), glm::vec2(0, 1), glm::vec3(0, 1, 0), glm::vec3(1, 0, 0));			//red
+//    t = Vertex(glm::vec3(-width + x, height + y, depth + z), glm::vec2(1, 1), glm::vec3(0, 1, 0), glm::vec3(1, 0, 0));
+    myVertex.emplace_back(glm::vec3(-width + x, height + y, depth + z), glm::vec2(1, 1), glm::vec3(0, 1, 0), glm::vec3(1, 0, 0));
+//    t = Vertex(glm::vec3(width + x, height + y, depth + z), glm::vec2(1, 0), glm::vec3(0, 1, 0), glm::vec3(1, 0, 0));
+    myVertex.emplace_back(glm::vec3(width + x, height + y, depth + z), glm::vec2(1, 0), glm::vec3(0, 1, 0), glm::vec3(1, 0, 0));
+//    t = Vertex(glm::vec3(width + x, height + y, -depth + z), glm::vec2(0, 0), glm::vec3(0, 1, 0), glm::vec3(1, 0, 0));
+    myVertex.emplace_back(glm::vec3(width + x, height + y, -depth + z), glm::vec2(0, 0), glm::vec3(0, 1, 0), glm::vec3(1, 0, 0));
 
-    t = Vertex(glm::vec3(-width + x, -height + y, -depth + z), glm::vec2(1, 1), glm::vec3(-1, 0, 0), glm::vec3(0, 0, 1));			//blue
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(-width + x, -height + y, depth + z), glm::vec2(1, 0), glm::vec3(-1, 0, 0), glm::vec3(0, 0, 1));
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(-width + x, height + y, depth + z), glm::vec2(0, 0), glm::vec3(-1, 0, 0), glm::vec3(0, 0, 1));
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(-width + x, height + y, -depth + z), glm::vec2(0, 1), glm::vec3(-1, 0, 0), glm::vec3(0, 0, 1));
-    myVertex.push_back(t);
+//    t = Vertex(glm::vec3(-width + x, -height + y, -depth + z), glm::vec2(1, 1), glm::vec3(-1, 0, 0), glm::vec3(0, 0, 1));			//blue
+    myVertex.emplace_back(glm::vec3(-width + x, -height + y, -depth + z), glm::vec2(1, 1), glm::vec3(-1, 0, 0), glm::vec3(0, 0, 1));			//blue
+//    t = Vertex(glm::vec3(-width + x, -height + y, depth + z), glm::vec2(1, 0), glm::vec3(-1, 0, 0), glm::vec3(0, 0, 1));
+    myVertex.emplace_back(glm::vec3(-width + x, -height + y, depth + z), glm::vec2(1, 0), glm::vec3(-1, 0, 0), glm::vec3(0, 0, 1));
+//    t = Vertex(glm::vec3(-width + x, height + y, depth + z), glm::vec2(0, 0), glm::vec3(-1, 0, 0), glm::vec3(0, 0, 1));
+    myVertex.emplace_back(glm::vec3(-width + x, height + y, depth + z), glm::vec2(0, 0), glm::vec3(-1, 0, 0), glm::vec3(0, 0, 1));
+//    t = Vertex(glm::vec3(-width + x, height + y, -depth + z), glm::vec2(0, 1), glm::vec3(-1, 0, 0), glm::vec3(0, 0, 1));
+    myVertex.emplace_back(glm::vec3(-width + x, height + y, -depth + z), glm::vec2(0, 1), glm::vec3(-1, 0, 0), glm::vec3(0, 0, 1));
 
-    t = Vertex(glm::vec3(width + x, -height + y, -depth + z), glm::vec2(1, 1), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0));			//green
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(width + x, -height + y, depth + z), glm::vec2(1, 0), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0));
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(width + x, height + y, depth + z), glm::vec2(0, 0), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0));
-    myVertex.push_back(t);
-    t = Vertex(glm::vec3(width + x, height + y, -depth + z), glm::vec2(0, 1), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0));
-    myVertex.push_back(t);
+//    t = Vertex(glm::vec3(width + x, -height + y, -depth + z), glm::vec2(1, 1), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0));			//green
+    myVertex.emplace_back(glm::vec3(width + x, -height + y, -depth + z), glm::vec2(1, 1), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0));			//green
+//    t = Vertex(glm::vec3(width + x, -height + y, depth + z), glm::vec2(1, 0), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0));
+    myVertex.emplace_back(glm::vec3(width + x, -height + y, depth + z), glm::vec2(1, 0), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0));
+//    t = Vertex(glm::vec3(width + x, height + y, depth + z), glm::vec2(0, 0), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0));
+    myVertex.emplace_back(glm::vec3(width + x, height + y, depth + z), glm::vec2(0, 0), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0));
+//    t = Vertex(glm::vec3(width + x, height + y, -depth + z), glm::vec2(0, 1), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0));
+    myVertex.emplace_back(glm::vec3(width + x, height + y, -depth + z), glm::vec2(0, 1), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0));
 
     return myVertex;
 }
@@ -623,6 +641,6 @@ vector<unsigned int> Model::getCubeIndex() {
     23, 22, 20
     };
     for (unsigned int i = 0; i < cubeIndexSize; i++)
-        indices.push_back(cubeIndex[i]);
+        indices.emplace_back(cubeIndex[i]);
     return indices;
 }

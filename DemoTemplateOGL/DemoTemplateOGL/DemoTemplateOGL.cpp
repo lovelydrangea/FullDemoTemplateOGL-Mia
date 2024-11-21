@@ -142,7 +142,7 @@ int main(int argc, char** argv){
             // ------
             bool checkCollition = checkInput(&actions, OGLobj);
             if (checkCollition) { // Bandera para buscar colisiones sobre Camara/Modelo
-                if (false && OGLobj->lookForCollition(true) != NULL) { // Llamamos a la funcion de colision 
+                if (OGLobj->lookForCollition(true) != NULL) { // Llamamos a la funcion de colision 
                     model->setNextTranslate(model->getTranslate());
                     model->setNextRotX(model->getRotX());
                     model->setNextRotY(model->getRotY());

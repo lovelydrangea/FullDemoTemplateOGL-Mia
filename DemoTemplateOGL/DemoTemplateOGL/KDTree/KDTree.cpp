@@ -113,6 +113,8 @@ void KDTree::setHeadVariables(Node* head, std::list<KDTree::vecType>& plist)
 void KDTree::makeTree(std::list<KDTree::vecType>& plist) {
 	Node* head = new Node();
 	makeTreeRecursivelyImpl(head, plist, 0);
+	if (m_root != NULL)
+		delete m_root;
 	m_root = head;
 }
 

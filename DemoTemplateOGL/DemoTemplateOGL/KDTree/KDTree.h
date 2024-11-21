@@ -24,8 +24,8 @@ class Node
 {
 public:
 	typedef glm::vec4 vecType;
-	Node* m_left;
-	Node* m_right;
+	Node* m_left = NULL;
+	Node* m_right = NULL;
 	vecType m_median;
 
 	glm::vec4 m_center;
@@ -79,7 +79,7 @@ private:
 	// Helper for makeTree.
 	void makeTreeRecursivelyImpl(Node* head, std::list<vecType>& plist, int depth);
 
-	Node* m_root;
+	Node* m_root = NULL;
 };
 
 

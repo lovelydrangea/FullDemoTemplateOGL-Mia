@@ -60,7 +60,6 @@ public:
     bool gammaCorrection;
     Shader* gpuDemo = NULL;
     string name;
-    KDTree kdTree;
 
     // constructor, expects a filepath to a 3D model.
     Model();

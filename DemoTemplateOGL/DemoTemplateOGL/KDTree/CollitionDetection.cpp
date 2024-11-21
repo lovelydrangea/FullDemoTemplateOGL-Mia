@@ -1,4 +1,3 @@
-#include "KDTree.h"
 #include "CollitionDetection.h"
 #include <iostream>
 //https://github.com/Meirshomron/MeshCollision
@@ -181,4 +180,51 @@ bool findCollision(std::pair<Node*, Node*>& collistionNodes, Node& firstShape, g
 //		}
 	}
 	return ret;
+}
+
+std::vector<glm::vec3> obtenerEjesSeparacion(const glm::mat4& M1, const glm::mat4& M2) {
+    std::vector<glm::vec3> ejes;
+
+    // Extraer los ejes de cada cubo (columna de la matriz de rotación)
+    glm::vec3 X1 = glm::normalize(glm::vec3(M1[0]));  // Eje X del cubo 1
+    glm::vec3 Y1 = glm::normalize(glm::vec3(M1[1]));  // Eje Y del cubo 1
+    glm::vec3 Z1 = glm::normalize(glm::vec3(M1[2]));  // Eje Z del cubo 1
+
+    glm::vec3 X2 = glm::normalize(glm::vec3(M2[0]));  // Eje X del cubo 2
+    glm::vec3 Y2 = glm::normalize(glm::vec3(M2[1]));  // Eje Y del cubo 2
+    glm::vec3 Z2 = glm::normalize(glm::vec3(M2[2]));  // Eje Z del cubo 2
+
+    // Paso 1: Ejes de los cubos
+    ejes.push_back(X1); ejes.push_back(Y1); ejes.push_back(Z1);
+    ejes.push_back(X2); ejes.push_back(Y2); ejes.push_back(Z2);
+
+    // Paso 2: Productos cruzados entre los ejes de los cubos
+    ejes.push_back(glm::cross(X1, X2)); ejes.push_back(glm::cross(X1, Y2)); ejes.push_back(glm::cross(X1, Z2));
+    ejes.push_back(glm::cross(Y1, X2)); ejes.push_back(glm::cross(Y1, Y2)); ejes.push_back(glm::cross(Y1, Z2));
+    ejes.push_back(glm::cross(Z1, X2)); ejes.push_back(glm::cross(Z1, Y2)); ejes.push_back(glm::cross(Z1, Z2));
+
+    return ejes;
+}
+
+bool proyectarYComprobarSolapamiento(std::vector<Vertex>& verticesCubo1, 
+                                     std::vector<Vertex>& verticesCubo2, 
+                                     const glm::vec3& eje) {
+    float minCubo1 = glm::dot(verticesCubo1[0].Position, eje);
+    float maxCubo1 = minCubo1;
+    for (int i = 1; i < 8; i++) {
+        float proj = glm::dot(verticesCubo1[i].Position, eje);
+        minCubo1 = std::min(minCubo1, proj);
+        maxCubo1 = std::max(maxCubo1, proj);
+    }
+
+    float minCubo2 = glm::dot(verticesCubo2[0].Position, eje);
+    float maxCubo2 = minCubo2;
+    for (int i = 1; i < 8; i++) {
+        float proj = glm::dot(verticesCubo2[i].Position, eje);
+        minCubo2 = std::min(minCubo2, proj);
+        maxCubo2 = std::max(maxCubo2, proj);
+    }
+
+    // Comprobar si las proyecciones se solapan
+    return !(maxCubo1 < minCubo2 || maxCubo2 < minCubo1);
 }
