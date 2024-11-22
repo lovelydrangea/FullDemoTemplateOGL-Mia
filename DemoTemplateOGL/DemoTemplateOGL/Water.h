@@ -71,7 +71,7 @@ public:
 	}
 
 	void Draw(Shader& shader) {
-		reloadData(meshes[0].vertices);
+		reloadData(meshes[0]->vertices);
 		Model::Draw(shader);
 	}
 

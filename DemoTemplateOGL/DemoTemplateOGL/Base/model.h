@@ -42,6 +42,7 @@ private:
     std::unordered_map<string, BoneInfo> m_BoneInfoMap;
     int m_BoneCounter = 0;
 	Animator* animator = NULL;
+    bool cleanTextures = true;
 
     void SetVertexBoneDataToDefault(Vertex& vertex);
     void SetVertexBoneData(Vertex& vertex, int boneID, float weight);
@@ -55,7 +56,7 @@ public:
 
     vector<Texture> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
     vector<Material> material_loaded;	// stores all the materials.
-    vector<Mesh>    meshes;
+    vector<Mesh*>    meshes;
     string directory;
     bool gammaCorrection;
     Shader* gpuDemo = NULL;
@@ -106,6 +107,7 @@ public:
     std::unordered_map<string, BoneInfo>& GetBoneInfoMap();
     int& GetBoneCount();
     void setAnimator(Animator *animator);
+    void setCleanTextures(bool flag);
 private:
     vector<Vertex> init_cube(float x, float y, float z, float width, float height, float depth);
     vector<unsigned int> getCubeIndex();
@@ -114,7 +116,7 @@ private:
     void loadModel(string const& path, bool rotationX = false, bool rotationY = true);
     // processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
     void processNode(aiNode* node, const aiScene* scene, bool rotationX = false, bool rotationY = true);
-    Mesh processMesh(aiMesh* mesh, const aiScene* scene, bool rotationX = false, bool rotationY = true);
+    void processMesh(aiMesh* mesh, const aiScene* scene, bool rotationX = false, bool rotationY = true);
     // checks all material textures of a given type and loads the textures if they're not loaded yet.
     // the required info is returned as a Texture struct.
     vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName, bool rotationX = false, bool rotationY = true);

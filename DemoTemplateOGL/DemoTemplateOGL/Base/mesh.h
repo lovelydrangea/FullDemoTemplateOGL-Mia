@@ -29,6 +29,11 @@ public:
     int EBOGLDrawType = GL_STATIC_DRAW;
     int VBOGLDrawType = GL_STATIC_DRAW;
 
+    ~Mesh(){
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(1, &VBO);
+        glDeleteBuffers(1, &EBO);
+    }
     // constructor
     Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures, vector<Material> materials, int VBOGLDrawType = GL_STATIC_DRAW, int EBOGLDrawType = GL_STATIC_DRAW) {
         this->vertices = vertices;

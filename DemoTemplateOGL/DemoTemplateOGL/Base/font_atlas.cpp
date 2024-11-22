@@ -4,19 +4,27 @@
 
 std::map<std::string, font_atlas> font_atlas::fontsLoaded;
 
-font_atlas *font_atlas::getInstance(std::string fontName){
+void font_atlas::clearInstance(){
+	fontsLoaded.clear();
+}
+
+font_atlas &font_atlas::getInstance(){
+	std::string defFont = "shaders/ttf_FreeSans.ttf";
+	return getInstance(defFont);
+}
+
+font_atlas &font_atlas::getInstance(std::string &fontName){
 	std::string font = fontName;
 	if (fontName.compare("") || fontName.size() < 1)
 		font = "shaders/ttf_CanadaDBNormal.ttf";
 	std::map<std::string, font_atlas>::iterator fontFound = fontsLoaded.find(font);
 	if (fontFound != fontsLoaded.end()){
-		return &fontFound->second;
+		return fontFound->second;
 	} else {
-		font_atlas *ftnew = new font_atlas();
-//		fontsLoaded.emplace(std::make_pair(font, ftnew));
-//		fontFound = fontsLoaded.find(font);
-		ftnew->create_atlas(font);
-		return ftnew;
+		fontsLoaded.emplace(std::make_pair(font, font_atlas()));
+		fontFound = fontsLoaded.find(font);
+		fontFound->second.create_atlas(font);
+		return fontFound->second;
 	}
 }
 
@@ -26,14 +34,16 @@ font_atlas::font_atlas()
 
 }
 
-font_atlas::~font_atlas()
-{
+font_atlas::~font_atlas() {
+	glDeleteTextures(1, &textureID);
+	textureID = 0;
 }
 
 void font_atlas::create_atlas(){
-	create_atlas("shaders/ttf_FreeSans.ttf");
+	std::string defFont = "shaders/ttf_FreeSans.ttf";
+	create_atlas(defFont);
 }
-void font_atlas::create_atlas(std::string fontName) {
+void font_atlas::create_atlas(std::string &fontName) {
 	// FreeType
 	// --------
 	FT_Library ft;
@@ -153,7 +163,7 @@ void font_atlas::create_atlas(std::string fontName) {
 			character.bot_right.x = static_cast<float>(x + character.Size.x) / static_cast<float>(atlas_width);
 			character.bot_right.y = static_cast<float>(character.Size.y) / static_cast<float>(atlas_height);
 
-			ch_atlas.insert(std::pair<char, Character>(c, character));
+			ch_atlas.emplace(std::pair<char, Character>(c, character));
 
 			// update x position for next glyph
 			x += face->glyph->bitmap.width;

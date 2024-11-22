@@ -36,11 +36,11 @@ public:
 	std::map<char, Character> ch_atlas;
 	std::string name;
 
-	static font_atlas *getInstance(std::string fontName);
+	static font_atlas &getInstance();
+	static font_atlas &getInstance(std::string &fontName);
+	static void clearInstance();
 	font_atlas();
 	~font_atlas();
 	void create_atlas(); // Function to create the atlas
-	void create_atlas(std::string fontName); // Function to create the atlas
-	void Bind_atlas();
-	void UnBind_atlas();
+	void create_atlas(std::string &fontName); // Function to create the atlas
 };

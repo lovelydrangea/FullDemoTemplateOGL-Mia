@@ -19,7 +19,7 @@ Model::Model(string const& path, Camera* camera, bool rotationX, bool rotationY,
 Model::Model(vector<Vertex> vertices, unsigned int numVertices, vector<unsigned int> indices, unsigned int numIndices, Camera* camera) {
     vector<Texture> textures;
     vector<Material> materials;
-    meshes.emplace_back(vertices, indices, textures, materials);
+    meshes.emplace_back(new Mesh(vertices, indices, textures, materials));
     this->defaultShader = false;
     gpuDemo = NULL;
     this->cameraDetails = camera;
@@ -45,7 +45,10 @@ Model::~Model() {
         delete animator;
         animator = NULL;
     }
-    for (int i = 0; i < textures_loaded.size(); i++) {
+    for (int i = 0; i < meshes.size(); i++) {
+        delete meshes[i];
+    }
+    for (int i = 0; cleanTextures && i < textures_loaded.size(); i++) {
         glDeleteTextures(1, &(textures_loaded[i].id));
     }
 }
@@ -117,7 +120,7 @@ void Model::Draw(Shader& shader) {
             shader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms->at(i));
     }
     for (unsigned int i = 0; i < meshes.size(); i++)
-        meshes[i].Draw(shader);
+        meshes[i]->Draw(shader);
     if (this->AABB)
         this->AABB->Draw(shader);
 }
@@ -269,16 +272,16 @@ void Model::buildKDtree() {
     // Creamos el cubo AABB apartir del arbol de puntos del modelo cargado
     std::list<Node::vecType> point_list;
     for (unsigned int i = 0; i < meshes.size(); i++){
-        for (unsigned int j = 0; j < meshes[i].vertices.size(); j++)
-            point_list.emplace_back(Node::vecType(meshes[i].vertices[j].Position, 1));
+        for (unsigned int j = 0; j < meshes[i]->vertices.size(); j++)
+            point_list.emplace_back(Node::vecType(meshes[i]->vertices[j].Position, 1));
     }
     KDTree kdTree;
     kdTree.makeTree(point_list);
     vector<Vertex> cuboAABB = init_cube(kdTree.getRoot()->m_center.x, kdTree.getRoot()->m_center.y, kdTree.getRoot()->m_center.z, kdTree.getRoot()->m_halfWidth, kdTree.getRoot()->m_halfHeight, kdTree.getRoot()->m_halfDepth);
     vector<unsigned int> cuboIndex = getCubeIndex();
     this->AABB = new Model(cuboAABB, cuboAABB.size(), cuboIndex, cuboIndex.size(), this->cameraDetails);
-    for (Mesh &m : this->AABB->meshes)
-        m.VBOGLDrawType = GL_LINE_LOOP;
+    for (Mesh *m : this->AABB->meshes)
+        m->VBOGLDrawType = GL_LINE_LOOP;
 }
 
 vector<Material> Model::loadMaterial(aiMaterial* mat) {
@@ -353,7 +356,7 @@ void Model::processNode(aiNode* node, const aiScene* scene, bool rotationX, bool
         // the node object only contains indices to index the actual objects in the scene. 
         // the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes.emplace_back(processMesh(mesh, scene, rotationX, rotationY));
+        processMesh(mesh, scene, rotationX, rotationY);
     }
     // after we've processed all of the meshes (if any) we then recursively process each of the children nodes
     for (unsigned int i = 0; i < node->mNumChildren; i++)
@@ -363,7 +366,7 @@ void Model::processNode(aiNode* node, const aiScene* scene, bool rotationX, bool
 
 }
 
-Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, bool rotationX, bool rotationY)
+void Model::processMesh(aiMesh* mesh, const aiScene* scene, bool rotationX, bool rotationY)
 {
     // data to fill
     vector<Vertex> vertices;
@@ -453,7 +456,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, bool rotationX, bool
 
     ExtractBoneWeightForVertices(vertices,mesh,scene);
     // return a mesh object created from the extracted mesh data
-    return Mesh(vertices, indices, textures, materials);
+    meshes.emplace_back(new Mesh(vertices, indices, textures, materials));
 }
 
 // checks all material textures of a given type and loads the textures if they're not loaded yet.
@@ -535,8 +538,8 @@ bool Model::colisionaCon(Model& objeto, bool collitionMove) {
     glm::mat4 transform2 = objeto.makeTransScale(glm::mat4(1)); // Para el cubo B
 
     // Obtener los vértices de ambos cubos AABB
-    vector<Vertex> verticesCubo1 = this->AABB->meshes[0].vertices;
-    vector<Vertex> verticesCubo2 = objeto.AABB->meshes[0].vertices;
+    vector<Vertex> verticesCubo1 = this->AABB->meshes[0]->vertices;
+    vector<Vertex> verticesCubo2 = objeto.AABB->meshes[0]->vertices;
 
             // Transformar los vértices de cada cubo usando sus respectivas matrices de transformación
             for (Vertex& vertex : verticesCubo1) {
@@ -643,4 +646,8 @@ vector<unsigned int> Model::getCubeIndex() {
     for (unsigned int i = 0; i < cubeIndexSize; i++)
         indices.emplace_back(cubeIndex[i]);
     return indices;
+}
+
+void Model::setCleanTextures(bool flag){
+    cleanTextures = flag;
 }

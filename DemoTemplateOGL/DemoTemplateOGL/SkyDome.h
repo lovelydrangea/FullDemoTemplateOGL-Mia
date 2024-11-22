@@ -31,10 +31,10 @@ public:
 		string textura(n.begin(), n.end());
 		esferaTextura = TextureFromFile(textura.c_str(), this->directory);
 		Texture t = { esferaTextura , "texture_diffuse", textura.c_str() };
-		textures_loaded.push_back(t);
-		textures.push_back(t);
+		textures_loaded.emplace_back(t);
+		textures.emplace_back(t);
 		gpuDemo = NULL;
-		meshes.push_back(Mesh(vertices, indices, textures, materials));
+		meshes.emplace_back(new Mesh(vertices, indices, textures, materials));
 		setDefaultShader(false);
 	}
 

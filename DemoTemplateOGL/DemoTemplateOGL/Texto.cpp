@@ -1,56 +1,78 @@
 #include "Texto.h"
 
-Texto::Texto(wstring texto, float escala, float rotacion, float x, float y, float z, Model* camera){
-    initTexto((WCHAR*)texto.c_str(), escala, rotacion, x, y, z, camera);
+Texto::Texto(wstring &texto, float escala, float rotacion, float x, float y, float z, Model* camera){
+	this->scale = escala;
+	this->rotacion = rotacion;
+	this->x = x;
+	this->y = y;
+	this->z = z;
+	cameraDetails = camera;
+	this->texto = texto;
+    initTexto();
 }
 
 Texto::Texto(WCHAR *texto, float escala, float rotacion, float x, float y, float z, Model* camera){
-    initTexto(texto, escala, rotacion, x, y, z, camera);
+	this->scale = escala;
+	this->rotacion = rotacion;
+	this->x = x;
+	this->y = y;
+	this->z = z;
+	cameraDetails = camera;
+	this->texto.assign((wchar_t*)texto);
+    initTexto();
 }
 
-void Texto::initTexto(WCHAR *texto, float escala, float rotacion, float x, float y, float z, Model* camera){
-    cameraDetails = camera;
-    std::wstring wtext((const wchar_t*)texto);
-    long tLength = wtext.size();
-    this->textBillboard.reserve(tLength);
-    font_atlas *font = font_atlas::getInstance("");
-	fontTexture = font;
-    std::string stext(wtext.begin(), wtext.end());
+void Texto::initTexto(wstring &texto){
+	this->texto = texto;
+	initTexto();
+}
+
+void Texto::initTexto(){
+	for (int i = 0; i < this->textBillboard.size(); i++){
+		delete textBillboard[i];
+	}
+	this->textBillboard.clear();
+    long tLength = texto.size();
+	if (this->textBillboard.capacity() < tLength)
+	    this->textBillboard.reserve(tLength);
+	font_atlas &fontTexture = font_atlas::getInstance();
+    std::string stext(texto.begin(), texto.end());
 	// Store the x,y location
 	glm::vec2 loc = glm::vec2(x,y);
-	scale = escala;
 	glm::vec2 rotated_pt;
 
-	for (int i = 0; stext[i] != '\0'; ++i) {
+	float xpos = x;
+	float ypos = y;
+	for (int i = 0; i < tLength; i++) {
 		// get the atlas information
 		char ch = stext[i];
 
-		Character ch_data =	font->ch_atlas[ch];
+		Character &ch_data = fontTexture.ch_atlas[ch];
 
-		float xpos = x + (ch_data.Bearing.x * scale);
-		float ypos = y - (ch_data.Size.y - ch_data.Bearing.y) * scale;
+//		float xpos = x + (ch_data.Bearing.x * scale);
+//		float ypos = y - (ch_data.Size.y - ch_data.Bearing.y) * scale;
 
 		float w = ch_data.Size.x * scale;
 		float h = ch_data.Size.y * scale;
 
 		float margin = 0.00002; // This value prevents the minor overlap with the next char when rendering
-		rotated_pt = rotate_pt(loc, glm::vec2(xpos, ypos + h), rotacion);
-        textBillboard.emplace_back(font->textureID, (WCHAR*)texto, x, y, 0, camera->cameraDetails);
+//		rotated_pt = rotate_pt(loc, glm::vec2(xpos, ypos + h), rotacion);
+        textBillboard.emplace_back(new Billboard(fontTexture.textureID, (WCHAR*)L"TEXTO", xpos, ypos, 0, cameraDetails->cameraDetails));
         float texCoords[] = { ch_data.bot_right.x - margin, ch_data.bot_right.y,
 		                      ch_data.top_left.x+ margin,  ch_data.bot_right.y,
 		                      ch_data.top_left.x + margin, ch_data.top_left.y,
 		                      ch_data.bot_right.x - margin, ch_data.top_left.y };
-        textBillboard.back().setTextureCoords(texCoords);
-        textBillboard.back().reloadData();
-		x += escala;
+        textBillboard.back()->setTextureCoords(texCoords);
+		textBillboard.back()->setCleanTextures(false);
+        textBillboard.back()->reloadData();
+		xpos += scale;
 	}
 }
 
 Texto::~Texto(){
     if (gpuDemo != NULL)
         delete gpuDemo;
-	if (fontTexture != NULL)
-		delete fontTexture;
+	textBillboard.clear();
 }
 
 // Usa el shader default para poder imprimir el billboard
@@ -72,8 +94,8 @@ void Texto::Draw(){
 
 void Texto::Draw(Shader &shader){
     for (int i = 0; i < textBillboard.size(); i ++){
-		prepShader(shader,*textBillboard[i].getTranslate());
-        textBillboard[i].Draw(shader);
+		prepShader(shader,*textBillboard[i]->getTranslate());
+        textBillboard[i]->Draw(shader);
     }
 }
 
@@ -87,6 +109,7 @@ void Texto::prepShader(Shader& shader, glm::vec3 &pos){
 	model = glm::translate(model, pos); // translate it down so it's at the center of the scene
 	model = glm::scale(model, glm::vec3(scale,scale,0.0f));
 
+	shader.setVec3("color", glm::vec3(100,100,100));
 	shader.setMat4("projection", projection);
 	shader.setMat4("view", view);
 	shader.setMat4("model", model);

@@ -29,7 +29,8 @@ private:
 	int animacion = 0;
 	int frameArbol = 1;
 	std::vector<Texto*> ourText;
-
+	std::wstring wCoordenadas;
+	Texto *coordenadas = NULL;
 public:
 	Scenario(Camera *cam) {
 		glm::vec3 translate;
@@ -112,10 +113,15 @@ public:
 		model->setScale(&scale);
 		ourModel.emplace_back(model);
 		inicializaBillboards();
-		ourText.emplace_back(new Texto(L"Esta es una prueba", 20, 0, 0, SCR_HEIGHT, 0, camara));
+		std::wstring prueba(L"Esta es una prueba");
+		ourText.emplace_back(new Texto(prueba, 20, 0, 0, SCR_HEIGHT, 0, camara));
 		billBoard2D.emplace_back(new Billboard2D((WCHAR*)L"billboards/awesomeface.png", 6, 6, 100, 200, 0, camara->cameraDetails));
 		scale = glm::vec3(100.0f, 100.0f, 0.0f);	// it's a bit too big for our scene, so scale it down
 		billBoard2D.back()->setScale(&scale);
+		wCoordenadas =  L"X: " + std::to_wstring(getMainModel()->getTranslate()->x) +
+						L" Y: " + std::to_wstring(getMainModel()->getTranslate()->y) +
+						L" Z: " + std::to_wstring(getMainModel()->getTranslate()->z);
+		coordenadas = new Texto(wCoordenadas, 15, 0, 0, 0, 0, camara);
 	}
 
 	void inicializaBillboards() {
@@ -176,12 +182,12 @@ public:
 		for (int i = 0; i < ourText.size(); i++) {
 			ourText[i]->Draw();
 		}
-		std::wstring wCoordenadas =  L"X: " + std::to_wstring(getMainModel()->getTranslate()->x) +
-									L" Y: " + std::to_wstring(getMainModel()->getTranslate()->y) +
-									L" Z: " + std::to_wstring(getMainModel()->getTranslate()->z);
 		// No es optimo ya que crea el texto cada renderizado....
-		Texto coordenadas(wCoordenadas, 15, 0, 0, 0, 0, camara);
-		coordenadas.Draw();
+		wCoordenadas =  L"X: " + std::to_wstring(getMainModel()->getTranslate()->x) +
+						L" Y: " + std::to_wstring(getMainModel()->getTranslate()->y) +
+						L" Z: " + std::to_wstring(getMainModel()->getTranslate()->z);
+		coordenadas->initTexto(wCoordenadas);
+		coordenadas->Draw();
 		// Le decimos a winapi que haga el update en la ventana
 		return this;
 	}

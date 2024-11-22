@@ -25,7 +25,7 @@ public:
         if (gpuDemo == NULL) {
             // build and compile our shader zprogram
             // ------------------------------------
-            gpuDemo = new Shader("shaders/text_shader.vs", "shaders/text_shader.fs");
+            gpuDemo = new Shader("shaders/text_shader.vs", "shaders/billboard.fs");
     //		gpuDemo = new Shader("shaders/models/1.model_material_loading.vs", "shaders/models/1.model_material_loading.fs");
             setDefaultShader(true);
         }

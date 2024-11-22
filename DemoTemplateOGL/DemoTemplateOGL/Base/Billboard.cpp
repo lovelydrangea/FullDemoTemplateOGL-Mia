@@ -1,7 +1,7 @@
 #include "Billboard.h"
 
 void Billboard::reloadData(){
-	reloadData(&(meshes[0].vertices));
+	reloadData(&(meshes[0]->vertices));
 }
 
 void Billboard::reloadData(vector<Vertex> *vertices){
@@ -87,7 +87,7 @@ void Billboard::initBillboard(Texture texture, float ancho, float alto, float x,
 		1, 2, 3  // second triangle
 	};
 	gpuDemo = NULL;
-	meshes.emplace_back(vertices, indices, textures, VBOGLDrawType, EBOGLDrawType);
+	meshes.emplace_back(new Mesh(vertices, indices, textures, VBOGLDrawType, EBOGLDrawType));
 	buildKDtree();
 }
 
@@ -97,7 +97,7 @@ Billboard::~Billboard(){
 
 // Usa el shader default para poder imprimir el billboard
 void Billboard::Draw() {
-	reloadData(&(meshes[0].vertices), *getTranslate());
+	reloadData(&(meshes[0]->vertices), *getTranslate());
 	if (gpuDemo == NULL) {
 		// build and compile our shader zprogram
 		// ------------------------------------

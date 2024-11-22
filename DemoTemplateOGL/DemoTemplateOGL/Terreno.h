@@ -50,7 +50,7 @@ public:
 
 		Texture t = { planoTextura , "texture_height", texturan.c_str() };
 		textures.emplace_back(t);
-		meshes.emplace_back(vertices, indices, textures, materials, VBOGLDrawType, EBOGLDrawType);
+		meshes.emplace_back(new Mesh(vertices, indices, textures, materials, VBOGLDrawType, EBOGLDrawType));
 		setDefaultShader(false);
 	}
 
@@ -76,7 +76,7 @@ public:
 	}
 
 	float Superficie(float x, float z) {
-		vector<Vertex> vertices = meshes[0].vertices;
+		vector<Vertex> vertices = meshes[0]->vertices;
 		//obtenemos el indice pero podria incluir una fraccion
 		float indicefx = (x + anchof / 2) / deltax;
 		float indicefz = (z + proff / 2) / deltaz;

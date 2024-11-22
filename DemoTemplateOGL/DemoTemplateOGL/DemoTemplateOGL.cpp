@@ -177,12 +177,13 @@ int main(int argc, char** argv){
         }
 #endif
     }
-#ifndef _WIN32
-	glfwTerminate();
-#endif
     if (OGLobj != NULL) delete OGLobj;
     if (camera != NULL) delete camera;
     if (model != NULL) delete model;
+    font_atlas::clearInstance();
+#ifndef _WIN32
+	glfwTerminate();
+#endif
 #ifdef _WIN32
     return (int) msg.wParam;
 #else
