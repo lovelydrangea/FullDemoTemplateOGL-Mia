@@ -53,7 +53,7 @@ public:
 		//creamos el objeto skydome
 		sky = new SkyDome(32, 32, 20, (WCHAR*)L"skydome/earth.jpg", main->cameraDetails);
 		//creamos el terreno
-		terreno = new Terreno((WCHAR*)L"skydome/terreno.jpg", (WCHAR*)L"skydome/texterr2.jpg", 400, 400, main->cameraDetails);
+		terreno = new Terreno((WCHAR*)L"skydome/terreno.jpg", (WCHAR*)L"skydome/texterr.jpg", 400, 400, main->cameraDetails);
 		water = new Water((WCHAR*)L"textures/terreno.bmp", (WCHAR*)L"textures/water.bmp", 20, 20, camara->cameraDetails);
 		glm::vec3 translate;
 		glm::vec3 scale;
@@ -64,16 +64,19 @@ public:
 		// -----------
 		ourModel.emplace_back(main);
 		Model* model;
+
 		model = new Model("models/fogata.obj", main->cameraDetails);
 		translate = glm::vec3(0.0f, 10.0f, 25.0f);
 		model->setTranslate(&translate);
 		rotation = glm::vec3(1.0f, 0.0f, 0.0f); //rotation X
 		model->setRotX(45); // 45� rotation
 		ourModel.emplace_back(model);
+
 		model= new Model("models/pez.obj", main->cameraDetails);
 		translate = glm::vec3(0.0f, 7.0f, 50.0f);
 		model->setTranslate(&translate);
 		ourModel.emplace_back(model);
+
 		model = new Model("models/dancing_vampire.dae", main->cameraDetails);
 		translate = glm::vec3(0.0f, terreno->Superficie(0.0f, 60.0f) , 60.0f);
 		scale = glm::vec3(0.1f, 0.1f, 0.1f);	// it's a bit too big for our scene, so scale it down
@@ -106,6 +109,7 @@ public:
 //		model->setScale(&scale);
 //		model->setTranslate(&translate);
 //		ourModel.emplace_back(model);
+
 		model = new Model("models/backpack.obj", main->cameraDetails, false, false);
 		translate = glm::vec3(20.0f, 14.0f, 0.0f);
 		scale = glm::vec3(1.0f, 1.0f, 1.0f);	// it's a bit too big for our scene, so scale it down
