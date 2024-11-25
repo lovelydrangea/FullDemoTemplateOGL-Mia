@@ -16,28 +16,31 @@
 #include "Texto.h"
 #include "Billboard2D.h"
 
+using namespace std;
+using namespace glm;
+
 class Scenario : public Scene {
 private:
 	SkyDome* sky;
 	Terreno* terreno;
-	std::vector<Billboard*> billBoard;
-	std::vector<Billboard2D*> billBoard2D;
-	std::vector<Model*> ourModel;
+	vector<Billboard*> billBoard;
+	vector<Billboard2D*> billBoard2D;
+	vector<Model*> ourModel;
 	Model* camara;
 	Water* water;
 	float angulo;
 	int animacion = 0;
 	int frameArbol = 1;
-	std::vector<Texto*> ourText;
-	std::wstring wCoordenadas;
+	vector<Texto*> ourText;
+	wstring wCoordenadas;
 	Texto *coordenadas = NULL;
 public:
 	Scenario(Camera *cam) {
-		glm::vec3 translate;
-		glm::vec3 scale;
+		vec3 translate;
+		vec3 scale;
 		Model* model = new Model("models/Cube.obj", cam);
-		translate = glm::vec3(0.0f, 0.0f, 3.0f);
-		scale = glm::vec3(0.25f, 0.25f, 0.25f);	// it's a bit too big for our scene, so scale it down
+		translate = vec3(0.0f, 0.0f, 3.0f);
+		scale = vec3(0.25f, 0.25f, 0.25f);	// it's a bit too big for our scene, so scale it down
 		model->setScale(&scale);
 		model->setTranslate(&translate);
 		InitGraph(model);
@@ -55,10 +58,10 @@ public:
 		//creamos el terreno
 		terreno = new Terreno((WCHAR*)L"skydome/terreno.jpg", (WCHAR*)L"skydome/texterr.jpg", 400, 400, main->cameraDetails);
 		water = new Water((WCHAR*)L"textures/terreno.bmp", (WCHAR*)L"textures/water.bmp", 20, 20, camara->cameraDetails);
-		glm::vec3 translate;
-		glm::vec3 scale;
-		glm::vec3 rotation;
-		translate = glm::vec3(0.0f, 20.0f, 30.0f);
+		vec3 translate;
+		vec3 scale;
+		vec3 rotation;
+		translate = vec3(0.0f, 20.0f, 30.0f);
 		water->setTranslate(&translate);
 		// load models
 		// -----------
@@ -66,20 +69,20 @@ public:
 		Model* model;
 
 		model = new Model("models/fogata.obj", main->cameraDetails);
-		translate = glm::vec3(0.0f, 10.0f, 25.0f);
+		translate = vec3(0.0f, 10.0f, 25.0f);
 		model->setTranslate(&translate);
-		rotation = glm::vec3(1.0f, 0.0f, 0.0f); //rotation X
+		rotation = vec3(1.0f, 0.0f, 0.0f); //rotation X
 		model->setRotX(45); // 45� rotation
 		ourModel.emplace_back(model);
 
 		model= new Model("models/pez.obj", main->cameraDetails);
-		translate = glm::vec3(0.0f, 7.0f, 50.0f);
+		translate = vec3(0.0f, 7.0f, 50.0f);
 		model->setTranslate(&translate);
 		ourModel.emplace_back(model);
 
 		model = new Model("models/dancing_vampire.dae", main->cameraDetails);
-		translate = glm::vec3(0.0f, terreno->Superficie(0.0f, 60.0f) , 60.0f);
-		scale = glm::vec3(0.1f, 0.1f, 0.1f);	// it's a bit too big for our scene, so scale it down
+		translate = vec3(0.0f, terreno->Superficie(0.0f, 60.0f) , 60.0f);
+		scale = vec3(0.1f, 0.1f, 0.1f);	// it's a bit too big for our scene, so scale it down
 		model->setTranslate(&translate);
 		model->setScale(&scale);
 		model->setRotY(90);
@@ -91,8 +94,8 @@ public:
 			cout << "Could not load animation!\n";
 		}*/
 		model = new Model("models/Silly_Dancing.dae", main->cameraDetails);
-		translate = glm::vec3(10.0f, terreno->Superficie(0.0f, 60.0f) , 60.0f);
-		scale = glm::vec3(0.1f, 0.1f, 0.1f);	// it's a bit too big for our scene, so scale it down
+		translate = vec3(10.0f, terreno->Superficie(0.0f, 60.0f) , 60.0f);
+		scale = vec3(0.1f, 0.1f, 0.1f);	// it's a bit too big for our scene, so scale it down
 		model->setTranslate(&translate);
 		model->setScale(&scale);
 		model->setRotY(180);
@@ -111,20 +114,21 @@ public:
 //		ourModel.emplace_back(model);
 
 		model = new Model("models/backpack.obj", main->cameraDetails, false, false);
-		translate = glm::vec3(20.0f, 14.0f, 0.0f);
-		scale = glm::vec3(1.0f, 1.0f, 1.0f);	// it's a bit too big for our scene, so scale it down
+		translate = vec3(20.0f, 14.0f, 0.0f);
+		scale = vec3(1.0f, 1.0f, 1.0f);	// it's a bit too big for our scene, so scale it down
 		model->setTranslate(&translate);
 		model->setScale(&scale);
 		ourModel.emplace_back(model);
+
 		inicializaBillboards();
-		std::wstring prueba(L"Esta es una prueba");
+		wstring prueba(L"Esta es una prueba");
 		ourText.emplace_back(new Texto(prueba, 20, 0, 0, SCR_HEIGHT, 0, camara));
 		billBoard2D.emplace_back(new Billboard2D((WCHAR*)L"billboards/awesomeface.png", 6, 6, 100, 200, 0, camara->cameraDetails));
-		scale = glm::vec3(100.0f, 100.0f, 0.0f);	// it's a bit too big for our scene, so scale it down
+		scale = vec3(100.0f, 100.0f, 0.0f);	// it's a bit too big for our scene, so scale it down
 		billBoard2D.back()->setScale(&scale);
-		wCoordenadas =  L"X: " + std::to_wstring(getMainModel()->getTranslate()->x) +
-						L" Y: " + std::to_wstring(getMainModel()->getTranslate()->y) +
-						L" Z: " + std::to_wstring(getMainModel()->getTranslate()->z);
+		wCoordenadas =  L"X: " + to_wstring(getMainModel()->getTranslate()->x) +
+						L" Y: " + to_wstring(getMainModel()->getTranslate()->y) +
+						L" Z: " + to_wstring(getMainModel()->getTranslate()->z);
 		coordenadas = new Texto(wCoordenadas, 15, 0, 0, 0, 0, camara);
 	}
 
@@ -187,9 +191,10 @@ public:
 			ourText[i]->Draw();
 		}
 		// No es optimo ya que crea el texto cada renderizado....
-		wCoordenadas =  L"X: " + std::to_wstring(getMainModel()->getTranslate()->x) +
-						L" Y: " + std::to_wstring(getMainModel()->getTranslate()->y) +
-						L" Z: " + std::to_wstring(getMainModel()->getTranslate()->z);
+
+		wCoordenadas = L"X: " + std::to_wstring(getMainModel()->getTranslate()->x) +
+			L" Y: " + std::to_wstring(getMainModel()->getTranslate()->y) +
+			L" Z: " + std::to_wstring(getMainModel()->getTranslate()->z);
 		coordenadas->initTexto(wCoordenadas);
 		coordenadas->Draw();
 		// Le decimos a winapi que haga el update en la ventana
