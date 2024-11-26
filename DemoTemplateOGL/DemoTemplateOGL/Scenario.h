@@ -49,6 +49,7 @@ public:
 		InitGraph(camIni);
 	}
 	void InitGraph(Model *main) {
+
 		float matAmbient[] = { 1,1,1,1 };
 		float matDiff[] = { 1,1,1,1 };
 		angulo = 0;
@@ -67,7 +68,45 @@ public:
 		// -----------
 		ourModel.emplace_back(main);
 		Model* model;
+		// Modelos mios jajsjasjasd
+		//Pinos
+		model = new Model("models/Low Poly Pine.obj", main->cameraDetails);
+		translate = vec3(1.0f, 10.0f, 25.0f);
+		model->setTranslate(&translate);
+		rotation = vec3(1.0f, 0.0f, 0.0f); //rotation X
+		model->setRotX(0); // 45� rotation
+		ourModel.emplace_back(model);
 
+		model = new Model("models/Low Poly Pine.obj", main->cameraDetails);
+		translate = vec3(1.0f, 10.0f, 25.0f);
+		model->setTranslate(&translate);
+		rotation = vec3(1.0f, 0.0f, 0.0f); //rotation X
+		model->setRotX(0); // 45� rotation
+		ourModel.emplace_back(model);
+
+		model = new Model("models/Low Poly Pine.obj", main->cameraDetails);
+		translate = vec3(1.0f, 10.0f, 25.0f);
+		model->setTranslate(&translate);
+		rotation = vec3(1.0f, 0.0f, 0.0f); //rotation X
+		model->setRotX(0); // 45� rotation
+		ourModel.emplace_back(model);
+
+
+		model = new Model("models/Low Poly Pine.obj", main->cameraDetails);
+		translate = vec3(1.0f, 10.0f, 25.0f);
+		model->setTranslate(&translate);
+		rotation = vec3(1.0f, 0.0f, 0.0f); //rotation X
+		model->setRotX(0); // 45� rotation
+		ourModel.emplace_back(model);
+
+		model = new Model("models/Low Poly Pine.obj", main->cameraDetails);
+		translate = vec3(1.0f, 10.0f, 25.0f);
+		model->setTranslate(&translate);
+		rotation = vec3(1.0f, 0.0f, 0.0f); //rotation X
+		model->setRotX(0); // 45� rotation
+		ourModel.emplace_back(model);
+
+		/*
 		model = new Model("models/fogata.obj", main->cameraDetails);
 		translate = vec3(0.0f, 10.0f, 25.0f);
 		model->setTranslate(&translate);
@@ -87,31 +126,32 @@ public:
 		model->setScale(&scale);
 		model->setRotY(90);
 		ourModel.emplace_back(model);
-/*		try{
+		try {
 			Animation *ani = new Animation("models/dancing_vampire.dae", model->GetBoneInfoMap(), model->GetBoneCount());
 		    model->setAnimator(new Animator(ani));
 		}catch(...){
 			cout << "Could not load animation!\n";
-		}*/
-		model = new Model("models/Silly_Dancing.dae", main->cameraDetails);
+		}
+			
+	model = new Model("models/Silly_Dancing.dae", main->cameraDetails);
 		translate = vec3(10.0f, terreno->Superficie(0.0f, 60.0f) , 60.0f);
 		scale = vec3(0.1f, 0.1f, 0.1f);	// it's a bit too big for our scene, so scale it down
 		model->setTranslate(&translate);
 		model->setScale(&scale);
 		model->setRotY(180);
 		ourModel.emplace_back(model);
-/*		try{
+		try{
 			Animation *ani = new Animation("models/Silly_Dancing.dae", model->GetBoneInfoMap(), model->GetBoneCount());
 		    model->setAnimator(new Animator(ani));
 		}catch(...){
 			cout << "Could not load animation!\n";
-		}*/
-//		model = new Model("models/IronMan.obj", main);
-//		translate = glm::vec3(0.0f, 20.0f, 30.0f);
-//		scale = glm::vec3(0.025f, 0.025f, 0.025f);	// it's a bit too big for our scene, so scale it down
-//		model->setScale(&scale);
-//		model->setTranslate(&translate);
-//		ourModel.emplace_back(model);
+		}
+		model = new Model("models/IronMan.obj", main);
+		translate = glm::vec3(0.0f, 20.0f, 30.0f);
+		scale = glm::vec3(0.025f, 0.025f, 0.025f);	// it's a bit too big for our scene, so scale it down
+		model->setScale(&scale);
+		model->setTranslate(&translate);
+		ourModel.emplace_back(model);
 
 		model = new Model("models/backpack.obj", main->cameraDetails, false, false);
 		translate = vec3(20.0f, 14.0f, 0.0f);
@@ -120,19 +160,30 @@ public:
 		model->setScale(&scale);
 		ourModel.emplace_back(model);
 
+		*/
 		inicializaBillboards();
-		wstring prueba(L"Esta es una prueba");
+		
+		wstring prueba(L"");
 		ourText.emplace_back(new Texto(prueba, 20, 0, 0, SCR_HEIGHT, 0, camara));
-		billBoard2D.emplace_back(new Billboard2D((WCHAR*)L"billboards/awesomeface.png", 6, 6, 100, 200, 0, camara->cameraDetails));
-		scale = vec3(100.0f, 100.0f, 0.0f);	// it's a bit too big for our scene, so scale it down
-		billBoard2D.back()->setScale(&scale);
-		wCoordenadas =  L"X: " + to_wstring(getMainModel()->getTranslate()->x) +
-						L" Y: " + to_wstring(getMainModel()->getTranslate()->y) +
-						L" Z: " + to_wstring(getMainModel()->getTranslate()->z);
+		// Inicializa un Billboard2D antes de intentar usarlo
+		billBoard2D.emplace_back(new Billboard2D((WCHAR*)L"", 6, 6, 100, 100, 0, camara->cameraDetails));
+		if (!billBoard2D.empty()) {
+			vec3 scale = vec3(100.0f, 100.0f, 0.0f); // Asegura que la escala está definida aquí
+			billBoard2D.back()->setScale(&scale);
+		}
+		else {
+			std::cerr << "Error: El vector billBoard2D está vacío al intentar establecer la escala.\n";
+		}
+
+		wCoordenadas = L"X: " + to_wstring(getMainModel()->getTranslate()->x) +
+			L" Y: " + to_wstring(getMainModel()->getTranslate()->y) +
+			L" Z: " + to_wstring(getMainModel()->getTranslate()->z);
 		coordenadas = new Texto(wCoordenadas, 15, 0, 0, 0, 0, camara);
+
 	}
 
 	void inicializaBillboards() {
+
 		float ye = terreno->Superficie(0, 0);
 		billBoard.emplace_back(new Billboard((WCHAR*)L"billboards/Arbol.png", 6, 6, 0, ye - 1, 0, camara->cameraDetails));
 
@@ -146,60 +197,118 @@ public:
 	//el metodo render toma el dispositivo sobre el cual va a dibujar
 	//y hace su tarea ya conocida
 	Scene* Render() {
-		//borramos el biffer de color y el z para el control de profundidad a la 
-		//hora del render a nivel pixel.
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
-//		glClearColor(255.0f, 255.0f, 255.0f, 255.0f);
+		// Validación inicial de los recursos clave
+		if (!sky) {
+			std::cerr << "Error: SkyDome no está inicializado.\n";
+			return nullptr;
+		}
+		if (!terreno) {
+			std::cerr << "Error: Terreno no está inicializado.\n";
+			return nullptr;
+		}
+		if (!water) {
+			std::cerr << "Error: Water no está inicializado.\n";
+			return nullptr;
+		}
+		if (billBoard.empty()) {
+			std::cerr << "Error: No hay Billboards cargados.\n";
+			return nullptr;
+		}
+		if (billBoard2D.empty()) {
+			std::cerr << "Error: No hay Billboards 2D cargados.\n";
+			return nullptr;
+		}
+		if (ourModel.empty()) {
+			std::cerr << "Error: No hay modelos cargados.\n";
+			return nullptr;
+		}
+		if (!camara || !camara->cameraDetails) {
+			std::cerr << "Error: Cámara o detalles de cámara no están inicializados.\n";
+			return nullptr;
+		}
 
-		// Actualizamos la camara
-		camara->cameraDetails->CamaraUpdate(camara->getRotY(), camara->getTranslate());
+		try {
+			// Renderizado principal
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 
-		if (this->animacion > 25) { // Timer se ejecuta cada 1000/30 = 33.333 ms
-			float ye = terreno->Superficie(5, -5);
-			Billboard* temporal = billBoard[1];
-			wstring textura = L"billboards/Arbol" +
-				(this->frameArbol == 1 ? L"" : to_wstring(this->frameArbol)) + L".png";
-			billBoard[1] = new Billboard((WCHAR*)textura.c_str(), 6, 6, 5, ye - 1, -5, camara->cameraDetails);
-			if (this->frameArbol == 3) {
-				this->frameArbol = 1;
+			// Actualización de la cámara
+			camara->cameraDetails->CamaraUpdate(camara->getRotY(), camara->getTranslate());
+
+			// Animación y actualización de billboards
+			if (this->animacion > 25) {
+				if (billBoard.size() > 1) {
+					float ye = terreno->Superficie(5, -5);
+					Billboard* temporal = billBoard[1];
+					wstring textura = L"billboards/Arbol" +
+						(this->frameArbol == 1 ? L"" : to_wstring(this->frameArbol)) + L".png";
+					try {
+						billBoard[1] = new Billboard((WCHAR*)textura.c_str(), 6, 6, 5, ye - 1, -5, camara->cameraDetails);
+						delete temporal;
+					}
+					catch (const std::exception& e) {
+						std::cerr << "Error al actualizar Billboard: " << e.what() << "\n";
+					}
+					this->frameArbol = (this->frameArbol == 3) ? 1 : this->frameArbol + 1;
+				}
+				this->animacion = 0;
 			}
 			else {
-				this->frameArbol++;
+				animacion++;
 			}
-			this->animacion = 0;
-			delete temporal;
-		}
-		else {
-			animacion++;
-		}
-		// Decimos que dibuje la media esfera
-		sky->Draw();
-		// Ahora el terreno
-		terreno->Draw();
-		water->Draw();
-		// Dibujamos cada billboard que este cargado en el arreglo de billboards.
-		for (int i = 0; i < billBoard.size(); i++)
-			billBoard[i]->Draw();
-		for (int i = 0; i < billBoard2D.size(); i++)
-			billBoard2D[i]->Draw();
-		// Dibujamos cada modelo que este cargado en nuestro arreglo de modelos
-		for (int i = 0; i < ourModel.size(); i++) {
-			ourModel[i]->Draw();
-		}
-		for (int i = 0; i < ourText.size(); i++) {
-			ourText[i]->Draw();
-		}
-		// No es optimo ya que crea el texto cada renderizado....
 
-		wCoordenadas = L"X: " + std::to_wstring(getMainModel()->getTranslate()->x) +
-			L" Y: " + std::to_wstring(getMainModel()->getTranslate()->y) +
-			L" Z: " + std::to_wstring(getMainModel()->getTranslate()->z);
-		coordenadas->initTexto(wCoordenadas);
-		coordenadas->Draw();
-		// Le decimos a winapi que haga el update en la ventana
+			// Dibujar el cielo
+			sky->Draw();
+
+			// Dibujar el terreno
+			terreno->Draw();
+
+			// Dibujar el agua
+			water->Draw();
+
+			// Dibujar billboards 3D
+			for (auto& billboard : billBoard) {
+				if (billboard) billboard->Draw();
+			}
+
+			// Dibujar modelos
+			for (auto& model : ourModel) {
+				if (model) model->Draw();
+			}
+
+			// Dibujar textos
+			for (auto& text : ourText) {
+				if (text) text->Draw();
+			}
+
+			// Actualizar y dibujar coordenadas
+			if (!ourModel.empty() && getMainModel()) {
+				wCoordenadas = L"X: " + to_wstring(getMainModel()->getTranslate()->x) +
+					L" Y: " + to_wstring(getMainModel()->getTranslate()->y) +
+					L" Z: " + to_wstring(getMainModel()->getTranslate()->z);
+				coordenadas->initTexto(wCoordenadas);
+				coordenadas->Draw();
+			}
+			else {
+				std::cerr << "Error: El modelo principal no está disponible.\n";
+			}
+
+		}
+		catch (const std::exception& e) {
+			std::cerr << "Excepción capturada durante el renderizado: " << e.what() << "\n";
+			return nullptr;
+		}
+		catch (...) {
+			std::cerr << "Excepción desconocida capturada durante el renderizado.\n";
+			return nullptr;
+		}
+
 		return this;
 	}
+
+
+
+
 	
 	std::vector<Model*> *getLoadedModels() {
 		return &ourModel;

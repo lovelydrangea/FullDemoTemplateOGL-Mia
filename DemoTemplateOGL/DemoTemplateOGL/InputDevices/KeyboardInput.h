@@ -4,6 +4,11 @@
 
 #include "../Base/Utilities.h"
 
+using namespace std;
+using namespace glm;
+
+
+
 // Define the Input struct with key codes
 struct Input {
     enum Keys : unsigned int {  // Usar unsigned int como tipo subyacente
@@ -27,9 +32,9 @@ struct Input {
 // MouseInput class definition
 class MouseInput {
 private:
-    glm::vec2 prevP;       // Previous position of the mouse
-    glm::vec2 currP;       // Current position of the mouse
-    glm::vec2 delta;       // Mouse movement (delta)
+    vec2 prevP;       // Previous position of the mouse
+    vec2 currP;       // Current position of the mouse
+    vec2 delta;       // Mouse movement (delta)
     char mouseWheel;       // Mouse wheel movement
     bool lbtn;             // Left mouse button state
     bool rbtn;             // Right mouse button state
@@ -40,10 +45,10 @@ public:
     // Getters and setters
     float getDY() const;    // Get Y movement (delta)
     float getDX() const;    // Get X movement (delta)
-    glm::vec2 getDelta() const;  // Get delta of mouse movement
+    vec2 getDelta() const;  // Get delta of mouse movement
 
-    glm::vec2 setPosition(double x, double y, bool isDelta = false);  // Set mouse position
-    glm::vec2 setPosition(glm::vec2 d, bool isDelta = false);  // Set mouse position from glm::vec2
+    vec2 setPosition(double x, double y, bool isDelta = false);  // Set mouse position
+    vec2 setPosition(vec2 d, bool isDelta = false);  // Set mouse position from glm::vec2
 
     bool getLbtn() const;      // Get state of the left mouse button
     bool getRbtn() const;      // Get state of the right mouse button
@@ -56,7 +61,7 @@ public:
 
 // External variables and function declarations
 extern struct Input input;
-extern std::array<bool, 256> KEYS;  // Using std::array for type safety
+extern array<bool, 256> KEYS;  // Using std::array for type safety
 extern bool KeysEvents(GameActions* obj);  // Key event handling function
 extern void Init();  // Initialization function for keys
 extern MouseInput cDelta;  // Mouse input instance

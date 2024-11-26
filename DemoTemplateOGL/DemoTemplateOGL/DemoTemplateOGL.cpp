@@ -5,7 +5,7 @@
 #include "Base/Utilities.h"
 #include "InputDevices/KeyboardInput.h"
 #include <glad/glad.h>
-
+#include <xstring>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -13,6 +13,7 @@
 #include "Base/glext.h"
 #include "Base/wglext.h"
 #include "Base/model.h"
+#include <array>
 
 #ifdef _WIN32 
 #include "InputDevices/GamePadRR.h"
@@ -24,6 +25,7 @@
 
 #define MAX_LOADSTRING 100
 #define Timer1 100
+
 bool renderiza;                     // Variable para controlar el render
 #ifdef _WIN32 
 HINSTANCE hInst;                                // current instance

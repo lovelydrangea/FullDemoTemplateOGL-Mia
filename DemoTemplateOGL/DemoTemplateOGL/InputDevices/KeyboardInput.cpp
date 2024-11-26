@@ -1,4 +1,7 @@
 #include "KeyboardInput.h"
+#include <array> 
+
+
 using namespace std;
 using namespace glm;
 
@@ -10,7 +13,7 @@ MouseInput::MouseInput() {
     currP.y = 0;
     delta.x = 0;
     delta.y = 0;
-    lbtn = false;
+    lbtn = false; 
     rbtn = false;
     mouseWheel = 0;
 }
@@ -50,14 +53,14 @@ vec2 MouseInput::setPosition(double x, double y, bool isDelta) {
     return delta;
 }
 
-vec2 MouseInput::setPosition(glm::vec2 d, bool isDelta) {
+vec2 MouseInput::setPosition(vec2 d, bool isDelta) {
     return setPosition(d.x, d.y, isDelta);
 }
 
 // External variables
 extern struct Input input;
-extern array<bool, 256> KEYS;  // Using std::array for better type safety
-extern MouseInput cDelta;           // Instance of MouseInput class
+array<bool, 256> KEYS;  // Using std::array for better type safety
+MouseInput cDelta;           // Instance of MouseInput class
 
 // Initializes the keys array
 void Init() {
