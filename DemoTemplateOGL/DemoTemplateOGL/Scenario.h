@@ -7,7 +7,8 @@
 #endif
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
+#include <cstdlib> // Para rand() y srand()
+#include <ctime>   // Para seed de random
 #include <vector>
 #include "Base/camera.h"
 #include "Base/Billboard.h"
@@ -53,67 +54,64 @@ public:
 		float matAmbient[] = { 1,1,1,1 };
 		float matDiff[] = { 1,1,1,1 };
 		angulo = 0;
-		camara = main;
+		camara = main;// Personaje principal
 		//creamos el objeto skydome
-		sky = new SkyDome(32, 32, 20, (WCHAR*)L"skydome/earth.jpg", main->cameraDetails);
+		sky = new SkyDome(20, 17, 12, (WCHAR*)L"skydome/earth.jpg", main->cameraDetails);
 		//creamos el terreno
 		terreno = new Terreno((WCHAR*)L"skydome/terreno.jpg", (WCHAR*)L"skydome/texterr.jpg", 400, 400, main->cameraDetails);
-		water = new Water((WCHAR*)L"textures/terreno.bmp", (WCHAR*)L"textures/water.bmp", 20, 20, camara->cameraDetails);
+		water = new Water((WCHAR*)L"textures/terreno.bmp", (WCHAR*)L"textures/water.bmp", 80, 50, camara->cameraDetails);
 		vec3 translate;
 		vec3 scale;
 		vec3 rotation;
-		translate = vec3(0.0f, 20.0f, 30.0f);
+		translate = vec3(-97.0f, terreno->Superficie(-97.0f,-5.0f)+2.9f, -5.0f);
+		rotation = vec3(0.0f, 0.0f, 1.0f);
+		water->setRotZ(0);
 		water->setTranslate(&translate);
 		// load models
 		// -----------
 		ourModel.emplace_back(main);
 		Model* model;
+
+		vec3 PosicionJugador = glm::vec3(5.0f, terreno->Superficie(5.0f, -13.0f), -13.0f);
+		vec3 PosicionCasa = glm::vec3(38.0f, terreno->Superficie(18.0f, 27.0f) + 10, 27.0f);
+
+		CrearBosque(ourModel, terreno, main->cameraDetails, 18, PosicionJugador, PosicionCasa, 12.0f);
+		// Creamos un pequeñito bosque utilizando las librerias, randomizando como tal el escenario
 		// Modelos mios jajsjasjasd
 		//Pinos
-		model = new Model("models/Low Poly Pine.obj", main->cameraDetails);
-		translate = vec3(1.0f, 10.0f, 25.0f);
-		model->setTranslate(&translate);
-		rotation = vec3(1.0f, 0.0f, 0.0f); //rotation X
-		model->setRotX(0); // 45� rotation
-		ourModel.emplace_back(model);
-
-		model = new Model("models/Low Poly Pine.obj", main->cameraDetails);
-		translate = vec3(1.0f, 10.0f, 25.0f);
-		model->setTranslate(&translate);
-		rotation = vec3(1.0f, 0.0f, 0.0f); //rotation X
-		model->setRotX(0); // 45� rotation
-		ourModel.emplace_back(model);
-
-		model = new Model("models/Low Poly Pine.obj", main->cameraDetails);
-		translate = vec3(1.0f, 10.0f, 25.0f);
-		model->setTranslate(&translate);
-		rotation = vec3(1.0f, 0.0f, 0.0f); //rotation X
-		model->setRotX(0); // 45� rotation
-		ourModel.emplace_back(model);
-
-
-		model = new Model("models/Low Poly Pine.obj", main->cameraDetails);
-		translate = vec3(1.0f, 10.0f, 25.0f);
-		model->setTranslate(&translate);
-		rotation = vec3(1.0f, 0.0f, 0.0f); //rotation X
-		model->setRotX(0); // 45� rotation
-		ourModel.emplace_back(model);
-
-		model = new Model("models/Low Poly Pine.obj", main->cameraDetails);
-		translate = vec3(1.0f, 10.0f, 25.0f);
-		model->setTranslate(&translate);
-		rotation = vec3(1.0f, 0.0f, 0.0f); //rotation X
-		model->setRotX(0); // 45� rotation
-		ourModel.emplace_back(model);
-
 		/*
+
+		*/
+		//Fogata para complementar el bosque!!
 		model = new Model("models/fogata.obj", main->cameraDetails);
 		translate = vec3(0.0f, 10.0f, 25.0f);
 		model->setTranslate(&translate);
 		rotation = vec3(1.0f, 0.0f, 0.0f); //rotation X
-		model->setRotX(45); // 45� rotation
+		model->setRotX(0); // 45� rotation
 		ourModel.emplace_back(model);
 
+
+		//Casita
+		model = new Model("models/model.dae", main->cameraDetails);
+		translate = vec3(38.0f, terreno->Superficie(18.0f, 27.0f)+10, 27.0f);
+		scale = vec3(15.0f, 15.0f, 15.0f);
+		model->setScale(&scale);
+		model->setTranslate(&translate);
+		ourModel.emplace_back(model);
+		//Monstrous se ven oscuros
+
+		model = new Model("models/base.obj", main->cameraDetails);
+		translate = vec3(0.0f, 17.0f, 25.0f);
+		model->setTranslate(&translate);
+		scale = vec3(3.0f, 3.0f, 3.0f);
+		rotation = vec3(1.0f, 0.0f, 0.0f); //rotation X
+		model->setScale(&scale);
+		model->setRotX(0); // 45� rotation
+		ourModel.emplace_back(model);
+
+
+
+		/*
 		model= new Model("models/pez.obj", main->cameraDetails);
 		translate = vec3(0.0f, 7.0f, 50.0f);
 		model->setTranslate(&translate);
@@ -234,7 +232,7 @@ public:
 
 			// Actualización de la cámara
 			camara->cameraDetails->CamaraUpdate(camara->getRotY(), camara->getTranslate());
-
+			
 			// Animación y actualización de billboards
 			if (this->animacion > 25) {
 				if (billBoard.size() > 1) {
@@ -256,7 +254,7 @@ public:
 			else {
 				animacion++;
 			}
-
+			
 			// Dibujar el cielo
 			sky->Draw();
 
@@ -358,6 +356,62 @@ public:
 					delete ourModel[i];
 		this->ourModel.clear();
 	}
+	void CrearBosque(std::vector<Model*>& ourModel, Terreno* terreno, Camera* camaraDetails, int cantidadArboles, glm::vec3 PosicionJugador, glm::vec3 PosicionCasa, float distanciaMinima) {
+		// Semilla para números aleatorios
+		srand(static_cast<unsigned>(time(0)));
+
+		for (int i = 0; i < cantidadArboles; ++i) {
+			bool posicionValida = false;
+			vec3 translate;
+
+			// Intentar generar una posición válida
+			int intentos = 0; // Para evitar bucles infinitos
+			while (!posicionValida && intentos < 100) {
+				// Generar coordenadas X y Z aleatorias dentro de un rango
+				float x = static_cast<float>((rand() % 100) - 50); // Rango: -50 a 50
+				float z = static_cast<float>((rand() % 100) - 50); // Rango: -50 a 50
+
+				// Obtener la altura del terreno en esas coordenadas
+				float y = terreno->Superficie(x, z);
+
+				translate = vec3(x, y, z);
+
+				// Verificar que las distancias sean mayores o iguales a la distancia mínima en X, Y y Z
+				bool lejosDeJugador = abs(translate.x - PosicionJugador.x) >= distanciaMinima &&
+					abs(translate.z - PosicionJugador.z) >= distanciaMinima;
+
+				bool lejosDeCasa = abs(translate.x - PosicionCasa.x) >= distanciaMinima &&
+					abs(translate.z - PosicionCasa.z) >= distanciaMinima;
+
+				if (lejosDeJugador && lejosDeCasa) {
+					posicionValida = true;
+				}
+
+				intentos++;
+			}
+
+			if (!posicionValida) {
+				std::cerr << "Advertencia: No se pudo encontrar una posición válida para un árbol tras 100 intentos.\n";
+				continue; // Saltar este árbol si no se encuentra una posición válida
+			}
+
+			// Crear y posicionar el modelo del árbol
+			Model* model = new Model("models/Low Poly Pine.obj", camaraDetails);
+			model->setTranslate(&translate);
+
+			// Escalar el árbol para variar su tamaño, si lo deseas (opcional)
+			float scaleValue = static_cast<float>((rand() % 5 + 10)) / 10.0f; // Rango: 1.0f - 1.5f
+			vec3 scale = vec3(scaleValue, scaleValue, scaleValue);
+			model->setScale(&scale);
+
+			// Agregar el modelo a la lista
+			ourModel.emplace_back(model);
+		}
+	}
+
+
+
+
 };
 
 #endif

@@ -4,6 +4,7 @@
 #endif
 
 
+
 Model::Model() {
     this->cameraDetails = NULL;
     this->gammaCorrection = false;
@@ -501,6 +502,7 @@ void Model::SetVertexBoneData(Vertex& vertex, int boneID, float weight){
         }
     }
 }
+
 
 void Model::ExtractBoneWeightForVertices(vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene){
     for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex){

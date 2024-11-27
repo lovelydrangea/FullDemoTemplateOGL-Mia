@@ -99,7 +99,6 @@ public:
     void setNextRotX(float rotationAngle);
     void setNextRotY(float rotationAngle);
     void setNextRotZ(float rotationAngle);
-
     void buildKDtree();
     bool colisionaCon(Model& objeto, bool collitionMove = false);
     bool nodoColisionCon(Model& objeto, std::pair<Node*, Node*>& nodeCollitions, bool collitionMove = false);

@@ -26,6 +26,8 @@
 #define MAX_LOADSTRING 100
 #define Timer1 100
 
+
+
 bool renderiza;                     // Variable para controlar el render
 #ifdef _WIN32 
 HINSTANCE hInst;                                // current instance
