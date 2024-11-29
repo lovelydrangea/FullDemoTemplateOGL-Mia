@@ -6,9 +6,10 @@
 #include "Water.h"
 #include "Animator.h"
 #include "Animation.h"
+#include "../Projectile.h"
 
 class Scene {
-	public:
+	public: 
 		virtual float getAngulo() = 0;
 		virtual void setAngulo(float angulo) = 0;
 		virtual Model* getMainModel() = 0;

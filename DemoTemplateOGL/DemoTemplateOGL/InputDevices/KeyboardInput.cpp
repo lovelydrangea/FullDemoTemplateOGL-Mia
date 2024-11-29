@@ -1,5 +1,6 @@
 #include "KeyboardInput.h"
 #include <array> 
+#include "../Base/model.h"
 
 
 using namespace std;
@@ -75,6 +76,11 @@ bool KeysEvents(GameActions* actions) {
     if (KEYS[static_cast<size_t>(input.P)]) {
         actions->firstPerson = true;
         KEYS[static_cast<size_t>(input.P)] = false;
+    }
+    // Seria correcto esto para el disparo
+    if (KEYS[static_cast<size_t>(input.F)]&& actions->firstPerson == true ) {
+        actions->action = true;
+        KEYS[static_cast<size_t>(input.F)] = false;
     }
 
     if (KEYS[static_cast<size_t>(input.D)]) {

@@ -14,6 +14,7 @@
 #include "Base/Billboard.h"
 #include <iostream>
 #include "Base/Scene.h"
+#include "Projectile.h"
 #include "Texto.h"
 #include "Billboard2D.h"
 #include <GLFW/glfw3.h>
@@ -27,6 +28,7 @@ private:
 	SkyDome* sky;
 	Terreno* terreno;
 	Shader* rainShader;
+	vector<Projectile*> projectiles;
 	vector<Billboard*> billBoard;
 	vector<Billboard2D*> billBoard2D;
 	vector<Model*> ourModel;
@@ -50,14 +52,18 @@ public:
 		model->setScale(&scale);
 		model->setTranslate(&translate);
 		InitGraph(model);
+		InitRainShader();
+		InitRainGeometry();
 
 
 	}
 	Scenario(Model *camIni) {
 		InitGraph(camIni);
-
+		InitRainShader();
+		InitRainGeometry();
 
 	}
+
 	void InitGraph(Model* main) {
 		glEnable(GL_PROGRAM_POINT_SIZE);
 

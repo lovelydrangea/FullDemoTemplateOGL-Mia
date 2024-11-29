@@ -13,6 +13,7 @@
 #include "Base/glext.h"
 #include "Base/wglext.h"
 #include "Base/model.h"
+
 #include <array>
 
 #ifdef _WIN32 
@@ -22,9 +23,11 @@
 #endif
 #include "Base/Scene.h"
 #include "Scenario.h"
+#include "Player.h"
 
 #define MAX_LOADSTRING 100
 #define Timer1 100
+
 
 
 
@@ -110,7 +113,7 @@ int main(int argc, char** argv){
     Camera* camera = new Camera();
     //Personaje principal
 
-    Model* model = new Model("models/catidle.fbx", translate, camera);
+    Player * model = new Player("models/catidle.fbx", translate, camera);
     model->setTranslate(&translate);
     camera->setFront(v);
     rotate = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -186,7 +189,7 @@ int main(int argc, char** argv){
                 delete OGLobj;
                 OGLobj = escena;
             }
-//            renderiza = false;
+     //      renderiza = false;
 #ifdef _WIN32
             SwapBuffers(dc);
 #else
@@ -257,6 +260,17 @@ bool checkInput(GameActions* actions, Scene* scene) {
     }
 
     Model* mainModel = scene->getMainModel(); //Modelo principal
+    if (actions->action) {
+        // Genera un proyectil al presionar "F"
+        glm::vec3 direction = glm::normalize(mainModel->cameraDetails->getFront()); // Dirección hacia donde mira la cámara
+        glm::vec3 startPosition = *model->getTranslate() + glm::vec3(0.0f, 1.5f, 0.0f); // Justo frente al jugador
+        Projectile* newProjectile = new Projectile("models/projectile.obj", startPosition, direction, mainModel->cameraDetails);
+        OGLobj->addProjectile(newProjectile);
+
+        actions.action = false; // Resetea la acción
+    }
+
+
 
     if (actions->firstPerson) {
         // Alternar entre primera y tercera persona presionando la tecla F
