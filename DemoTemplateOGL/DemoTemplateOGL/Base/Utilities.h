@@ -46,7 +46,7 @@ extern struct GameActions {
 	float sideAdvance = 0;
 	bool firstPerson = false;
 	bool jump = false;
-	bool action = false;
+	bool action = false; //Seria el boton f
 	void setZoom(float value);
 	float* getZoom();
 	void setPlayerZoom(float value);

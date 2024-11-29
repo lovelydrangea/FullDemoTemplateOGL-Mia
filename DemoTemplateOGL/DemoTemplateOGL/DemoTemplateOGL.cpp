@@ -108,6 +108,7 @@ int main(int argc, char** argv){
     //MainModel *model = new MainModel(hWnd, "models/Cube.obj", translate);
     // Esta es la camara prinicpal
     Camera* camera = new Camera();
+    //Personaje principal
 
     Model* model = new Model("models/catidle.fbx", translate, camera);
     model->setTranslate(&translate);
@@ -255,10 +256,10 @@ bool checkInput(GameActions* actions, Scene* scene) {
         checkCollition = KeysEvents(actions);
     }
 
-    Model* mainModel = scene->getMainModel();
+    Model* mainModel = scene->getMainModel(); //Modelo principal
 
     if (actions->firstPerson) {
-        // Alternar entre primera y tercera persona
+        // Alternar entre primera y tercera persona presionando la tecla F
         bool isFirstPerson = mainModel->cameraDetails->getFirstPerson();
         mainModel->cameraDetails->setFirstPerson(!isFirstPerson);
 

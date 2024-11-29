@@ -223,7 +223,7 @@ public:
 		std::vector<glm::vec3> rainPositions;
 
 		// Genera posiciones aleatorias para las gotas de lluvia
-		for (int i = 0; i < 100000; i++) {
+		for (int i = 0; i < 10000; i++) {
 			float x = ((rand() % 200) - 100) / 100.0f; // Posición X
 			float y = ((rand() % 200) - 100) / 100.0f; // Posición Y
 			float z = ((rand() % 200) - 100) / 100.0f; // Posición Z
@@ -282,6 +282,7 @@ public:
 			rainShader->desuse();
 
 		}
+		
 	}
 
 

@@ -102,7 +102,7 @@ void Billboard::Draw() {
 		// build and compile our shader zprogram
 		// ------------------------------------
 		gpuDemo = new Shader("shaders/billboard.vs", "shaders/billboard.fs");
-//		gpuDemo = new Shader("shaders/models/1.model_material_loading.vs", "shaders/models/1.model_material_loading.fs");
+	//gpuDemo = new Shader("shaders/models/1.model_material_loading.vs", "shaders/models/1.model_material_loading.fs");
 		setDefaultShader(true);
 	}
 	if (getDefaultShader()) {
