@@ -534,7 +534,11 @@ void Model::ExtractBoneWeightForVertices(vector<Vertex>& vertices, aiMesh* mesh,
 bool Model::colisionaCon(Model& objeto, bool collitionMove) {
     // Obtener las matrices de transformación para ambos modelos
     // collitionMove sirve para saber si el modelo principal a comparar va avanzar(true)
+    // 
     // o esta quieto(false)
+    if (this->AABB == NULL || objeto.AABB == NULL) {
+        return false;
+    }
     glm::mat4 transform1 = collitionMove ? this->makeTransScaleNextPosition(glm::mat4(1)) : this->makeTransScale(glm::mat4(1)) ; // Para el cubo A
     // Asumimos que el modelo a comparar esta quieto y no se esta moviendo
     glm::mat4 transform2 = objeto.makeTransScale(glm::mat4(1)); // Para el cubo B

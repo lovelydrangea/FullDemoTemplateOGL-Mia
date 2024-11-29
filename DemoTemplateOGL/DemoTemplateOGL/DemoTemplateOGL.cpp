@@ -28,6 +28,8 @@
 
 
 
+
+
 bool renderiza;                     // Variable para controlar el render
 #ifdef _WIN32 
 HINSTANCE hInst;                                // current instance
@@ -58,6 +60,8 @@ unsigned int SCR_HEIGHT = 600;
 bool newContext = false; // Bandera para identificar si OpenGL 2.0 > esta activa
 struct GameTime gameTime;
 
+
+
 // Objecto de escena y render
 Scene *OGLobj;
 
@@ -80,6 +84,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     gamPad = new GamePadRR(1); // Obtenemos el primer gamepad conectado
     SetTimer(hWnd, Timer1, 1000/30, (TIMERPROC)WndProc);// Asignamos el timer con un render de 30 fps
     MSG msg = { 0 };
+   
 #else
 int main(int argc, char** argv){
     if (!glfwInit()){
@@ -97,21 +102,37 @@ int main(int argc, char** argv){
     }
 #endif
     // Main character with it's camera
-    glm::vec3 translate, scale, v(0, 0, -1);
+    glm::vec3 translate, scale, v,rotate(0, 0, -1);
     translate = glm::vec3(5.0f, 10.0f, -5.0f);
     //5, ye - 1,-5
     //MainModel *model = new MainModel(hWnd, "models/Cube.obj", translate);
+    // Esta es la camara prinicpal
     Camera* camera = new Camera();
-    Model* model = new Model("models/BaseSpiderman.obj", translate, camera);
+
+    Model* model = new Model("models/catidle.fbx", translate, camera);
     model->setTranslate(&translate);
     camera->setFront(v);
-    camera->setCharacterHeight(4.0);
-    scale = glm::vec3(1.0f, 1.0f, 1.0f);	// it's a bit too big for our scene, so scale it down
+    rotate = glm::vec3(0.0f, 0.0f, 0.0f);
+    camera->setCharacterHeight(3.5);
+
+    scale = glm::vec3(1.0f, 1.0f, 1.0f);// it's a bit too big for our scene, so scale it down
     model->setScale(&scale);
+    model->setRotX(0);
+    model->setNextRotX(0);
     model->setTranslate(&translate);
+    //Se soluciono?
+    try {
+        Animation* ani = new Animation("models/catwalk.fbx", model->GetBoneInfoMap(), model->GetBoneCount());
+        model->setAnimator(new Animator(ani));
+    }
+    catch (...) {
+        cout << "Could not load animation!\n";
+    }
     
+
     OGLobj = new Scenario(model); // Creamos nuestra escena con esa posicion de inicio
     translate = glm::vec3(5.0f, OGLobj->getTerreno()->Superficie(model->getNextTranslate()->x, model->getNextTranslate()->z), -5.0f);
+    OGLobj->getTerreno()->getNextRotX();
     model->setTranslate(&translate);
     model->setNextTranslate(&translate);
     renderiza = true;
@@ -208,73 +229,89 @@ void mouseActions() {
 #endif
 }
 
-bool checkInput(GameActions *actions, Scene* scene) {
+bool checkInput(GameActions* actions, Scene* scene) {
     bool checkCollition = false;
+
 #ifdef _WIN32 
     if (gamPad->IsConnected()) {
-        //convierto a flotante el valor analogico de tipo entero
+        // Conversión de valores del gamepad
         double grados = (float)gamPad->GetState().Gamepad.sThumbLX / 32767.0;
-        //debido a que los controles se aguadean con el uso entonces ya no dan el cero
-        //en el centro, por eso lo comparo con una ventana de aguadencia de mi control
-        if (grados > 0.19 || grados < -0.19)
-            //model->CamaraGiraY(grados * 3.0);
+        if (grados > 0.19 || grados < -0.19) {
             actions->setAngle(grados * 3.0);
+        }
         float velocidad = (float)gamPad->GetState().Gamepad.sThumbLY / 32767;
         if (velocidad > 0.19 || velocidad < -0.19) {
-            //model->movePosition(velocidad);
             actions->advance = velocidad;
             checkCollition = true;
         }
+    }
 #else
     if (false) {
         cout << "This should be the gamepad code \n";
+    }
 #endif
-    } else {
+    else {
         mouseActions();
         checkCollition = KeysEvents(actions);
     }
-    Model* OGLobj = scene->getMainModel();
-    if (actions->firstPerson) {
-        OGLobj->cameraDetails->setFirstPerson(!OGLobj->cameraDetails->getFirstPerson());
-    }
-    if (actions->sideAdvance != 0) {
-        OGLobj->setNextRotY(OGLobj->getNextRotY() + (5.0 * actions->sideAdvance));
-        checkCollition = true;
-    }
-    if (actions->hAdvance != 0) {
-        glm::vec3 pos = *OGLobj->getTranslate();
-        pos.x += actions->hAdvance * 0.5 * glm::cos(glm::radians(OGLobj->getRotY()));
-        pos.z += actions->hAdvance * 0.5 * glm::sin(glm::radians(OGLobj->getRotY()));
-        // Posicionamos la camara/modelo pixeles arriba de su posicion en el terreno
-        pos.y = scene->getTerreno()->Superficie(pos.x, pos.z);
 
-        OGLobj->setNextTranslate(&pos);
-        checkCollition = true;
+    Model* mainModel = scene->getMainModel();
+
+    if (actions->firstPerson) {
+        // Alternar entre primera y tercera persona
+        bool isFirstPerson = mainModel->cameraDetails->getFirstPerson();
+        mainModel->cameraDetails->setFirstPerson(!isFirstPerson);
+
+        // Mensaje opcional de depuración
+        std::cout << "Modo de cámara cambiado a: "
+            << (isFirstPerson ? "Tercera Persona" : "Primera Persona")
+            << std::endl;
     }
+
+    if (actions->sideAdvance != 0) {
+        // Obtenemos la rotación actual únicamente en el eje Y
+        float currentRotY = mainModel->getRotY();
+
+        // Calculamos la nueva rotación solo en el eje Y (sin inclinar)
+        float newRotY = currentRotY + (5.0f * actions->sideAdvance); // Ajusta el "5.0f" para controlar la sensibilidad de giro
+
+        // Aplicamos la rotación únicamente en el eje Y
+        mainModel->setRotY(newRotY);
+        mainModel->setNextRotY(newRotY);
+
+        checkCollition = true; // Detectar colisiones si es necesario
+    }
+
+
     if (actions->advance != 0) {
-        glm::vec3 pos = *OGLobj->getTranslate();
-        pos.x += actions->advance * 0.5 * glm::sin(glm::radians(OGLobj->getRotY()));
-        pos.z += actions->advance * 0.5 * glm::cos(glm::radians(OGLobj->getRotY()));
-        // Posicionamos la camara/modelo pixeles arriba de su posicion en el terreno
+        glm::vec3 pos = *mainModel->getTranslate();
+        pos.x += actions->advance * 0.5f * glm::sin(glm::radians(mainModel->getRotY()));
+        pos.z += actions->advance * 0.5f * glm::cos(glm::radians(mainModel->getRotY()));
+
+        // Ajustar la altura con base en el terreno
         pos.y = scene->getTerreno()->Superficie(pos.x, pos.z);
-        OGLobj->setNextTranslate(&pos);
+        mainModel->setNextTranslate(&pos);
         checkCollition = true;
     }
-    if (actions->getAngle() != NULL) {
-        OGLobj->cameraDetails->calculateAngleAroundPlayer((*actions->getAngle()) * 3.0);
+
+
+    // Otros ángulos de cámara
+    if (actions->getAngle() != nullptr) {
+        mainModel->cameraDetails->calculateAngleAroundPlayer((*actions->getAngle()) * 3.0f);
     }
-    if (actions->getPitch() != NULL) {
-        OGLobj->cameraDetails->setPitch(OGLobj->cameraDetails->getPitch() + (*actions->getPitch()) * 0.50 * 3.0);
+    if (actions->getPitch() != nullptr) {
+        mainModel->cameraDetails->setPitch(mainModel->cameraDetails->getPitch() + (*actions->getPitch()) * 0.50f * 3.0f);
     }
-    if (actions->getZoom() != NULL) {
-        OGLobj->cameraDetails->setZoom(OGLobj->cameraDetails->getZoom() + *actions->getZoom() * 0.50);
+    if (actions->getZoom() != nullptr) {
+        mainModel->cameraDetails->setZoom(mainModel->cameraDetails->getZoom() + *actions->getZoom() * 0.50f);
     }
-    if (actions->getPlayerZoom() != NULL) {
-        OGLobj->cameraDetails->calculateZoomPlayer(*actions->getPlayerZoom() * 0.50);
+    if (actions->getPlayerZoom() != nullptr) {
+        mainModel->cameraDetails->calculateZoomPlayer(*actions->getPlayerZoom() * 0.50f);
     }
 
     return checkCollition;
 }
+
 
 #ifdef _WIN32
 //

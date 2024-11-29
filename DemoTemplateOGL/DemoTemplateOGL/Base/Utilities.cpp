@@ -28,6 +28,7 @@
 #define MB_ICONSTOP                 MB_ICONHAND
 #endif
 
+
 std::wstring s2ws(const std::string& s) {
 #ifdef __linux__
     std::wstring wideString = 

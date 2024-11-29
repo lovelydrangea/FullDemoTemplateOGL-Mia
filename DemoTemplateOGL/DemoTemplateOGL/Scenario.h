@@ -16,6 +16,8 @@
 #include "Base/Scene.h"
 #include "Texto.h"
 #include "Billboard2D.h"
+#include <GLFW/glfw3.h>
+
 
 using namespace std;
 using namespace glm;
@@ -24,6 +26,7 @@ class Scenario : public Scene {
 private:
 	SkyDome* sky;
 	Terreno* terreno;
+	Shader* rainShader;
 	vector<Billboard*> billBoard;
 	vector<Billboard2D*> billBoard2D;
 	vector<Model*> ourModel;
@@ -35,6 +38,8 @@ private:
 	vector<Texto*> ourText;
 	wstring wCoordenadas;
 	Texto *coordenadas = NULL;
+	mat4 viewMatrix;
+	mat4 projectionMatrix;
 public:
 	Scenario(Camera *cam) {
 		vec3 translate;
@@ -45,25 +50,31 @@ public:
 		model->setScale(&scale);
 		model->setTranslate(&translate);
 		InitGraph(model);
+
+
 	}
 	Scenario(Model *camIni) {
 		InitGraph(camIni);
+
+
 	}
-	void InitGraph(Model *main) {
+	void InitGraph(Model* main) {
+		glEnable(GL_PROGRAM_POINT_SIZE);
 
 		float matAmbient[] = { 1,1,1,1 };
 		float matDiff[] = { 1,1,1,1 };
 		angulo = 0;
-		camara = main;// Personaje principal
+		camara = main;
 		//creamos el objeto skydome
 		sky = new SkyDome(20, 17, 12, (WCHAR*)L"skydome/earth.jpg", main->cameraDetails);
 		//creamos el terreno
+		
 		terreno = new Terreno((WCHAR*)L"skydome/terreno.jpg", (WCHAR*)L"skydome/texterr.jpg", 400, 400, main->cameraDetails);
 		water = new Water((WCHAR*)L"textures/terreno.bmp", (WCHAR*)L"textures/water.bmp", 80, 50, camara->cameraDetails);
 		vec3 translate;
 		vec3 scale;
 		vec3 rotation;
-		translate = vec3(-97.0f, terreno->Superficie(-97.0f,-5.0f)+2.9f, -5.0f);
+		translate = vec3(-97.0f, terreno->Superficie(-97.0f, -5.0f) + 2.9f, -5.0f);
 		rotation = vec3(0.0f, 0.0f, 1.0f);
 		water->setRotZ(0);
 		water->setTranslate(&translate);
@@ -89,27 +100,56 @@ public:
 		rotation = vec3(1.0f, 0.0f, 0.0f); //rotation X
 		model->setRotX(0); // 45� rotation
 		ourModel.emplace_back(model);
+		model->AABB = NULL;
 
 
 		//Casita
 		model = new Model("models/model.dae", main->cameraDetails);
-		translate = vec3(38.0f, terreno->Superficie(18.0f, 27.0f)+10, 27.0f);
+		translate = vec3(38.0f, terreno->Superficie(18.0f, 27.0f) + 10, 27.0f);
 		scale = vec3(15.0f, 15.0f, 15.0f);
 		model->setScale(&scale);
 		model->setTranslate(&translate);
 		ourModel.emplace_back(model);
 		//Monstrous se ven oscuros
 
-		model = new Model("models/base.obj", main->cameraDetails);
-		translate = vec3(0.0f, 17.0f, 25.0f);
+		model = new Model("models/base.obj", main->cameraDetails,true,true);
+		translate = vec3(-54.0f, terreno->Superficie(-54.0f,23.0f)+3, 23.0f);
 		model->setTranslate(&translate);
 		scale = vec3(3.0f, 3.0f, 3.0f);
-		rotation = vec3(1.0f, 0.0f, 0.0f); //rotation X
+		rotation = vec3(1.0f, 1.0f, 0.0f); //rotation X
 		model->setScale(&scale);
-		model->setRotX(0); // 45� rotation
+		model->setRotY(0); // 45� rotation
+		model->setRotY(90);
 		ourModel.emplace_back(model);
 
 
+
+		// señal
+		model = new Model("models/sign.fbx", main->cameraDetails, false, false);
+		translate = vec3(6.0f, terreno->Superficie(6.0f,35.0f), 35.0f);
+		scale = vec3(.0025f, .0025f, .0025f);
+		model->setScale(&scale);
+		model->setTranslate(&translate);
+		ourModel.emplace_back(model);
+		delete model->AABB;
+		model->AABB = NULL;
+
+
+
+		model = new Model("models/monster.fbx", main->cameraDetails);
+		translate = vec3(-53.0f, terreno->Superficie(-53.0f, 52.0f)+2 , 52.0f);
+		scale = vec3(.04f, .04f, .04f);
+		rotation = vec3(1.0f, 0.0f, 1.0f); //rotation X
+		model->setRotX(-90);
+		model->setRotZ(90);
+		model->setScale(&scale);
+		model->setTranslate(&translate);
+		ourModel.emplace_back(model);
+
+		Camera* camrita = new Camera();
+		camrita
+
+		
 
 		/*
 		model= new Model("models/pez.obj", main->cameraDetails);
@@ -130,36 +170,15 @@ public:
 		}catch(...){
 			cout << "Could not load animation!\n";
 		}
-			
-	model = new Model("models/Silly_Dancing.dae", main->cameraDetails);
-		translate = vec3(10.0f, terreno->Superficie(0.0f, 60.0f) , 60.0f);
-		scale = vec3(0.1f, 0.1f, 0.1f);	// it's a bit too big for our scene, so scale it down
-		model->setTranslate(&translate);
-		model->setScale(&scale);
-		model->setRotY(180);
-		ourModel.emplace_back(model);
-		try{
-			Animation *ani = new Animation("models/Silly_Dancing.dae", model->GetBoneInfoMap(), model->GetBoneCount());
-		    model->setAnimator(new Animator(ani));
-		}catch(...){
-			cout << "Could not load animation!\n";
-		}
-		model = new Model("models/IronMan.obj", main);
-		translate = glm::vec3(0.0f, 20.0f, 30.0f);
-		scale = glm::vec3(0.025f, 0.025f, 0.025f);	// it's a bit too big for our scene, so scale it down
-		model->setScale(&scale);
-		model->setTranslate(&translate);
-		ourModel.emplace_back(model);
 
-		model = new Model("models/backpack.obj", main->cameraDetails, false, false);
-		translate = vec3(20.0f, 14.0f, 0.0f);
-		scale = vec3(1.0f, 1.0f, 1.0f);	// it's a bit too big for our scene, so scale it down
-		model->setTranslate(&translate);
-		model->setScale(&scale);
-		ourModel.emplace_back(model);
 
-		*/
+		*/;
+
+		InitRainShader();
+		InitRainGeometry();
+
 		inicializaBillboards();
+		
 		
 		wstring prueba(L"");
 		ourText.emplace_back(new Texto(prueba, 20, 0, 0, SCR_HEIGHT, 0, camara));
@@ -179,6 +198,95 @@ public:
 		coordenadas = new Texto(wCoordenadas, 15, 0, 0, 0, 0, camara);
 
 	}
+	
+
+	void InitRainShader() {
+		glEnable(GL_PROGRAM_POINT_SIZE);
+
+		// Inicializar el shader de la lluvia
+		rainShader = new Shader("shaders/shader.vert", "shaders/shader.frag", nullptr);
+
+		// Activar el shader
+		rainShader->use();
+
+		// Establecer variables uniform necesarias (ejemplo)
+		rainShader->setMat4("viewMatrix", viewMatrix);
+		rainShader->setMat4("projectionMatrix", projectionMatrix);
+
+		// Verificar errores de compilación y enlace
+	}
+
+
+	unsigned int rainVAO, rainVBO;
+
+	void InitRainGeometry() {
+		std::vector<glm::vec3> rainPositions;
+
+		// Genera posiciones aleatorias para las gotas de lluvia
+		for (int i = 0; i < 100000; i++) {
+			float x = ((rand() % 200) - 100) / 100.0f; // Posición X
+			float y = ((rand() % 200) - 100) / 100.0f; // Posición Y
+			float z = ((rand() % 200) - 100) / 100.0f; // Posición Z
+			rainPositions.push_back(glm::vec3(x, y, z));
+		}
+
+		glGenVertexArrays(1, &rainVAO);
+		glGenBuffers(1, &rainVBO);
+
+		glBindVertexArray(rainVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, rainVBO);
+		glBufferData(GL_ARRAY_BUFFER, rainPositions.size() * sizeof(glm::vec3), &rainPositions[0], GL_STATIC_DRAW);
+
+		// Configura atributos de posición
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+
+	void RenderRain() {
+		glEnable(GL_PROGRAM_POINT_SIZE);
+
+		// Asegúrate de que el shader de la lluvia esté cargado y listo
+		if (rainShader) {
+			rainShader->use(); // Activa el shader de lluvia
+
+			// Configura las propiedades de la luz
+			rainShader->setVec3("lightPosition", glm::vec3(10.0f, 50.0f, 20.0f)); // Posición de la luz
+			rainShader->setVec3("lightColor", glm::vec3(10.0f, 10.0f, 10.0f));       // Color de la luz
+
+			// Calcula la matriz MVP (Model-View-Projection)
+			glm::mat4 model = glm::mat4(1.0f); // Matriz modelo (identidad si no necesitas transformaciones)
+			glm::mat4 MVP = projectionMatrix * viewMatrix * model;
+
+			// Envía la matriz MVP al shader
+			rainShader->setMat4("MVP", MVP);
+
+			// Envía el tiempo transcurrido como una variable uniforme para animar las partículas
+			float timeValue = static_cast<float>(glfwGetTime());
+			rainShader->setFloat("time", timeValue);
+
+			// Vincula el VAO que contiene las partículas de lluvia (configuración de vértices)
+			glBindVertexArray(rainVAO);
+
+			// Dibuja las partículas como puntos (1000 partículas, ajusta según sea necesario)
+			glDrawArrays(GL_POINTS, 0, 100000);
+
+			// Desvincula el VAO (buen hábito para evitar efectos no deseados)
+			glBindVertexArray(1);
+
+			
+
+			// Desactiva el shader actual
+			rainShader->desuse();
+
+		}
+	}
+
+
+
+
 
 	void inicializaBillboards() {
 
@@ -190,11 +298,15 @@ public:
 
 		ye = terreno->Superficie(-9, -15);
 		billBoard.emplace_back(new Billboard((WCHAR*)L"billboards/Arbol3.png", 8, 8, -9, ye - 1, -15, camara->cameraDetails));
+
+
 	}
 
 	//el metodo render toma el dispositivo sobre el cual va a dibujar
 	//y hace su tarea ya conocida
 	Scene* Render() {
+		glEnable(GL_PROGRAM_POINT_SIZE);
+
 		// Validación inicial de los recursos clave
 		if (!sky) {
 			std::cerr << "Error: SkyDome no está inicializado.\n";
@@ -255,6 +367,12 @@ public:
 				animacion++;
 			}
 			
+
+			// Calcula las matrices de vista y proyección
+			viewMatrix = camara->cameraDetails->GetViewMatrix();
+			projectionMatrix = camara->cameraDetails->GetProjectionMatrix();
+
+
 			// Dibujar el cielo
 			sky->Draw();
 
@@ -263,6 +381,8 @@ public:
 
 			// Dibujar el agua
 			water->Draw();
+			//espera y jala la lluvia
+			RenderRain();
 
 			// Dibujar billboards 3D
 			for (auto& billboard : billBoard) {
@@ -278,12 +398,13 @@ public:
 			for (auto& text : ourText) {
 				if (text) text->Draw();
 			}
+		
 
 			// Actualizar y dibujar coordenadas
 			if (!ourModel.empty() && getMainModel()) {
-				wCoordenadas = L"X: " + to_wstring(getMainModel()->getTranslate()->x) +
-					L" Y: " + to_wstring(getMainModel()->getTranslate()->y) +
-					L" Z: " + to_wstring(getMainModel()->getTranslate()->z);
+				wCoordenadas = L"X:" + to_wstring(getMainModel()->getTranslate()->x) +
+					L" Y:" + to_wstring(getMainModel()->getTranslate()->y) +
+					L" Z:" + to_wstring(getMainModel()->getTranslate()->z);
 				coordenadas->initTexto(wCoordenadas);
 				coordenadas->Draw();
 			}
@@ -303,9 +424,6 @@ public:
 
 		return this;
 	}
-
-
-
 
 	
 	std::vector<Model*> *getLoadedModels() {
@@ -408,9 +526,6 @@ public:
 			ourModel.emplace_back(model);
 		}
 	}
-
-
-
 
 };
 

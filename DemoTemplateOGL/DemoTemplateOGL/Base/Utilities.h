@@ -39,7 +39,7 @@ struct GameTime {
 };
 extern GameTime gameTime;
 
-struct GameActions {
+extern struct GameActions {
 	// float /// x = 0 -> quiet; x > 0 -> move positive; x < 0 -> move negative
 	float advance = 0;
 	float hAdvance = 0;

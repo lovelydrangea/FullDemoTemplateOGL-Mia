@@ -1,6 +1,7 @@
 #include "CollitionDetection.h"
 #include <iostream>
 
+
 //https://github.com/Meirshomron/MeshCollision
 struct AABB {
     glm::vec3 min;

@@ -87,6 +87,13 @@ public:
         viewMatrix = glm::translate(viewMatrix, glm::vec3(-this->Position.x, -this->Position.y, -this->Position.z));
         return viewMatrix;//glm::lookAt(Position, Position + Front, Up);
     }
+    glm::mat4 GetProjectionMatrix() {
+        float fov = 45.0f;                 // Campo de visión en grados
+        float aspectRatio = 800.0f / 600.0f; // Relación de aspecto (puedes ajustarla dinámicamente)
+        float nearPlane = 0.1f;             // Plano cercano
+        float farPlane = 100.0f;            // Plano lejano
+        return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
+    }
 
     void calculateCameraPosition(float pRotY, glm::vec3 *pTrans, float dHorizontal, float dVertical) {
         if (firstPerson) {
