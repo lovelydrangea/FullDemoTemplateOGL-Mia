@@ -42,10 +42,33 @@ public:
     }
 
     // Aplica daño a otro modelo (ejemplo, un monstruo)
-    void attack(Monster monster) {
-        // Aquí podrías implementar cómo el ataque afecta al objetivo
-        std::cout << "El jugador inflige " << attackDamage << " de daño al objetivo." << std::endl;
+    void attack(std::vector<Model*>& models, float attackDamage, float attackRadius) {
+        glm::vec3 playerPosition = *getTranslate();
+
+        for (auto it = models.begin(); it != models.end(); ) {
+            Monster* monster = dynamic_cast<Monster*>(*it);
+            if (monster) {
+                glm::vec3 monsterPosition = *monster->getTranslate();
+                float distanceToMonster = glm::distance(playerPosition, monsterPosition);
+
+                if (distanceToMonster <= attackRadius) {
+                    // Aplica daño al monstruo
+                    std::cout << "El jugador inflige " << attackDamage << " de daño al monstruo." << std::endl;
+                    monster->takeDamage(attackDamage);
+
+                    // Elimina el monstruo si su vida es 0
+                    if (monster->getLife() <= 0.0f) {
+                        std::cout << "¡El monstruo ha sido eliminado!" << std::endl;
+                        delete* it;  // Elimina el objeto del heap
+                        it = models.erase(it);  // Borra el puntero del vector
+                        continue;  // Pasa al siguiente modelo
+                    }
+                }
+            }
+            ++it;  // Avanza el iterador
+        }
     }
+
 
     // Obtiene la vida actual del jugador
     float getHealth() const {

@@ -67,7 +67,7 @@ public:
     Model(string const& path, Camera* camera, bool rotationX = false, bool rotationY = true, bool gamma = false);
     Model(vector<Vertex> vertices, unsigned int numVertices, vector<unsigned int> indices, unsigned int numIndices, Camera* camera);
     Model(string const& path, glm::vec3 actualPosition, Camera* cam, bool rotationX = false, bool rotationY = true, bool gamma = false);
-    ~Model();
+    virtual ~Model();
     // draws the model, and thus all its meshes
     void prepShader(Shader& gpuDemo);
     void Draw();

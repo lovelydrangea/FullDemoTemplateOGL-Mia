@@ -128,7 +128,7 @@ public:
 
 		// Monstrou 1
 		translate = vec3(-54.0f, terreno->Superficie(-54.0f, 23.0f) + 3, 23.0f);
-		monster = new Monster("models/base.obj",translate, main->cameraDetails);
+		monster = new Monster("models/base.obj",translate, main->cameraDetails,terreno);
 		monster->setTranslate(&translate);
 		scale = vec3(3.0f, 3.0f, 3.0f);
 		rotation = vec3(1.0f, 1.0f, 0.0f); //rotation X
@@ -245,7 +245,7 @@ public:
 		std::vector<glm::vec3> rainPositions;
 
 		// Genera posiciones aleatorias para las gotas de lluvia
-		for (int i = 0; i < 10000; i++) {
+		for (int i = 0; i < 5000; i++) {
 			float x = ((rand() % 200) - 100) / 100.0f; // Posición X
 			float y = ((rand() % 200) - 100) / 100.0f; // Posición Y
 			float z = ((rand() % 200) - 100) / 100.0f; // Posición Z
@@ -293,7 +293,7 @@ public:
 			glBindVertexArray(rainVAO);
 
 			// Dibuja las partículas como puntos (1000 partículas, ajusta según sea necesario)
-			glDrawArrays(GL_POINTS, 0, 10000);
+			glDrawArrays(GL_POINTS, 0, 5000);
 
 			// Desvincula el VAO (buen hábito para evitar efectos no deseados)
 			glBindVertexArray(1);
@@ -367,7 +367,6 @@ public:
 
 			// Actualización de la cámara
 			camara->cameraDetails->CamaraUpdate(camara->getRotY(), camara->getTranslate());
-			
 			// Animación y actualización de billboards
 			if (this->animacion > 25) {
 				if (billBoard.size() > 1) {
@@ -389,13 +388,9 @@ public:
 			else {
 				animacion++;
 			}
-			
-
 			// Calcula las matrices de vista y proyección
 			viewMatrix = camara->cameraDetails->GetViewMatrix();
 			projectionMatrix = camara->cameraDetails->GetProjectionMatrix();
-
-
 			// Dibujar el cielo
 			sky->Draw();
 
@@ -406,19 +401,6 @@ public:
 			water->Draw();
 			//espera y jala la lluvia
 			RenderRain();
-
-			glm::vec3 housePosition = glm::vec3(38.0f, terreno->Superficie(38.0f, 27.0f), 27.0f); // Posición de la casa
-			float deltaTime = gameTime.deltaTime / 1000.0f; // DeltaTime en segundos	
-			for (auto& model : ourModel) {
-				Monster* monster = dynamic_cast<Monster*>(monster);
-				if (monster) {
-					monster->moveToHouse(housePosition, deltaTime); // Mueve el monstruo hacia la casa
-
-					if (monster->hasReachedHouse()) { // Si el monstruo ha alcanzado la casa
-						house->takeDamage(monster->getAttackDamage()); // Aplica daño a la casa
-					}
-				}
-			}
 
 			// Dibujar billboards 3D
 			for (auto& billboard : billBoard) {
@@ -437,7 +419,10 @@ public:
 			
 			
 
-			// Actualizar y dibujar coordenadas
+
+
+
+			// Actualizar y dibujar coordenadasd
 			if (!ourModel.empty() && getMainModel()) {
 				wCoordenadas = L"X:" + to_wstring(getMainModel()->getTranslate()->x) +
 					L" Y:" + to_wstring(getMainModel()->getTranslate()->y) +
@@ -448,6 +433,29 @@ public:
 			else {
 				std::cerr << "Error: El modelo principal no está disponible.\n";
 			}
+
+			glm::vec3 housePosition = glm::vec3(38.0f, terreno->Superficie(38.0f, 27.0f), 27.0f); // Posición de la casa
+			float deltaTime = gameTime.deltaTime / 8.00003f; // Conversión a segundos
+			glm::vec3 playerPosition = *(camara->getTranslate());
+			float collisionRadius = 3.0f;
+
+			for (auto& model : ourModel) {
+				Monster* monsterInstance = dynamic_cast<Monster*>(model);
+				if (monsterInstance) {
+					// Manejo de colisión con el jugador
+					monsterInstance->handleCollisionWithPlayer(playerPosition, collisionRadius);
+					// Movimiento hacia la casa
+					if (!monsterInstance->hasReachedHouse()) {
+						monsterInstance->moveToHouse(housePosition, deltaTime);
+					}
+					if (monsterInstance->hasReachedHouse()) {
+						house->takeDamage(monsterInstance->getAttackDamage());
+					}
+				}
+			}
+
+
+
 
 		}
 		catch (const std::exception& e) {

@@ -37,7 +37,7 @@ Model::Model(string const& path, glm::vec3 actualPosition, Camera *cam, bool rot
     buildKDtree();
 }
 
-Model::~Model() {
+ Model::~Model() {
     if (this->AABB != NULL)
         delete AABB;
     if (gpuDemo != NULL) {
@@ -461,6 +461,7 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene, bool rotationX, bool
     // return a mesh object created from the extracted mesh data
     meshes.emplace_back(new Mesh(vertices, indices, textures, materials));
 }
+
 
 // checks all material textures of a given type and loads the textures if they're not loaded yet.
 // the required info is returned as a Texture struct.

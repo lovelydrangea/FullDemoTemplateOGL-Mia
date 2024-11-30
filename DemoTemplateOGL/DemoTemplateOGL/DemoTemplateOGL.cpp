@@ -106,7 +106,10 @@ int main(int argc, char** argv){
 #endif
     // Main character with it's camera
     glm::vec3 translate, scale, v,rotate(0, 0, -1);
+
+
     translate = glm::vec3(5.0f, 10.0f, -5.0f);
+
     //5, ye - 1,-5
     //MainModel *model = new MainModel(hWnd, "models/Cube.obj", translate);
     // Esta es la camara prinicpal
@@ -259,10 +262,20 @@ bool checkInput(GameActions* actions, Scene* scene) {
     }
 
     Model* mainModel = scene->getMainModel(); //Modelo principal
-    if (actions->action) {
-    
-    }
+    if (actions->action) { // Si se presiona la tecla F
 
+        Player* player = dynamic_cast<Player*>(mainModel);
+        if (player) {
+            // Radio del ataque del jugador
+            float attackRadius = 5.0f; // Radio dentro del cual se afecta a los monstruos
+            float attackDamage = 20.0f; // Daño del ataque
+
+            // El jugador ataca los modelos cercanos (posiblemente monstruos)
+            player->attack(*scene->getLoadedModels(), attackDamage, attackRadius);
+        }
+
+        actions->action = false; // Resetea la acción
+    }
     if (actions->firstPerson) {
         // Alternar entre primera y tercera persona presionando la tecla P
         bool isFirstPerson = mainModel->cameraDetails->getFirstPerson();
@@ -279,7 +292,7 @@ bool checkInput(GameActions* actions, Scene* scene) {
         float currentRotY = mainModel->getRotY();
 
         // Calculamos la nueva rotación solo en el eje Y (sin inclinar)
-        float newRotY = currentRotY + (5.0f * actions->sideAdvance); // Ajusta el "5.0f" para controlar la sensibilidad de giro
+        float newRotY = currentRotY + (8.0f * actions->sideAdvance); // Ajusta el "5.0f" para controlar la sensibilidad de giro
 
         // Aplicamos la rotación únicamente en el eje Y
         mainModel->setRotY(newRotY);
@@ -292,8 +305,8 @@ bool checkInput(GameActions* actions, Scene* scene) {
     if (actions->advance != 0) {
         //Movimiento del personaje aqui nos basaremos para hacer el movimiento del monstrou
         glm::vec3 pos = *mainModel->getTranslate();
-        pos.x += actions->advance * 0.5f * glm::sin(glm::radians(mainModel->getRotY()));
-        pos.z += actions->advance * 0.5f * glm::cos(glm::radians(mainModel->getRotY()));
+        pos.x += actions->advance * 1.20f * glm::sin(glm::radians(mainModel->getRotY()));
+        pos.z += actions->advance * 1.20f * glm::cos(glm::radians(mainModel->getRotY()));
 
         // Ajustar la altura con base en el terreno
         pos.y = scene->getTerreno()->Superficie(pos.x, pos.z);

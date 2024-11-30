@@ -4,6 +4,7 @@
 
 #include "Base/model.h"
 #include <iostream>
+#include <windows.h>
 
 class House : public Model {
 private:
@@ -12,7 +13,7 @@ private:
 public:
     float life = getHealth();
     // Constructor de la casa
-    House(const std::string& path, Camera* camera, float health = 500.0f)
+    House(const std::string& path, Camera* camera, float health = 100.0f)
         : Model(path, camera), health(health) {
          // Establece la posición inicial de la casa
     }
@@ -22,7 +23,9 @@ public:
          life-= amount;
         if (life <= 0.0f) {
             std::cout << "¡La casa ha sido destruida!" << std::endl;
-            // Lógica adicional para la destrucción de la casa
+
+            LOGGER::LOG().exclamation("Casa destruida, Has perdido");
+           PostQuitMessage(0);
         }
         else {
             std::cout << "La casa recibe " << amount << " de daño. Vida restante: " << health << std::endl;
