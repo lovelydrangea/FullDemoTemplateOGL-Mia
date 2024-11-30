@@ -18,6 +18,12 @@
 #include "Texto.h"
 #include "Billboard2D.h"
 #include <GLFW/glfw3.h>
+#include <xkeycheck.h>
+#include "Water.h"
+#include "House.h"
+#include "Monster.h"
+
+
 
 
 using namespace std;
@@ -28,7 +34,8 @@ private:
 	SkyDome* sky;
 	Terreno* terreno;
 	Shader* rainShader;
-	vector<Projectile*> projectiles;
+	House* house;
+	Monster* monster;
 	vector<Billboard*> billBoard;
 	vector<Billboard2D*> billBoard2D;
 	vector<Model*> ourModel;
@@ -63,12 +70,13 @@ public:
 		InitRainGeometry();
 
 	}
-
+	//Base
 	void InitGraph(Model* main) {
 		glEnable(GL_PROGRAM_POINT_SIZE);
 
 		float matAmbient[] = { 1,1,1,1 };
 		float matDiff[] = { 1,1,1,1 };
+		float deltaTime = 1000;
 		angulo = 0;
 		camara = main;
 		//creamos el objeto skydome
@@ -76,7 +84,7 @@ public:
 		//creamos el terreno
 		
 		terreno = new Terreno((WCHAR*)L"skydome/terreno.jpg", (WCHAR*)L"skydome/texterr.jpg", 400, 400, main->cameraDetails);
-		water = new Water((WCHAR*)L"textures/terreno.bmp", (WCHAR*)L"textures/water.bmp", 80, 50, camara->cameraDetails);
+		water = new Water((WCHAR*)L"textures/terreno.bmp", (WCHAR*)L"textures/water.bmp", 80, 500, camara->cameraDetails);
 		vec3 translate;
 		vec3 scale;
 		vec3 rotation;
@@ -88,16 +96,17 @@ public:
 		// -----------
 		ourModel.emplace_back(main);
 		Model* model;
+		
 
 		vec3 PosicionJugador = glm::vec3(5.0f, terreno->Superficie(5.0f, -13.0f), -13.0f);
-		vec3 PosicionCasa = glm::vec3(38.0f, terreno->Superficie(18.0f, 27.0f) + 10, 27.0f);
+		vec3 PosicionCasa = glm::vec3(38.0f, terreno->Superficie(38.0f, 27.0f)+6.0f, 27.0f);
 
-		CrearBosque(ourModel, terreno, main->cameraDetails, 18, PosicionJugador, PosicionCasa, 12.0f);
+		CrearBosque(ourModel, terreno, main->cameraDetails, 18, PosicionJugador, PosicionCasa, 13.0f);
 		// Creamos un pequeñito bosque utilizando las librerias, randomizando como tal el escenario
 		// Modelos mios jajsjasjasd
 		//Pinos
 		/*
-
+		
 		*/
 		//Fogata para complementar el bosque!!
 		model = new Model("models/fogata.obj", main->cameraDetails);
@@ -110,16 +119,38 @@ public:
 
 
 		//Casita
-		model = new Model("models/model.dae", main->cameraDetails);
-		translate = vec3(38.0f, terreno->Superficie(18.0f, 27.0f) + 10, 27.0f);
+		house = new House("models/model.dae", main->cameraDetails,100.0f);
+		translate = vec3(38.0f, terreno->Superficie(38.0f, 27.0f)+6.0f, 27.0f);
 		scale = vec3(15.0f, 15.0f, 15.0f);
-		model->setScale(&scale);
-		model->setTranslate(&translate);
-		ourModel.emplace_back(model);
-		//Monstrous se ven oscuros
+		house->setScale(&scale);
+		house->setTranslate(&translate);
+		ourModel.emplace_back(house);
 
-		model = new Model("models/base.obj", main->cameraDetails,true,true);
-		translate = vec3(-54.0f, terreno->Superficie(-54.0f,23.0f)+3, 23.0f);
+		// Monstrou 1
+		translate = vec3(-54.0f, terreno->Superficie(-54.0f, 23.0f) + 3, 23.0f);
+		monster = new Monster("models/base.obj",translate, main->cameraDetails);
+		monster->setTranslate(&translate);
+		scale = vec3(3.0f, 3.0f, 3.0f);
+		rotation = vec3(1.0f, 1.0f, 0.0f); //rotation X
+		monster->setScale(&scale);
+		monster->setRotY(0); // 45� rotation
+		monster->setRotY(90);
+		ourModel.emplace_back(monster);//Ingresar el modelo 
+		
+
+		model = new Model("models/base.obj", main->cameraDetails, true, true);
+		translate = vec3(-54.0f, terreno->Superficie(-54.0f, 32.0f) + 3, 32.0f);
+		model->setTranslate(&translate);
+		scale = vec3(3.0f, 3.0f, 3.0f);
+		rotation = vec3(1.0f, 1.0f, 0.0f); //rotation X
+		model->setScale(&scale);
+		model->setRotY(0); // 45� rotation
+		model->setRotY(90);
+		ourModel.emplace_back(model);
+
+
+		model = new Model("models/base.obj", main->cameraDetails, true, true);
+		translate = vec3(-54.0f, terreno->Superficie(-54.0f, 19.0f) + 3, 12.0f);
 		model->setTranslate(&translate);
 		scale = vec3(3.0f, 3.0f, 3.0f);
 		rotation = vec3(1.0f, 1.0f, 0.0f); //rotation X
@@ -140,22 +171,6 @@ public:
 		delete model->AABB;
 		model->AABB = NULL;
 
-
-
-		model = new Model("models/monster.fbx", main->cameraDetails);
-		translate = vec3(-53.0f, terreno->Superficie(-53.0f, 52.0f)+2 , 52.0f);
-		scale = vec3(.04f, .04f, .04f);
-		rotation = vec3(1.0f, 0.0f, 1.0f); //rotation X
-		model->setRotX(-90);
-		model->setRotZ(90);
-		model->setScale(&scale);
-		model->setTranslate(&translate);
-		ourModel.emplace_back(model);
-
-		Camera* camrita = new Camera();
-		camrita
-
-		
 
 		/*
 		model= new Model("models/pez.obj", main->cameraDetails);
@@ -179,8 +194,9 @@ public:
 
 
 		*/;
-
+		//
 		InitRainShader();
+
 		InitRainGeometry();
 
 		inicializaBillboards();
@@ -277,7 +293,7 @@ public:
 			glBindVertexArray(rainVAO);
 
 			// Dibuja las partículas como puntos (1000 partículas, ajusta según sea necesario)
-			glDrawArrays(GL_POINTS, 0, 100000);
+			glDrawArrays(GL_POINTS, 0, 10000);
 
 			// Desvincula el VAO (buen hábito para evitar efectos no deseados)
 			glBindVertexArray(1);
@@ -391,6 +407,19 @@ public:
 			//espera y jala la lluvia
 			RenderRain();
 
+			glm::vec3 housePosition = glm::vec3(38.0f, terreno->Superficie(38.0f, 27.0f), 27.0f); // Posición de la casa
+			float deltaTime = gameTime.deltaTime / 1000.0f; // DeltaTime en segundos	
+			for (auto& model : ourModel) {
+				Monster* monster = dynamic_cast<Monster*>(monster);
+				if (monster) {
+					monster->moveToHouse(housePosition, deltaTime); // Mueve el monstruo hacia la casa
+
+					if (monster->hasReachedHouse()) { // Si el monstruo ha alcanzado la casa
+						house->takeDamage(monster->getAttackDamage()); // Aplica daño a la casa
+					}
+				}
+			}
+
 			// Dibujar billboards 3D
 			for (auto& billboard : billBoard) {
 				if (billboard) billboard->Draw();
@@ -405,7 +434,8 @@ public:
 			for (auto& text : ourText) {
 				if (text) text->Draw();
 			}
-		
+			
+			
 
 			// Actualizar y dibujar coordenadas
 			if (!ourModel.empty() && getMainModel()) {
@@ -533,6 +563,9 @@ public:
 			ourModel.emplace_back(model);
 		}
 	}
+
+
+
 
 };
 

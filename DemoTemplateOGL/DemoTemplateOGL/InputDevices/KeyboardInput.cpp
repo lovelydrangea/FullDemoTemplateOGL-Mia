@@ -78,7 +78,8 @@ bool KeysEvents(GameActions* actions) {
         KEYS[static_cast<size_t>(input.P)] = false;
     }
     // Seria correcto esto para el disparo
-    if (KEYS[static_cast<size_t>(input.F)]&& actions->firstPerson == true ) {
+    
+    if (KEYS[static_cast<size_t>(input.F)]) {
         actions->action = true;
         KEYS[static_cast<size_t>(input.F)] = false;
     }

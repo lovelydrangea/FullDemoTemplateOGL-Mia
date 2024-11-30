@@ -126,6 +126,12 @@
     <ClInclude Include="Projectile.h">
       <Filter>Header Files\Base</Filter>
     </ClInclude>
+    <ClInclude Include="Monster.h">
+      <Filter>Header Files\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="House.h">
+      <Filter>Header Files\Base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DemoTemplateOGL.cpp">

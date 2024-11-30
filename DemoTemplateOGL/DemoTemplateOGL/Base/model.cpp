@@ -6,6 +6,7 @@
 
 
 
+
 Model::Model() {
     this->cameraDetails = NULL;
     this->gammaCorrection = false;

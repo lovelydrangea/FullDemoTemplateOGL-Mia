@@ -112,7 +112,6 @@ int main(int argc, char** argv){
     // Esta es la camara prinicpal
     Camera* camera = new Camera();
     //Personaje principal
-
     Player * model = new Player("models/catidle.fbx", translate, camera);
     model->setTranslate(&translate);
     camera->setFront(v);
@@ -124,7 +123,7 @@ int main(int argc, char** argv){
     model->setRotX(0);
     model->setNextRotX(0);
     model->setTranslate(&translate);
-    //Se soluciono?
+    //Se soluciono?d
     try {
         Animation* ani = new Animation("models/catwalk.fbx", model->GetBoneInfoMap(), model->GetBoneCount());
         model->setAnimator(new Animator(ani));
@@ -261,19 +260,11 @@ bool checkInput(GameActions* actions, Scene* scene) {
 
     Model* mainModel = scene->getMainModel(); //Modelo principal
     if (actions->action) {
-        // Genera un proyectil al presionar "F"
-        glm::vec3 direction = glm::normalize(mainModel->cameraDetails->getFront()); // Dirección hacia donde mira la cámara
-        glm::vec3 startPosition = *model->getTranslate() + glm::vec3(0.0f, 1.5f, 0.0f); // Justo frente al jugador
-        Projectile* newProjectile = new Projectile("models/projectile.obj", startPosition, direction, mainModel->cameraDetails);
-        OGLobj->addProjectile(newProjectile);
-
-        actions.action = false; // Resetea la acción
+    
     }
 
-
-
     if (actions->firstPerson) {
-        // Alternar entre primera y tercera persona presionando la tecla F
+        // Alternar entre primera y tercera persona presionando la tecla P
         bool isFirstPerson = mainModel->cameraDetails->getFirstPerson();
         mainModel->cameraDetails->setFirstPerson(!isFirstPerson);
 
@@ -299,6 +290,7 @@ bool checkInput(GameActions* actions, Scene* scene) {
 
 
     if (actions->advance != 0) {
+        //Movimiento del personaje aqui nos basaremos para hacer el movimiento del monstrou
         glm::vec3 pos = *mainModel->getTranslate();
         pos.x += actions->advance * 0.5f * glm::sin(glm::radians(mainModel->getRotY()));
         pos.z += actions->advance * 0.5f * glm::cos(glm::radians(mainModel->getRotY()));
